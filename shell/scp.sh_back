@@ -1,0 +1,66 @@
+#!/usr/bin/expect -f
+
+set FileToRead scp.ini
+
+puts "File To Read is $FileToRead\r"
+if { [file exists $FileToRead] } \
+{
+	puts "$FileToRead exists\r"
+} else \
+{
+   	puts "$FileToRead does not exist\r"
+	exit 1
+}
+
+#set timeout 30 
+set fp [open $FileToRead]
+while {-1 != [gets $fp line]} {
+#	puts "The current line is '$line'."
+
+	# # 표시는 주석이다.
+	set comment [string first "#" $line]
+	if { $comment == -1 } {
+
+		set first [string first "/" $line]
+		set last [string first "/" $line]
+		puts "==> $first"
+		
+		# last++
+		incr last	
+		puts "==> $last"
+		# last index 에서 문자열 끝까지 구한다.
+		set name [string range $line $last end]
+		puts "name ==> $name"
+
+		eval spawn $line
+		expect {
+			stty -echo
+				"*yes/no*" {
+					send "yes\r"
+					expect -re "Password:"
+					send "1234\r"
+	#				interact
+				}
+				"*assword:" {
+					send "1234\r"
+	#				interact
+				}
+				default {
+					puts "=========== ERROR ==========="
+					#exit 1
+				}
+		}
+		interact
+
+	}
+
+#	spawn scp datafile.ini wizmaster@125.7.131.243:/home/wizmaster/aaaaaa
+#	expect -re "Password:"
+#	send "1234\r"
+#	interact
+}
+close $fp
+
+puts "***** Ending Program"
+
+

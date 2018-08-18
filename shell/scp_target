@@ -1,0 +1,26 @@
+scp -P 3333 DNServer wizmaster@114.108.28.30:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.31:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.32:/home/wizmaster/DownloadServer/DNServer.exe
+
+scp -P 3333 DNServer wizmaster@114.108.28.37:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.38:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.39:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.40:/home/wizmaster/DownloadServer/DNServer.exe
+
+scp -P 3333 DNServer wizmaster@114.108.28.41:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.42:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.43:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.44:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.45:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.46:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.47:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.48:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@114.108.28.49:/home/wizmaster/DownloadServer/DNServer.exe
+
+scp -P 3333 DNServer wizmaster@116.124.252.100:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@116.124.252.101:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@116.124.252.102:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@116.124.252.103:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@116.124.252.104:/home/wizmaster/DownloadServer/DNServer.exe
+scp -P 3333 DNServer wizmaster@116.124.252.105:/home/wizmaster/DownloadServer/DNServer.exe
+
