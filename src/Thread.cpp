@@ -25,7 +25,7 @@ void Thread::SetStarted(const bool _bStart)
 
 const int Thread::GetThreadID()
 {
-	return (int)m_ThreadID;
+	return *(int*)m_ThreadID;
 }
 
 const bool Thread::Spawn(void* const _pThread)

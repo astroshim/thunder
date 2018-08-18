@@ -67,14 +67,15 @@ CNPLog::GetInstance().Log("send =>(%p)iLeft=(%d) OffSet=(%d), TotalSendSize=(%d)
 			pClient, iLeft, pClient->GetFileOffset(), pClient->GetTotalSendSize(), iSendSize, iErrno);
 */
 
-            iSendSize = sendfile(pClient->GetFileFd()
-                                ,pClient->GetSocket()->GetFd()
-                                //,pClient->GetFileOffset()
-                                ,nOffset
-                                ,iLeft
-                                ,NULL
-                                ,&nTransmitted
-                                ,0);
+
+            // iSendSize = sendfile(pClient->GetFileFd()
+            //                     ,pClient->GetSocket()->GetFd()
+            //                     //,pClient->GetFileOffset()
+            //                     ,nOffset
+            //                     ,iLeft
+            //                     ,NULL
+            //                     // ,&nTransmitted
+            //                     ,0);
 
 			if(iSendSize == -1)
 			{

@@ -22,7 +22,7 @@ OBJS = 	CircularBuff.o		\
 		ClientDN.o			\
 		ClientSocket.o		\
 		IOMP_Select.o		\
-		IOMP_EPoll.o		\
+		IOMP_KQUEUE.o		\
 		Mutex.o				\
 		NPDebug.o			\
 		NPLog.o				\
@@ -43,7 +43,6 @@ OBJS = 	CircularBuff.o		\
 		ThreadSender.o		\
 		ThreadTic.o			\
 		ThreadQoS.o			\
-		ThreadQoSEPoll.o	\
 		CircularQueue.o		\
 		ReleaseSlot.o		\
 		DownloadManager.o	\

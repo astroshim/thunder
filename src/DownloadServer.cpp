@@ -21,7 +21,7 @@
 
 #include "../include/ThreadQoSSelect.h"
 #ifndef _FREEBSD
-#include "../include/ThreadQoSEPoll.h"
+// #include "../include/ThreadQoSEPoll.h"
 #endif
 /*
 #ifdef _FREEBSD

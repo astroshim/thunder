@@ -160,7 +160,7 @@ bool SharedMemory::Attach (const void *_pAddr)
     if(m_ShmId >= 0)
     {
         //if((m_Data = (void *)shmat (m_ShmId, _pAddr, SHM_RND)) < 0)
-        if((m_Data = (void *)shmat (m_ShmId, _pAddr, 0)) < 0)
+        if((m_Data = (void *)shmat (m_ShmId, _pAddr, 0)) <  (void *)0)
         {
             perror("in attach ");
             return false;

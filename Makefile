@@ -5,7 +5,7 @@
 #LDFLAGS= -Wl,--hash-style=sysv
 
 .SUFFIXES = .cpp .o 
-CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -I /usr/local/opt/openssl/include
+CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -D_FREEBSD -I /usr/local/opt/openssl/include
 
 CFLAGS = -g -Wall 
 #CFLAGS = -O2 -g
@@ -30,7 +30,7 @@ OBJ_MAIN = MainProcess.o 		\
 		./src/ClientDN.o       		\
 		./src/ClientSocket.o      \
 		./src/IOMP_Select.o       \
-		./src/IOMP_EPoll.o        \
+		./src/IOMP_KQUEUE.o        \
 		./src/Mutex.o             \
 		./src/NPDebug.o           \
 		./src/NPLog.o             \
@@ -51,9 +51,9 @@ OBJ_MAIN = MainProcess.o 		\
 		./src/ThreadSender.o      \
 		./src/ThreadTic.o       \
 		./src/ThreadQoS.o       \
-		./src/ThreadQoSEPoll.o       \
 		./src/CircularQueue.o     \
 		./src/ReleaseSlot.o     \
+		./src/ThreadQoSSelect.o     \
 		./src/DownloadManager.o	  \
 		./src/DownloadServer.o
 
