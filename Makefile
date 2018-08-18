@@ -5,7 +5,7 @@
 #LDFLAGS= -Wl,--hash-style=sysv
 
 .SUFFIXES = .cpp .o 
-CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -D_FREEBSD -I /usr/local/opt/openssl/include
+CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -I /usr/local/opt/openssl/include
 
 CFLAGS = -g -Wall 
 #CFLAGS = -O2 -g
@@ -17,7 +17,7 @@ LTHREAD = -lpthread
 LCURL = -lcurl 
 #CRYPTO = -lcrypto 
 
-LIBS += $(LTHREAD) $(LCURL) $(CRYPTO)
+LIBS += $(LTHREAD) $(LCURL) $(CRYPTO) 
 
 ######################################################################
 ####### Object definition
@@ -90,6 +90,7 @@ install :
 	cp $(TARGET) ./DownloadServer
 	cp runserver.sh ./DownloadServer
 	cp termserver.sh ./DownloadServer
+	mkdir logs
 	cp dstat ./DownloadServer
 
 clean :

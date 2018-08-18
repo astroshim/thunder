@@ -1,0 +1,7 @@
+*.o
+MainProcess.o
+DNServer
+DownloadServer
+logs/
+**/shell/*
+**/*.o

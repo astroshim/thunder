@@ -9,7 +9,7 @@ CC     = g++  -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY
 CFLAGS = -g -Wall 
 #CFLAGS = -O2 -g
 
-BASE		= $(HOME)/DownloadServer/src
+BASE		= $(HOME)/thunder/src
 BIN			= $(BASE)
 
 ######################################################################

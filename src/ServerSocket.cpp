@@ -63,7 +63,7 @@ Socket* const ServerSocket::Accept()
 */
 	iAddrLength = sizeof(struct sockaddr_in);
 
-	iClientSocket = accept(GetFd(), (struct sockaddr *)&stClientAddr, (size_t *)&iAddrLength);
+	iClientSocket = accept(GetFd(), (struct sockaddr *)&stClientAddr, (socklen_t *)&iAddrLength);
 	if(iClientSocket < 0)
 	{
         CNPLog::GetInstance().Log("1.accept() fail error=[%d],(%s) ", errno, strerror(errno));
@@ -95,7 +95,7 @@ const int ServerSocket::AcceptFD()
 	pstClientAddr = GetClientAddr();
 	iAddrLength = sizeof(struct sockaddr_in);
 
-	iClientSocket = accept(GetFd(), (struct sockaddr *)pstClientAddr, (size_t *)&iAddrLength);
+	iClientSocket = accept(GetFd(), (struct sockaddr *)pstClientAddr, (socklen_t *)&iAddrLength);
 	//iClientSocket = accept(GetFd(), (struct sockaddr *)&m_ClientAddr, (size_t *)&iAddrLength);
 	if(iClientSocket < 0)
 	{

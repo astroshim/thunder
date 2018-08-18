@@ -6,7 +6,7 @@
 pid=$(ps -ef |grep -v grep | grep "DNServer" | head -n 1 | awk {'print $8'})
 if [[ $pid != "./DNServer" ]]
 then
-	cd /home/wizmaster/DownloadServer
+	cd /root/thunder
 	./DNServer &
 
 	sleep 1

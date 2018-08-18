@@ -31,7 +31,7 @@ void ThreadTic::Run()
 
     // check directory
     name_start = (char *)m_pMainProcess->GetLogFileName();
-    name_end = basename(m_pMainProcess->GetLogFileName());
+    name_end = basename((char *)m_pMainProcess->GetLogFileName());
     //size = name_end - name_start;	// only linux
     size = strlen(name_start) - strlen(name_end);
 

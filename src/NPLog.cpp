@@ -90,7 +90,7 @@ void CNPLog::BackupLogFile2(char* _pchFileName)
 	sprintf( pchOrder, "\mv /root/DownloadServer/%s* /root/DownloadServer/%sold_log/", logdname, logdname);
 */
 	memset(pchOrder, 0x00, sizeof(pchOrder));
-	sprintf( pchOrder, "rm /root/DownloadServer/%s* > /dev/null 2>&1", logdname);
+	sprintf( pchOrder, "rm /root/thunder/%s* > /dev/null 2>&1", logdname);
 
 	system(pchOrder);
 	return ;
