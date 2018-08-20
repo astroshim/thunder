@@ -57,6 +57,7 @@ class Socket
      * Data Send and Recv
      */
     const int   Read(void* const _vPtr, const size_t _n);
+    const int   ReadLine(void* const _vPtr, const size_t _n);
     const int   Write(const void* const _vPtr, const size_t _n);
     const int   Send(const char* const _pchBuf,  const int _iSize);
     const int   Recv(char* const _pchBuf, const int _iSize);

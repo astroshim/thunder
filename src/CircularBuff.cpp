@@ -219,10 +219,9 @@ const int CircularBuff::Put(Socket* const _pSocket)
     if (m_iHead == 0)
     {
       iFree = m_iBufferSize - m_iTail;
-      if((iReadLen = _pSocket->Read((char *)&m_pchBuffer[m_iTail],
+      if((iReadLen = _pSocket->ReadLine((char *)&m_pchBuffer[m_iTail],
               iLength )) <= 0)
       {
-
         return USER_CLOSE;
       }
     }
@@ -232,7 +231,7 @@ const int CircularBuff::Put(Socket* const _pSocket)
 
       if (iLength <= iFree)
       {
-        if((iReadLen = _pSocket->Read((char *)&m_pchBuffer[m_iTail],
+        if((iReadLen = _pSocket->ReadLine((char *)&m_pchBuffer[m_iTail],
                 iLength )) <= 0)
         {
           return USER_CLOSE;
@@ -245,13 +244,13 @@ CNPLog::GetInstance().LogDump("CircularBuff::Put", (char *)&m_pchBuffer[m_iTail]
       }
       else
       {
-        if((iReadLen = _pSocket->Read((char *)&m_pchBuffer[m_iTail],
+        if((iReadLen = _pSocket->ReadLine((char *)&m_pchBuffer[m_iTail],
                 iFree )) <= 0)
         {
           return USER_CLOSE;
         }
         int iTmp = 0;
-        if((iTmp = _pSocket->Read((char *)m_pchBuffer,
+        if((iTmp = _pSocket->ReadLine((char *)m_pchBuffer,
                 iLength-iFree )) <= 0)
         {
           return USER_CLOSE;
@@ -262,7 +261,7 @@ CNPLog::GetInstance().LogDump("CircularBuff::Put", (char *)&m_pchBuffer[m_iTail]
   }
   else
   {
-    if((iReadLen = _pSocket->Read((char *)&m_pchBuffer[m_iTail],
+    if((iReadLen = _pSocket->ReadLine((char *)&m_pchBuffer[m_iTail],
             iLength )) <= 0)
     {
       return USER_CLOSE;
@@ -278,7 +277,7 @@ CNPLog::GetInstance().LogDump("CircularBuff::Put", (char *)&m_pchBuffer[m_iTail]
   m_iUseBufferSize += iReadLen;
 
 #ifdef _DEBUG
-  CNPLog::GetInstance().Log("In CircularBuff::Put(%p) Leave iReadLen=(%d), m_iUseBufferSize=(%d), m_iHead=(%d), m_iTail=(%d)",
+  CNPLog::GetInstance().Log("In CircularBuff::Put(%s) Leave iReadLen=(%d), m_iUseBufferSize=(%d), m_iHead=(%d), m_iTail=(%d)",
       m_pchBuffer, iReadLen, m_iUseBufferSize, m_iHead, m_iTail);
 #endif
   return iReadLen;

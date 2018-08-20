@@ -1002,7 +1002,7 @@ int ClientUserDN::WorkGetCDNFile(const T_PACKET &_tPacket)
      */
   snprintf(m_tFileInfo.sFileName, FILE_SZ, "%s", pClientBody->_Data.d.pchFileName);
 
-  // file�� ����.
+  // file
   if(m_tFileInfo.iFileFd < 0)
   {
     char down_path[612] = {0,};
@@ -1165,6 +1165,7 @@ void ClientUserDN::WorkHello(const T_PACKET &_tPacket)
 
 void ClientUserDN::WorkPing(const T_PACKET &_tPacket)
 {
+
   memset((char *)&m_tSendPacket, 0x00, sizeof(T_PACKET));
   m_tSendPacket.header.command  = cmd_HEARTBEAT_DS_DC;
   m_tSendPacket.header.length   = 0;
@@ -1196,6 +1197,11 @@ void ClientUserDN::WorkGoodBye(const T_PACKET &_tPacket)
 const int ClientUserDN::ExecuteCommand(Thread *_pThread)
 {
   T_PACKET tPacket;
+
+#ifdef _DEBUG
+  DownloadServer *pServer = dynamic_cast<DownloadServer*>(m_pMainProcess);
+  CNPLog::GetInstance().Log("ClientUserDN::ExecuteCommand pServer=(%p)", pServer);
+#endif
 
   /*
      int iCommand   = CNPUtil::Get2Byte((unsigned char *)m_cCBuff.GetHeaderPoint(), 0);

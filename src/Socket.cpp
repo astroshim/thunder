@@ -4,18 +4,18 @@
 #include "../include/NPDebug.h"
 
 Socket::Socket()
-      :m_iFd(-1)
+  :m_iFd(-1)
 {
 }
 
 Socket::Socket(const int _iFd)
-      :m_iFd(_iFd)
+  :m_iFd(_iFd)
 {
 }
 
 Socket::~Socket()
 {
-//CNPLog::GetInstance().Log("Sockt class free");
+  //CNPLog::GetInstance().Log("Sockt class free");
   close(m_iFd);
   m_iFd = -1;
 }
@@ -38,23 +38,23 @@ const int Socket::Close()
 }
 
 /*
-struct sockaddr_in* Socket::GetServerAddr()
-{
-  return &m_ServerAddr;
-}
+   struct sockaddr_in* Socket::GetServerAddr()
+   {
+   return &m_ServerAddr;
+   }
 
-struct sockaddr_in* Socket::GetClientAddr()
-{
-  return &m_ClientAddr;
-}
-*/
+   struct sockaddr_in* Socket::GetClientAddr()
+   {
+   return &m_ClientAddr;
+   }
+   */
 
 const int Socket::Read(void* const _vPtr, const size_t _n)
 {
   size_t    nLeft;
   ssize_t   nRead;
   char    *pchPtr = NULL;
-  
+
   pchPtr = (char *)_vPtr;
   nLeft = _n;
 
@@ -66,7 +66,7 @@ const int Socket::Read(void* const _vPtr, const size_t _n)
       {
         nRead = 0;
       }
-      else 
+      else
       {
         return -1;
       }
@@ -79,6 +79,57 @@ const int Socket::Read(void* const _vPtr, const size_t _n)
     nLeft   -= nRead;
     pchPtr  += nRead;
 
+  }
+
+  return (_n - nLeft);
+}
+
+const int Socket::ReadLine(void* const _vPtr, const size_t _n)
+{
+  size_t    nLeft;
+  ssize_t   nRead;
+  char    *pchPtr = NULL;
+
+  pchPtr = (char *)_vPtr;
+  nLeft = _n;
+
+  while(nLeft > 0)
+  {
+    if( (nRead = read(m_iFd, pchPtr, nLeft)) < 0 )
+    {
+      if(errno == EINTR)
+      {
+        nRead = 0;
+      }
+      else
+      {
+        return -1;
+      }
+    }
+    else if(nRead == 0)
+    {
+      break;
+    }
+    //else  /* 'numRead' must be 1 if we get here */
+    //{
+    //  if (totRead < n - 1) {      /* Discard > (n - 1) bytes */
+    //    totRead++;
+    //    *buf++ = ch;
+    //  }
+
+    //  if (ch == '\n')
+    //    break;
+    //}
+
+    nLeft   -= nRead;
+    pchPtr  += nRead;
+
+    if (*(pchPtr-1) == '\n') {
+#ifdef _DEBUG
+      CNPLog::GetInstance().Log("Socket Break because linefeed \n", pchPtr);
+#endif
+      break;
+    }
   }
 
   return (_n - nLeft);
@@ -98,7 +149,7 @@ const int Socket::Write(const void* const _vPtr,  const size_t _n)
     if( (nWritten = write(m_iFd, pchPtr, nLeft)) < 0)
     {
       CNPLog::GetInstance().Log("Error Write errno=(%d)(%s)", errno, strerror(errno));
-      
+
       if(errno == EINTR)
       {
         nWritten = 0;
@@ -174,7 +225,7 @@ const int Socket::Recv(char* const _pchBuf, const int _iSize)
   timeout.tv_sec = (long)15;
   timeout.tv_usec = 0;
 
-  if( (iCnt = select(iSet, &set, 0, 0, &timeout)) == 0) 
+  if( (iCnt = select(iSet, &set, 0, 0, &timeout)) == 0)
   {
     return -1;
   }
@@ -210,22 +261,22 @@ const int Socket::SendTo(const void* const _vPtr, const size_t _iLen, const stru
 
     if(iBytesSent == -1 && errno == EAGAIN)
     {
-      
+
       FD_ZERO(&wfds);
       FD_SET(m_iFd, &wfds);
       tv.tv_sec = 5;
       tv.tv_usec = 0;
-  
-      do 
+
+      do
         iRetVal = select(m_iFd+1, NULL, &wfds, NULL, &tv);
       while(iRetVal == -1 && errno == EINTR);
 
-      if(iRetVal != 1) 
+      if(iRetVal != 1)
       {
         break;
       }
     }
-    else 
+    else
     {
       break;
     }
@@ -255,8 +306,8 @@ const int Socket::RecvFrom(void* const _vPtr, const size_t _iLen, struct sockadd
       FD_SET(m_iFd, &rfds);
       tv.tv_sec = 5;
       tv.tv_usec = 0;
-      
-      do 
+
+      do
         iRetVal = select(m_iFd + 1, &rfds, NULL, NULL, &tv);
       while(iRetVal == -1 && errno == EINTR);
 
@@ -265,7 +316,7 @@ const int Socket::RecvFrom(void* const _vPtr, const size_t _iLen, struct sockadd
         break;
       }
     }
-    else 
+    else
     {
       break;
     }
@@ -295,7 +346,7 @@ const int Socket::GetSockName(char* const _pchIpAddr)
     return -1;
   }
 
-//  memset(_pchIpAddr, 0x00, sizeof(_pchIpAddr));
+  //  memset(_pchIpAddr, 0x00, sizeof(_pchIpAddr));
   memset(_pchIpAddr, 0x00, strlen(inet_ntoa(sockSt.sin_addr))+1);
   strncpy(_pchIpAddr, inet_ntoa(sockSt.sin_addr), MAX_IP_LEN);
 
@@ -326,30 +377,30 @@ const int Socket::GetPeerName(char* const _pchPeerName)
 const int Socket::SetNonBlock()
 {
   /*
-    O_NONBLOCK  : POSIX nonblocking I/O 
-    FNONBLOCK   : POSIX nonblocking I/O 
-  */
+O_NONBLOCK  : POSIX nonblocking I/O
+FNONBLOCK   : POSIX nonblocking I/O
+*/
   if(fcntl(m_iFd, F_SETFL, O_NDELAY) < 0)
   {
     CNPLog::GetInstance().Log("Fail SetNonBlock errno=(%d)", errno);
     return -1;
   }
-  
+
   return 0;
 }
 
 const int Socket::SetBlock()
-{   
-    if(fcntl(m_iFd, F_SETFL, fcntl(m_iFd, F_GETFL, 0)) < 0)
-    {
+{
+  if(fcntl(m_iFd, F_SETFL, fcntl(m_iFd, F_GETFL, 0)) < 0)
+  {
     CNPLog::GetInstance().Log("Fail SetBlock errno=(%d)", errno);
-        return -1;
-    }
+    return -1;
+  }
 
-    return 0;
+  return 0;
 }
 
-// Get the return code from the connect 
+// Get the return code from the connect
 const int Socket::GetReturnCode()
 {
   int   iError;
@@ -396,8 +447,8 @@ const int Socket::GetSndBufSize()
 }
 
 /**
-  * It should be changed before opening the socket.
-  */
+ * It should be changed before opening the socket.
+ */
 const int Socket::SetSndBufSize(const int _iBufSize)
 {
   if(setsockopt(m_iFd, SOL_SOCKET, SO_SNDBUF, &_iBufSize, sizeof(_iBufSize)) < 0)
@@ -410,8 +461,8 @@ const int Socket::SetSndBufSize(const int _iBufSize)
 }
 
 /**
-  * It should be changed before opening the socket.
-  */
+ * It should be changed before opening the socket.
+ */
 const int Socket::SetRcvBufSize(const int _iBufSize)
 {
   if(setsockopt(m_iFd, SOL_SOCKET, SO_RCVBUF, &_iBufSize, sizeof(_iBufSize)) < 0)
@@ -437,13 +488,13 @@ const int Socket::SetKeepAlive()
 }
 
 /**
-* do not want time wait.
-*/
+ * do not want time wait.
+ */
 const int Socket::SetLinger()
 {
   struct linger stLinger;
 
-    /** 
+  /**
   */
   stLinger.l_onoff = 1;
   stLinger.l_linger = 0;
@@ -472,8 +523,8 @@ const int Socket::SetReUse()
 
 
 /**
-* 
-*/
+ *
+ */
 const int Socket::SetFreeBind()
 {
   int iReUseAddr = 1;
@@ -494,12 +545,12 @@ const int Socket::SetTcpCORK(int _iOptVal)
 #ifdef _FREEBSD
   if(setsockopt(m_iFd, IPPROTO_TCP, TCP_NOPUSH, (char *)&_iOptVal, sizeof(_iOptVal)) < 0)
 #else
-  if(setsockopt(m_iFd, IPPROTO_TCP, TCP_CORK, (char *)&_iOptVal, sizeof(_iOptVal)) < 0)
+    if(setsockopt(m_iFd, IPPROTO_TCP, TCP_CORK, (char *)&_iOptVal, sizeof(_iOptVal)) < 0)
 #endif
-  {
-    CNPLog::GetInstance().Log("Fail TCP_CORK errno=(%d)", errno);
-    return -1;
-  }
+    {
+      CNPLog::GetInstance().Log("Fail TCP_CORK errno=(%d)", errno);
+      return -1;
+    }
 
   return 0;
 }
@@ -540,14 +591,14 @@ const int Socket::GetHostName(char* const _pchHostName)
 
 const int Socket::GetHostByName(char* const _pchHostName, char* const _pchStr)
 {
-    struct hostent * pHost;
+  struct hostent * pHost;
 
   if(!_pchHostName)
   {
     return -1;
   }
 
-    _pchStr[0] = 0;
+  _pchStr[0] = 0;
   pHost = gethostbyname(_pchHostName);
 
   if (pHost== NULL)
@@ -560,41 +611,41 @@ const int Socket::GetHostByName(char* const _pchHostName, char* const _pchStr)
 
 const int Socket::GetHostByAddr()
 {
-/*
-    struct hostent *hptmp, *hp;
+  /*
+     struct hostent *hptmp, *hp;
 
-    if ((hptmp = gethostbyaddr(addr, sizeof(struct in_addr), af)) == NULL)
-        return NULL;
+     if ((hptmp = gethostbyaddr(addr, sizeof(struct in_addr), af)) == NULL)
+     return NULL;
 
-    if ((hp =  (struct hostent *) malloc(sizeof(struct hostent))) != NULL)
-        memcpy(hp, hptmp, sizeof(struct hostent));
+     if ((hp =  (struct hostent *) malloc(sizeof(struct hostent))) != NULL)
+     memcpy(hp, hptmp, sizeof(struct hostent));
 
 
-    return hp;
-*/
-    return 0;
+     return hp;
+     */
+  return 0;
 }
 
 // my_getipnodebyname
 const int Socket::GetIpNodeByName(char* const _pchHostName,  const int _iAf)
 {
-/*
-    int err;
+  /*
+     int err;
 
-    struct hostent *hp = getipnodebyname(_pchHostName, _iAf, AI_DEFAULT, &err);
-*/
+     struct hostent *hp = getipnodebyname(_pchHostName, _iAf, AI_DEFAULT, &err);
+     */
 
-    return 0;
+  return 0;
 }
 
 const int Socket::GetIpNodeByAddr(char* const _pchAddr,  const int _iAf)
 {
-/*
-    int err;
+  /*
+     int err;
 
-    unsigned int len = (_iAf == AF_INET) ? 4 : 16;
-    struct hostent *hp = getipnodebyaddr(_pchAddr, len, _iAf, &err);
-*/
-    return 0;
+     unsigned int len = (_iAf == AF_INET) ? 4 : 16;
+     struct hostent *hp = getipnodebyaddr(_pchAddr, len, _iAf, &err);
+     */
+  return 0;
 }
 

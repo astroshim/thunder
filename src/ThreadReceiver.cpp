@@ -81,8 +81,8 @@ void ThreadReceiver::Run()
 #endif
 
 #ifdef _DEBUG
-    CNPLog::GetInstance().Log("In ThreadReceiver [%p]thread Client Geted! (%p) fd=(%d), iPacketLen=(%d)",
-        this, pClient, pClient->GetSocket()->GetFd(), iPacketLen);
+      CNPLog::GetInstance().Log("In ThreadReceiver [%p]thread Client Geted! (%p) fd=(%d), iPacketLen=(%d)",
+          this, pClient, pClient->GetSocket()->GetFd(), iPacketLen);
 #endif
     }
 
