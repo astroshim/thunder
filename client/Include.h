@@ -51,33 +51,35 @@ using namespace std;
 //#include "./NPDebug.h"
 //#include "./NPLog.h"
 
-const char ON 	= 1;
-const char OFF 	= 0;
+const char ON   = 1;
+const char OFF  = 0;
 
-//const int RECV_NOT_ENOUGH 	= 0;	// CircularBuff¿¡ µ¥ÀÌÅ¸°¡ GetÇÒ¸¸Å­ ÃæºĞÇÏÁö ¸øÇÏ´Ù.
-const int RECV_NOT_ENOUGH 	= -2;	// CircularBuff¿¡ µ¥ÀÌÅ¸°¡ GetÇÒ¸¸Å­ ÃæºĞÇÏÁö ¸øÇÏ´Ù.
-const int RECV_ERROR	 	= -1;	// CircularBuff¿¡ µé¾î°¡ÀÖ´Â µ¥ÀÌÅ¸°¡ ÀÌ»óÇÏ´Ù.!!
+//const int RECV_NOT_ENOUGH   = 0;  // CircularBuff
 
-const unsigned int UNIX_PATH_MAX 	= 256;
-const unsigned int LOG_FILE_LEN 	= 256;
+//const int RECV_NOT_ENOUGH   = 0;  // CircularBuffì— ë°ì´íƒ€ê°€ Getí• ë§Œí¼ ì¶©ë¶„í•˜ì§€ ëª»í•˜ë‹¤.
+const int RECV_NOT_ENOUGH   = -2; // CircularBuffì— ë°ì´íƒ€ê°€ Getí• ë§Œí¼ ì¶©ë¶„í•˜ì§€ ëª»í•˜ë‹¤.
+const int RECV_ERROR    = -1; // CircularBuffì— ë“¤ì–´ê°€ìˆëŠ” ë°ì´íƒ€ê°€ ì´ìƒí•˜ë‹¤.!!
+
+const unsigned int UNIX_PATH_MAX  = 256;
+const unsigned int LOG_FILE_LEN   = 256;
 const int MAX_IP_LEN        = 20;
-const int MAX_PORT_CNT      = 10;   // ÇÑ ¼­¹ö°¡ °ü¸®ÇÒ ÃÖ´ë ServerPort °³¼ö
+const int MAX_PORT_CNT      = 10;   // í•œ ì„œë²„ê°€ ê´€ë¦¬í•  ìµœëŒ€ ServerPort ê°œìˆ˜
 
 const int MAX_USER_ID       = 24;
 const int MAX_PASSWD        = 24;
 
-const int MAX_PHONE_LEN 	= 16;
+const int MAX_PHONE_LEN   = 16;
 
-const int MAX_CLIENT_COUNT 	= 200;	// ÇÑ ÇÁ·Î¼¼½º¿¡¼­ °ü¸®ÇÏ´Â ÃÖ´ë client count
+const int MAX_CLIENT_COUNT  = 200;  // í•œ í”„ë¡œì„¸ìŠ¤ì—ì„œ ê´€ë¦¬í•˜ëŠ” ìµœëŒ€ client count
 
 /**
  * *   Server socket type define
  * */
 typedef enum
 {
-    SERVER_PORT = 0,   	/* To receive client */
-    SERVER_PORT_MGR,     	
-    SERVER_PORT_PC     	/* nothing */
+    SERVER_PORT = 0,    /* To receive client */
+    SERVER_PORT_MGR,
+    SERVER_PORT_PC      /* nothing */
 }ENUM_SERVERSOCKET_TYPE;
 
 /**
@@ -85,28 +87,28 @@ typedef enum
 */
 typedef enum
 {
-    CLIENT_NOTHING = 0,		/*  */
-    CLIENT_USER,        	/* User */
-    CLIENT_SERVER,        	/* for Server Socket */
-    CLIENT_DN        		/* Download Server */
-//    CLIENT_MEMBER,       	/* Member Server */
-//    CLIENT_SMEMBER       	/* SubMember Server */
+    CLIENT_NOTHING = 0,   /*  */
+    CLIENT_USER,          /* User */
+    CLIENT_SERVER,          /* for Server Socket */
+    CLIENT_DN           /* Download Server */
+//    CLIENT_MEMBER,        /* Member Server */
+//    CLIENT_SMEMBER        /* SubMember Server */
 }ENUM_CLIENT_TYPE;
 
 /**
- *	Client Status
+ *  Client Status
  */
 typedef enum
 {
-	STATE_WAIT = 1,
-	STATE_SEND = 2,
-	STATE_CLOSED = 4
+  STATE_WAIT = 1,
+  STATE_SEND = 2,
+  STATE_CLOSED = 4
 
-	/*
-    STATE_ADD,				// accept µÈ »óÅÂ
-    STATE_MODIFY,			// epoll oneshot 
-    STATE_USER_CLOSE		// ¿¬°áÁ¾·áµÈ »óÅÂ
-	*/
+  /*
+    STATE_ADD,        // accept ëœ ìƒíƒœ
+    STATE_MODIFY,     // epoll oneshot
+    STATE_USER_CLOSE    // ì—°ê²°ì¢…ë£Œëœ ìƒíƒœ
+  */
 }ENUM_CLIENT_STATE;
 
 /**
@@ -114,8 +116,8 @@ typedef enum
 */
 typedef enum
 {
-    THREAD_WORKER = 0,   	/* WORKER  */
-    THREAD_SENDER,       	/* SENDER */
+    THREAD_WORKER = 0,    /* WORKER  */
+    THREAD_SENDER,        /* SENDER */
     THREAD_RECEIVER         /* receiver */
 }ENUM_THREAD_TYPE;
 
@@ -137,10 +139,10 @@ struct scoreboard_file {
 };
 
 /******************************************************************************
-*	ACK List
+* ACK List
 ******************************************************************************/
-const int ACK_OK					= 1;
-const int ACK_ERROR					= -1;
+const int ACK_OK          = 1;
+const int ACK_ERROR         = -1;
 
 
 void   ProcessParent();

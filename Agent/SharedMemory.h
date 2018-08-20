@@ -6,11 +6,11 @@
 class SharedMemory
 {
 private:
-    key_t     		m_Key;
-    int     		m_ShmId;
+    key_t         m_Key;
+    int         m_ShmId;
     const size_t    m_Size;
-    void    		*m_Data;
-	bool			m_IsStarted;
+    void        *m_Data;
+  bool      m_IsStarted;
 
     void CreateSM(key_t _shm_key);
 public:
@@ -20,7 +20,7 @@ public:
     SharedMemory(key_t _key);
     ~SharedMemory();
 
-	key_t	GetKey();
+  key_t GetKey();
     bool IsStarted ();
 
     bool Create (key_t _shm_key);
@@ -43,31 +43,29 @@ public:
 
 /*
 struct shmid_ds {
-struct ipc_perm shm_perm; // ÆÛ¹Ì¼Ç
-int shm_segsz; // ¼¼±×¸ÕÆ®ÀÇ Å©±â (bytes)
-time_t shm_atime; // ¸¶Áö¸· Á¢±ÙÇÑ ½Ã°£
-time_t shm_dtime; // ¸¶Áö¸· Á¦°ÅµÈ ½Ã°£
-time_t shm_ctime; // ¸¶Áö¸· º¯°æµÈ ½Ã°£
-unsigned short shm_cpid; // ¸¸µç ÇÁ·Î¼¼½º ¾ÆÀÌµğ
-unsigned short shm_lpid; // ¸¶Áö¸· ÀÛµ¿ÇÑ ÇÁ·Î¼¼½º ¾ÆÀÌµğ
-short shm_nattch; // ÇöÀç Á¢±ÙÇÑ ÇÁ·Î¼¼½º ¼ö
-unsigned short shm_npages;// ¼¼±×¸ÕÆ®ÀÇ Å©±â(ÆäÀÌÁö)
-unsigned long *shm_pages; 
-struct shm_desc *attaches;// Á¢±ÙÀ» À§ÇÑ ±â¼úÀÚ
+struct ipc_perm shm_perm; // í¼ë¯¸ì…˜
+int shm_segsz; // ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ê¸° (bytes)
+time_t shm_atime; // ë§ˆì§€ë§‰ ì ‘ê·¼í•œ ì‹œê°„
+time_t shm_dtime; // ë§ˆì§€ë§‰ ì œê±°ëœ ì‹œê°„
+time_t shm_ctime; // ë§ˆì§€ë§‰ ë³€ê²½ëœ ì‹œê°„
+unsigned short shm_cpid; // ë§Œë“  í”„ë¡œì„¸ìŠ¤ ì•„ì´ë””
+unsigned short shm_lpid; // ë§ˆì§€ë§‰ ì‘ë™í•œ í”„ë¡œì„¸ìŠ¤ ì•„ì´ë””
+short shm_nattch; // í˜„ì¬ ì ‘ê·¼í•œ í”„ë¡œì„¸ìŠ¤ ìˆ˜
+unsigned short shm_npages;// ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ê¸°(í˜ì´ì§€)
+unsigned long *shm_pages;
+struct shm_desc *attaches;// ì ‘ê·¼ì„ ìœ„í•œ ê¸°ìˆ ì
 };
-
 struct ipc_perm {
-key_t key; // Å°°ª 
-ushort uid; // ¼ÒÀ¯ÀÚÀÇ À¯È¿»ç¿ëÀÚ ¾ÆÀÌµğ
-ushort gid; // ¼ÒÀ¯ÀÚÀÇ À¯È¿±×·ì ¾ÆÀÌµğ 
-ushort cuid; // ¸¸µçÀÌÀÇ À¯È¿»ç¿ëÀÚ ¾ÆÀÌµğ
-ushort cgid; // ¸¸µçÀÌÀÇ À¯È¿±×·ì ¾ÆÀÌµğ
-ushort mode; // Á¢±Ù ±ÇÇÑ 
+key_t key; // í‚¤ê°’
+ushort uid; // ì†Œìœ ìì˜ ìœ íš¨ì‚¬ìš©ì ì•„ì´ë””
+ushort gid; // ì†Œìœ ìì˜ ìœ íš¨ê·¸ë£¹ ì•„ì´ë””
+ushort cuid; // ë§Œë“ ì´ì˜ ìœ íš¨ì‚¬ìš©ì ì•„ì´ë””
+ushort cgid; // ë§Œë“ ì´ì˜ ìœ íš¨ê·¸ë£¹ ì•„ì´ë””
+ushort mode; // ì ‘ê·¼ ê¶Œí•œ
 ushort seq; // sequence number
 };
 */
 
 #endif
-
 
 

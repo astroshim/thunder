@@ -27,9 +27,9 @@
 #include <linux/types.h>
 #include <sys/vfs.h>
 
-#define JJANGFILE	1   
+#define JJANGFILE 1   
 #define CLUBFOS     2  
-#define CDN			4       
+#define CDN     4       
 #define JJANGCLUB   8  
 #define VSHARE      16 
 #define KDISK       32 
@@ -40,17 +40,17 @@
 #define ONDISK      102
 #define FDISK       103
 #define KDISK_FREE  33 
-#define FDISK_FREE	104
-#define GOGODISK 	105 
-#define DDAOGI 		106 
-#define VHARD 		107 
-#define DAWOONZ 	109 
-#define CLUBNEX 	110 
-#define ZIO 		116 
+#define FDISK_FREE  104
+#define GOGODISK  105 
+#define DDAOGI    106 
+#define VHARD     107 
+#define DAWOONZ   109 
+#define CLUBNEX   110 
+#define ZIO     116 
 
-#define HOME_STORAGE 	99 
+#define HOME_STORAGE  99 
 
-//#define MAX_CPUCNT 	32 
+//#define MAX_CPUCNT  32 
 /*
 #define MOUNT_STR_LEN 255
 #define DEVICE_STR_LEN 80
@@ -68,56 +68,56 @@
 // /proc/loadavg
 typedef struct _loadavg
 {
-	float avg1;
-	float avg5;
-	float avg15;
+  float avg1;
+  float avg5;
+  float avg15;
 }TLoadAvg;
 
 // df
 typedef struct _df
 {
-//	unsigned long long iDiskSize;		// Mbytes
-//	unsigned long long iAvail;			// Mbytes
-	unsigned long long iDiskSize;		// Kbytes
-	unsigned long long iAvail;			// Kbytes
+//  unsigned long long iDiskSize;   // Mbytes
+//  unsigned long long iAvail;      // Mbytes
+  unsigned long long iDiskSize;   // Kbytes
+  unsigned long long iAvail;      // Kbytes
 } TDF;
 
 // cpuinfo
 typedef struct _cpu_usage
 {
-	time_t ctime;
-	int iCpuCnt;
-	unsigned long long nUser;
-	unsigned long long nNice;
-	unsigned long long nSystem;
-	unsigned long long nIdle;
-	unsigned long long nIO;
-	unsigned long long nIRQ;
+  time_t ctime;
+  int iCpuCnt;
+  unsigned long long nUser;
+  unsigned long long nNice;
+  unsigned long long nSystem;
+  unsigned long long nIdle;
+  unsigned long long nIO;
+  unsigned long long nIRQ;
 /*
-	unsigned long long nUser[MAX_CPUCNT];
-	unsigned long long nSystem[MAX_CPUCNT];
-	unsigned long long nIdle[MAX_CPUCNT];
+  unsigned long long nUser[MAX_CPUCNT];
+  unsigned long long nSystem[MAX_CPUCNT];
+  unsigned long long nIdle[MAX_CPUCNT];
 */
 } TCpuUsage;
 
 // memory
 typedef struct _mem_data
 {
-	ulong mtotal;
-	ulong mfree;
-	ulong mbuffer;
-	ulong mcached;
+  ulong mtotal;
+  ulong mfree;
+  ulong mbuffer;
+  ulong mcached;
 } TMemory;
 
 // netstat
 typedef struct _netstat
 {
-	char 	protocol[16];
-	int		recv_q;	
-	int		send_q;	
-	char 	local_addr[64];
-	char 	remote_addr[64];
-	int		status[16];	
+  char  protocol[16];
+  int   recv_q; 
+  int   send_q; 
+  char  local_addr[64];
+  char  remote_addr[64];
+  int   status[16]; 
 } TNetstat;
 
 int GetDf2(TDF *_df);
