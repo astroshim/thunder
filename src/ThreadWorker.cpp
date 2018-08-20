@@ -12,13 +12,13 @@
 //#include <unistd.h>
 
 ThreadWorker::ThreadWorker()
-          :m_pDNMgr(NULL)
+  :m_pDNMgr(NULL)
 {
   CNPLog::GetInstance().Log("ThreadWorker Construct");
 }
 
 ThreadWorker::ThreadWorker(DownloadManager* const _pDNMgr)
-          :m_pDNMgr(_pDNMgr)
+  :m_pDNMgr(_pDNMgr)
 {
   m_pDNMgr = _pDNMgr;
   CNPLog::GetInstance().Log("ThreadWorker Construct");
@@ -36,18 +36,18 @@ void ThreadWorker::Run()
 
   while(1)
   {
-    // get the Client to the Eventqueue. 
-        //Client *pClient = (Client *)EventQueue::GetInstance().DeQueue();
-        Client *pClient = (Client *)m_pDNMgr->GetWorkQueue();
+    // get the Client to the Eventqueue.
+    //Client *pClient = (Client *)EventQueue::GetInstance().DeQueue();
+    Client *pClient = (Client *)m_pDNMgr->GetWorkQueue();
 #ifdef _DEBUG
-    CNPLog::GetInstance().Log("In ThreadWorker [%p]thread Client Geted! (%p) fd=(%d)",  
+    CNPLog::GetInstance().Log("In ThreadWorker [%p]thread Client Geted! (%p) fd=(%d)",
         this, pClient, ((Socket *)(pClient->GetSocket()))->GetFd());
 #endif
 
     int iRet;
-    // Data Recv 
-      if((iRet = pClient->FillFromSocket()) <= 0)
-      {
+    // Data Recv
+    if((iRet = pClient->FillFromSocket()) <= 0)
+    {
       if(iRet == USER_CLOSE)
       {
 #ifdef _DEBUG
@@ -56,21 +56,24 @@ void ThreadWorker::Run()
         m_pDNMgr->CloseClient(pClient);
         continue;
       }
-      }
-    else 
+    }
+    else
     {
       int iPacketLen;
       while((iPacketLen = pClient->IsValidPacket()) > 0)
       {
-              if(pClient->ExecuteCommand(this) < 0)
-              {
-                  break;
-              }
+        if(pClient->ExecuteCommand(this) < 0)
+        {
+          break;
+        }
       }
+#ifdef _DEBUG
+      CNPLog::GetInstance().Log("In ThreadWorker.(%p), packetLen=(%d)", pClient, iPacketLen);
+#endif
     }
 
 #ifdef _FREEBSD
-        //m_pDNMgr->UpdateEPoll(pClient, EV_ADD | EV_ENABLE |EV_ONESHOT);
+    //m_pDNMgr->UpdateEPoll(pClient, EV_ADD | EV_ENABLE |EV_ONESHOT);
     m_pDNMgr->AddEPoll(pClient, EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR);
 #else
     m_pDNMgr->UpdateEPoll(pClient, EPOLLIN|EPOLLET|EPOLLONESHOT);

@@ -851,8 +851,7 @@ const int DownloadManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* 
     {
       if(!IsAliveProcess(m_pDSInfo[i].iPid))
       {
-        CNPLog::GetInstance().Log("���� ���μ��� �̹Ƿ� �ٽ� �Ҵ�ȴ�.slot(%d) (%d)=>(%d)",
-            i, m_pDSInfo[i].iPid, _iPid);
+        CNPLog::GetInstance().Log("SetDS slot(%d) (%d)=>(%d)", i, m_pDSInfo[i].iPid, _iPid);
 
         SettingDS(i, _piSeq,_piMaxUser,_piShmKey, _piShmDSStatus, _iPid);
         break;
@@ -1096,7 +1095,7 @@ void DownloadManager::Run()
           struct in_addr laddr;
           laddr.s_addr = static_cast<TcpSocket *>(pClientSocket)->GetClientIp();
 
-          CNPLog::GetInstance().Log("Accept ====> ClientIp=(%s) conncnt=(%d),maxuser=(%d)",
+          CNPLog::GetInstance().Log("DownloadManager Accept ClientIp=(%s), conncnt=(%d), maxuser=(%d)",
               inet_ntoa(laddr), m_iConnCount, GetMaxUser());
           if(m_iConnCount >= GetMaxUser())
           {
@@ -1185,30 +1184,28 @@ void DownloadManager::Run()
 
         CloseClient(pClient);
       }
-      else
-        if(tEvents[i].events & EPOLLIN)
-        {
-          //m_pIOMP->DelClient(pClient);
+      else if(tEvents[i].events & EPOLLIN)
+      {
+        //m_pIOMP->DelClient(pClient);
 #ifdef _DEBUG
-          CNPLog::GetInstance().Log("EPOLLIN Client %p, events=(%d)", pClient, tEvents[i].events);
+        CNPLog::GetInstance().Log("EPOLLIN Client %p, events=(%d)", pClient, tEvents[i].events);
 #endif
-          pClient->SetAccessTime();
-          PutWorkQueue(pClient);
-          //EventQueue::GetInstance().EnQueue(pClient);
+        pClient->SetAccessTime();
+        PutWorkQueue(pClient);
+        //EventQueue::GetInstance().EnQueue(pClient);
+      }
+      else if(tEvents[i].events & EPOLLOUT)
+      {
+        CNPLog::GetInstance().Log("EPOLLOUT Client %p, events=(%d)", pClient, tEvents[i].events);
+        /*
+           if(((ClientUser*)pClient)->GetSendPacketCount() > 0)
+           {
+           m_pIOMP->DelClient(pClient);
+           PutSendQueue(pClient);
+        //SendQueue::GetInstance().EnQueue(pClient);
         }
-        else
-          if(tEvents[i].events & EPOLLOUT)
-          {
-            CNPLog::GetInstance().Log("EPOLLOUT Client %p, events=(%d)", pClient, tEvents[i].events);
-            /*
-               if(((ClientUser*)pClient)->GetSendPacketCount() > 0)
-               {
-               m_pIOMP->DelClient(pClient);
-               PutSendQueue(pClient);
-            //SendQueue::GetInstance().EnQueue(pClient);
-            }
-            */
-          }
+        */
+      }
 #endif
 
       continue;

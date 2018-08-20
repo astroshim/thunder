@@ -1,23 +1,23 @@
-#.SUFFIXES = .c .o 
+#.SUFFIXES = .c .o
 #CC     = gcc
 
 # if machine is 64 bits
 #LDFLAGS= -Wl,--hash-style=sysv
 
-.SUFFIXES = .cpp .o 
-CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -D_FREEBSD -I /usr/local/opt/openssl/include
+.SUFFIXES = .cpp .o
+CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -D_FREEBSD -D_DEBUG -I /usr/local/opt/openssl/include
 
-CFLAGS = -g -Wall 
+CFLAGS = -g -Wall
 #CFLAGS = -O2 -g
 
 BASE		= $(HOME)/DownloadServer
 BIN			= $(BASE)
 
 LTHREAD = -lpthread
-LCURL = -lcurl 
-#CRYPTO = -lcrypto 
+LCURL = -lcurl
+#CRYPTO = -lcrypto
 
-LIBS += $(LTHREAD) $(LCURL) $(CRYPTO) 
+LIBS += $(LTHREAD) $(LCURL) $(CRYPTO)
 
 ######################################################################
 ####### Object definition
@@ -63,7 +63,7 @@ DIRS = ./src
 ######################################################################
 ####### Compile definition
 ######################################################################
-TARGET = 	DNServer 
+TARGET = 	DNServer
 
 #all : $(TARGET)
 all : comp $(TARGET)
@@ -84,7 +84,7 @@ dep :
 #	/usr/bin/gccmakedep $(SRCS)
 
 .cpp.o:
-	$(CC) $(CFLAGS) -c $<	
+	$(CC) $(CFLAGS) -c $<
 
 install :
 	cp $(TARGET) ./DownloadServer
@@ -94,6 +94,6 @@ install :
 	cp dstat ./DownloadServer
 
 clean :
-	rm -rf $(OBJ_MAIN) $(TARGET) core 
+	rm -rf $(OBJ_MAIN) $(TARGET) core
 
 # DO NOT DELETE

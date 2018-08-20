@@ -8,7 +8,7 @@
 #include "../include/NPLog.h"
 
 ThreadAcceptor::ThreadAcceptor(DownloadServer* const _pMainProcess)
-              :m_pMainProcess(_pMainProcess)
+  :m_pMainProcess(_pMainProcess)
 {
   this->SetStarted(true);
   CNPLog::GetInstance().Log("ThreadAcceptor Construct");
@@ -36,66 +36,72 @@ void ThreadAcceptor::Run()
 
   while(1)
   {
-/*
-* block accept
-      Socket *pClientSocket;
+    /*
+     * block accept
+     Socket *pClientSocket;
 
-        if(m_pMainProcess->GetCurrentUserCount() >= m_pMainProcess->GetMaxUser())
-      {
-          CNPLog::GetInstance().Log("Acceptor OverFlow (%d), (%d) ", 
-              m_pMainProcess->GetCurrentUserCount(), 
-              m_pMainProcess->GetMaxUser());
-      sleep(5);
-          continue;
-      }
+     if(m_pMainProcess->GetCurrentUserCount() >= m_pMainProcess->GetMaxUser())
+     {
+     CNPLog::GetInstance().Log("Acceptor OverFlow (%d), (%d) ",
+     m_pMainProcess->GetCurrentUserCount(),
+     m_pMainProcess->GetMaxUser());
+     sleep(5);
+     continue;
+     }
 
-      if((pClientSocket = ((ServerSocket *)((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->Accept()) != NULL)
-      {
-          pClientSocket->SetNonBlock();
-          CNPLog::GetInstance().Log("Accept ====> ClientIp=(%s),CurrentUser=(%d),Max=(%d)" ,
-                              ((TcpSocket *)pClientSocket)->GetClientIp(), 
-                m_pMainProcess->GetCurrentUserCount(), 
-                m_pMainProcess->GetMaxUser());
+     if((pClientSocket = ((ServerSocket *)((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->Accept()) != NULL)
+     {
+     pClientSocket->SetNonBlock();
+     CNPLog::GetInstance().Log("Accept ====> ClientIp=(%s),CurrentUser=(%d),Max=(%d)" ,
+     ((TcpSocket *)pClientSocket)->GetClientIp(),
+     m_pMainProcess->GetCurrentUserCount(),
+     m_pMainProcess->GetMaxUser());
 
-          CNPLog::GetInstance().Log("1.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
-          pClientSocket->SetSndBufSize(4*1024*1024);
-          CNPLog::GetInstance().Log("2.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
-          pClientSocket->SetTcpCORK(1);
+     CNPLog::GetInstance().Log("1.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
+     pClientSocket->SetSndBufSize(4*1024*1024);
+     CNPLog::GetInstance().Log("2.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
+     pClientSocket->SetTcpCORK(1);
 
-      m_pMainProcess->AcceptClient(pClientSocket);
+     m_pMainProcess->AcceptClient(pClientSocket);
+     }
+     */
+
+    int eventCnt = 0;
+    if((eventCnt = pcIomp->Polling()) <= 0)
+    {
+      continue;
     }
-*/
 
-        int eventCnt = 0;
-        if((eventCnt = pcIomp->Polling()) <= 0)
-        {
-            continue;
-        }
-
-      if(pcIomp->CheckEvent(iServerFd) )
-      {
-/*
-          if(m_pMainProcess->GetCurrentUserCount() >= m_pMainProcess->GetMaxUser())
-      {
-        CNPLog::GetInstance().Log("Acceptor Max User OverFlow! CurrentUser=(%d), MaxUser=(%d)", 
-                  m_pMainProcess->GetCurrentUserCount(), 
-                  m_pMainProcess->GetMaxUser());
-        sleep(10);
-        continue;
-      }
-*/
+    if(pcIomp->CheckEvent(iServerFd) )
+    {
+      /*
+         if(m_pMainProcess->GetCurrentUserCount() >= m_pMainProcess->GetMaxUser())
+         {
+         CNPLog::GetInstance().Log("Acceptor Max User OverFlow! CurrentUser=(%d), MaxUser=(%d)",
+         m_pMainProcess->GetCurrentUserCount(),
+         m_pMainProcess->GetMaxUser());
+         sleep(10);
+         continue;
+         }
+         */
 #ifdef _CLIENT_ARRAY
       int iClientFD;
-        if((iClientFD = static_cast<ServerSocket *>(((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->AcceptFD()) < 0)
+      if((iClientFD = static_cast<ServerSocket *>(((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->AcceptFD()) < 0)
       {
         close(iClientFD);
         continue;
       }
+
+      CNPLog::GetInstance().Log("Acceptor iClientFD=(%d), CurrentUser=(%d), MaxUser=(%d)",
+            iClientFD,
+            m_pMainProcess->GetCurrentUserCount(),
+            m_pMainProcess->GetMaxUser());
+
       if(m_pMainProcess->GetCurrentUserCount() >= m_pMainProcess->GetMaxUser())
       {
-        CNPLog::GetInstance().Log("Acceptor Max User OverFlow! CurrentUser=(%d), MaxUser=(%d)", 
-                  m_pMainProcess->GetCurrentUserCount(), 
-                  m_pMainProcess->GetMaxUser());
+        CNPLog::GetInstance().Log("Acceptor Max User OverFlow! CurrentUser=(%d), MaxUser=(%d)",
+            m_pMainProcess->GetCurrentUserCount(),
+            m_pMainProcess->GetMaxUser());
 
         close(iClientFD);
         sleep(5);
@@ -107,15 +113,15 @@ void ThreadAcceptor::Run()
       }
 #else
       Socket *pClientSocket;
-        //if((pClientSocket = m_pMainProcess->GetServerSocket())->GetSocket()->Accept() != NULL)
-        if((pClientSocket = static_cast<ServerSocket *>(((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->Accept()) != NULL)
+      //if((pClientSocket = m_pMainProcess->GetServerSocket())->GetSocket()->Accept() != NULL)
+      if((pClientSocket = static_cast<ServerSocket *>(((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->Accept()) != NULL)
       {
         // 20090225
         if(m_pMainProcess->GetCurrentUserCount() >= m_pMainProcess->GetMaxUser())
         {
-          CNPLog::GetInstance().Log("Acceptor Max User OverFlow! CurrentUser=(%d), MaxUser=(%d)", 
-                    m_pMainProcess->GetCurrentUserCount(), 
-                    m_pMainProcess->GetMaxUser());
+          CNPLog::GetInstance().Log("Acceptor Max User OverFlow! CurrentUser=(%d), MaxUser=(%d)",
+              m_pMainProcess->GetCurrentUserCount(),
+              m_pMainProcess->GetMaxUser());
 
           delete pClientSocket;
           sleep(5);
@@ -126,39 +132,40 @@ void ThreadAcceptor::Run()
         laddr.s_addr = static_cast<TcpSocket *>(pClientSocket)->GetClientIp();
 
         pClientSocket->SetNonBlock();
-        CNPLog::GetInstance().Log("Accept ====> (%p)ClientIp=(%s),CurrentUser=(%d),Max=(%d)" ,
-                  pClientSocket, 
-                  inet_ntoa(laddr),
-                  m_pMainProcess->GetCurrentUserCount(), 
-                  m_pMainProcess->GetMaxUser());
+        CNPLog::GetInstance().Log("Acceptor pClientSocket=(%p), ClientIp=(%s), CurrentUser=(%d), Max=(%d)" ,
+            pClientSocket,
+            inet_ntoa(laddr),
+            m_pMainProcess->GetCurrentUserCount(),
+            m_pMainProcess->GetMaxUser());
+
         m_pMainProcess->AcceptClient(pClientSocket);
-/*
-        CNPLog::GetInstance().Log("1.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
-        pClientSocket->SetSndBufSize(4*1024*1024);
-        CNPLog::GetInstance().Log("2.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
-        pClientSocket->SetTcpCORK(1);
-*/
+        /*
+           CNPLog::GetInstance().Log("1.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
+           pClientSocket->SetSndBufSize(4*1024*1024);
+           CNPLog::GetInstance().Log("2.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
+           pClientSocket->SetTcpCORK(1);
+           */
 
 
-/*
-        if(pServerSocket->GetType() == SERVER_PORT)
-        {
-          pClient = new ClientUser(pClientSocket);
-        }
-              else
-              {
-                  CNPLog::GetInstance().Log("There is no platform!");
-                  delete pClientSocket;
-              if(--eventCnt <= 0) break;
-                  continue;
-              }
-*/
-          }
+        /*
+           if(pServerSocket->GetType() == SERVER_PORT)
+           {
+           pClient = new ClientUser(pClientSocket);
+           }
+           else
+           {
+           CNPLog::GetInstance().Log("There is no platform!");
+           delete pClientSocket;
+           if(--eventCnt <= 0) break;
+           continue;
+           }
+           */
+      }
 #endif
     }
     else
     {
-        CNPLog::GetInstance().Log("Acceptor EventCheck error!");
+      CNPLog::GetInstance().Log("Acceptor EventCheck error!");
     }
   }
 
