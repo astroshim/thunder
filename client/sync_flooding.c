@@ -289,8 +289,8 @@ int main(int argc,char *argv[]) {
    prep_syn(&syn);
    while(1) {
       if(xmit_syn(&syn,sock,&targ)!=sizeof(struct syn)) {
-	 fprintf(stderr,"failed to send packet\n");
-	 exit(7);
+   fprintf(stderr,"failed to send packet\n");
+   exit(7);
       }
 #ifdef DELAY
       usleep(DELAY);
