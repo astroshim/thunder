@@ -5,3 +5,5 @@ DownloadServer
 logs/
 **/shell/*
 **/*.o
+**/*.exe
+**/*.core
