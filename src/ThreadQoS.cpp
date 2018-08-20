@@ -9,7 +9,7 @@
 
 ThreadQoS::ThreadQoS(DownloadServer* const _pMainProcess)
 {
-	m_pMainProcess = _pMainProcess;
+  m_pMainProcess = _pMainProcess;
 }
 
 ThreadQoS::ThreadQoS()
@@ -32,6 +32,6 @@ const int ThreadQoS::RemoveQoS(Client* const _pClient)
 
 void ThreadQoS::Run()
 {
-	;
+  ;
 }
 

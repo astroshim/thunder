@@ -1,106 +1,106 @@
 #include "../include/ServerInfoDNMgr.h"
 #include "../include/NPUtil.h"
 #include "../include/NPDebug.h" //Assert
-#include "../include/NPLog.h" 	//Log
+#include "../include/NPLog.h"   //Log
 
 ServerInfoDNMgr::ServerInfoDNMgr()
-				: m_iMaxUser(0)
-				, m_iDSMaxUser(0)
-				, m_iDNPort(0)
-				, m_iDNCnt(1)
-				, m_iShmKey(0)
-				, m_iShmDSStatus(0)
-				//, m_iMessageQ(0)
+        : m_iMaxUser(0)
+        , m_iDSMaxUser(0)
+        , m_iDNPort(0)
+        , m_iDNCnt(1)
+        , m_iShmKey(0)
+        , m_iShmDSStatus(0)
+        //, m_iMessageQ(0)
 {
-	memset(m_pchIPAddr, 0x00, sizeof(char)*MAX_IP_LEN);
-	memset(m_pchMRTGURL, 0x00, sizeof(char)*MAX_URL);
+  memset(m_pchIPAddr, 0x00, sizeof(char)*MAX_IP_LEN);
+  memset(m_pchMRTGURL, 0x00, sizeof(char)*MAX_URL);
 }
 
 ServerInfoDNMgr::~ServerInfoDNMgr()
 {
 /*
-	std::list<T_MEMBER_INFO*>::iterator pos;
+  std::list<T_MEMBER_INFO*>::iterator pos;
 
-	pos = m_lstMember.begin();
-	while( pos != m_lstMember.end() )
-	{
-	    delete *pos++;
-	}
+  pos = m_lstMember.begin();
+  while( pos != m_lstMember.end() )
+  {
+      delete *pos++;
+  }
 */
 }
 
 ServerInfoDNMgr::ServerInfoDNMgr(Properties &_cProperties)
 {
-	memset(m_pchIPAddr, 0x00, sizeof(char)*MAX_IP_LEN);
-	if(_cProperties.GetProperty("SERVER_IP") != "")
-	{
-		if(strlen(_cProperties.GetProperty("SERVER_IP").c_str()) > MAX_IP_LEN)
-		{
-        	Assert(false, "In ServerInfoDNMgr SERVER_IP Length over! ");
-		}
+  memset(m_pchIPAddr, 0x00, sizeof(char)*MAX_IP_LEN);
+  if(_cProperties.GetProperty("SERVER_IP") != "")
+  {
+    if(strlen(_cProperties.GetProperty("SERVER_IP").c_str()) > MAX_IP_LEN)
+    {
+          Assert(false, "In ServerInfoDNMgr SERVER_IP Length over! ");
+    }
 
-		strncpy(m_pchIPAddr, _cProperties.GetProperty("SERVER_IP").c_str(), MAX_IP_LEN);
-	}
+    strncpy(m_pchIPAddr, _cProperties.GetProperty("SERVER_IP").c_str(), MAX_IP_LEN);
+  }
 
-	if(_cProperties.GetProperty("SERVER_PORT_DNMGR") != "")
-	{
-		m_mapServerPort.insert(serverInfoValType(SERVER_PORT, atoi(_cProperties.GetProperty("SERVER_PORT_DNMGR").c_str())));
-	}
+  if(_cProperties.GetProperty("SERVER_PORT_DNMGR") != "")
+  {
+    m_mapServerPort.insert(serverInfoValType(SERVER_PORT, atoi(_cProperties.GetProperty("SERVER_PORT_DNMGR").c_str())));
+  }
 
-	if(_cProperties.GetProperty("SERVER_PORT_DN") != "")
-	{
-		//m_mapServerPort.insert(serverInfoValType(SERVER_PORT, atoi(_cProperties.GetProperty("SERVER_PORT_DN").c_str())));
-		m_iDNPort = atoi(_cProperties.GetProperty("SERVER_PORT_DN").c_str());
-	}
+  if(_cProperties.GetProperty("SERVER_PORT_DN") != "")
+  {
+    //m_mapServerPort.insert(serverInfoValType(SERVER_PORT, atoi(_cProperties.GetProperty("SERVER_PORT_DN").c_str())));
+    m_iDNPort = atoi(_cProperties.GetProperty("SERVER_PORT_DN").c_str());
+  }
 
-	if(_cProperties.GetProperty("DM_MAX_USER") != "")
-	{
-		m_iMaxUser 	= atoi(_cProperties.GetProperty("DM_MAX_USER").c_str());
-	}
+  if(_cProperties.GetProperty("DM_MAX_USER") != "")
+  {
+    m_iMaxUser  = atoi(_cProperties.GetProperty("DM_MAX_USER").c_str());
+  }
 
-	if(_cProperties.GetProperty("DS_MAX_USER") != "")
-	{
-		m_iDSMaxUser = atoi(_cProperties.GetProperty("DS_MAX_USER").c_str());
-	}
-
-
-	if(_cProperties.GetProperty("DN_CNT") != "")
-	{
-		m_iDNCnt 	= atoi(_cProperties.GetProperty("DN_CNT").c_str());
-	}
-
-	if(_cProperties.GetProperty("SHMKEY") != "")
-	{
-		m_iShmKey 	= atoi(_cProperties.GetProperty("SHMKEY").c_str());
-	}
-
-	if(_cProperties.GetProperty("SHM_DS_STATUS") != "")
-	{
-		m_iShmDSStatus 	= atoi(_cProperties.GetProperty("SHM_DS_STATUS").c_str());
-	}
+  if(_cProperties.GetProperty("DS_MAX_USER") != "")
+  {
+    m_iDSMaxUser = atoi(_cProperties.GetProperty("DS_MAX_USER").c_str());
+  }
 
 
-	// log file
-	memset(m_pchLogFile, 0x00, sizeof(char)*LOG_FILE_LEN);
-	if(_cProperties.GetProperty("SERVER_LOGFILE") != "")
-	{
-		if(strlen(_cProperties.GetProperty("SERVER_LOGFILE").c_str()) > LOG_FILE_LEN)
-		{
-        	Assert(false, "In ServerInfoDNMgr SERVER_LOGFILE Length over! ");
-		}
+  if(_cProperties.GetProperty("DN_CNT") != "")
+  {
+    m_iDNCnt  = atoi(_cProperties.GetProperty("DN_CNT").c_str());
+  }
 
-		strncpy(m_pchLogFile, _cProperties.GetProperty("SERVER_LOGFILE").c_str(), LOG_FILE_LEN);
-	}
+  if(_cProperties.GetProperty("SHMKEY") != "")
+  {
+    m_iShmKey   = atoi(_cProperties.GetProperty("SHMKEY").c_str());
+  }
 
-	if(_cProperties.GetProperty("THREAD_WORKER") != "")
-	{
-		m_mapThreadCount.insert(threadValType(THREAD_WORKER, atoi(_cProperties.GetProperty("THREAD_WORKER").c_str())));
-	}
+  if(_cProperties.GetProperty("SHM_DS_STATUS") != "")
+  {
+    m_iShmDSStatus  = atoi(_cProperties.GetProperty("SHM_DS_STATUS").c_str());
+  }
 
-	if(_cProperties.GetProperty("MRTG_URL") != "")
-	{
-		strncpy(m_pchMRTGURL, _cProperties.GetProperty("MRTG_URL").c_str(), MAX_URL);
-	}
+
+  // log file
+  memset(m_pchLogFile, 0x00, sizeof(char)*LOG_FILE_LEN);
+  if(_cProperties.GetProperty("SERVER_LOGFILE") != "")
+  {
+    if(strlen(_cProperties.GetProperty("SERVER_LOGFILE").c_str()) > LOG_FILE_LEN)
+    {
+          Assert(false, "In ServerInfoDNMgr SERVER_LOGFILE Length over! ");
+    }
+
+    strncpy(m_pchLogFile, _cProperties.GetProperty("SERVER_LOGFILE").c_str(), LOG_FILE_LEN);
+  }
+
+  if(_cProperties.GetProperty("THREAD_WORKER") != "")
+  {
+    m_mapThreadCount.insert(threadValType(THREAD_WORKER, atoi(_cProperties.GetProperty("THREAD_WORKER").c_str())));
+  }
+
+  if(_cProperties.GetProperty("MRTG_URL") != "")
+  {
+    strncpy(m_pchMRTGURL, _cProperties.GetProperty("MRTG_URL").c_str(), MAX_URL);
+  }
 
 /*
     if(_cProperties.GetProperty("MESSAGEQ_ID") != "")
@@ -110,10 +110,10 @@ ServerInfoDNMgr::ServerInfoDNMgr(Properties &_cProperties)
 */
 
 /*
-	if(_cProperties.GetProperty("UNIX_SOCK_PATH") != "")
-	{
-		strcpy(m_pchUnixSockPath, _cProperties.GetProperty("UNIX_SOCK_PATH").c_str());
-	}
+  if(_cProperties.GetProperty("UNIX_SOCK_PATH") != "")
+  {
+    strcpy(m_pchUnixSockPath, _cProperties.GetProperty("UNIX_SOCK_PATH").c_str());
+  }
 */
 }
 
@@ -183,26 +183,26 @@ const serverInfoMap& ServerInfoDNMgr::GetPortMap()
 const int ServerInfoDNMgr::GetPort(const ENUM_SERVERSOCKET_TYPE _type)
 {
     serverInfoMapItor itor;
-	itor = m_mapServerPort.find(_type);
+  itor = m_mapServerPort.find(_type);
 
-	if(itor != m_mapServerPort.end())
-	{
-		return (int)itor->second;
-	}
+  if(itor != m_mapServerPort.end())
+  {
+    return (int)itor->second;
+  }
 
-	return -1;
+  return -1;
 }
 
 const int ServerInfoDNMgr::GetThreadCount(const ENUM_THREAD_TYPE _type)
 {
     threadMapItor itor;
-	itor = m_mapThreadCount.find(_type);
+  itor = m_mapThreadCount.find(_type);
 
-	if(itor != m_mapThreadCount.end())
-	{
-		return (int)itor->second;
-	}
+  if(itor != m_mapThreadCount.end())
+  {
+    return (int)itor->second;
+  }
 
-	return -1;
+  return -1;
 }
 

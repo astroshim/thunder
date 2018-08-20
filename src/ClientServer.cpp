@@ -3,13 +3,13 @@
 #include "../include/DownloadServer.h"
 
 ClientServer::ClientServer()
-					:m_iPort(0)
+          :m_iPort(0)
 {
 }
 
 ClientServer::ClientServer(Socket* const _cSocket)
-					:Client(_cSocket, CLIENT_SERVER),
-					m_iPort(0)
+          :Client(_cSocket, CLIENT_SERVER),
+          m_iPort(0)
 {
 }
 
@@ -19,20 +19,19 @@ ClientServer::~ClientServer()
 
 const int ClientServer::ExecuteCommand(Thread *_pThread)
 {
-	T_PACKET tPacket;
+  T_PACKET tPacket;
     PACKET_HEADER *pPacketHeader = (PACKET_HEADER *)m_cCBuff.GetHeaderPoint();
 
-	memset((char *)&tPacket, 0x00, sizeof(tPacket));
-	if(Client::GetPacket((char *)&tPacket, pPacketHeader->length + PDUHEADERSIZE) < 0)
-	{
-		CNPLog::GetInstance().Log("In ClientServer::ExecuteCommand() GetPacketError!");
-		return -1;
-	}
-	CNPLog::GetInstance().Log("ClientServer::ExecuteCommand(%p) command=(%d)", this, tPacket.header.command);
+  memset((char *)&tPacket, 0x00, sizeof(tPacket));
+  if(Client::GetPacket((char *)&tPacket, pPacketHeader->length + PDUHEADERSIZE) < 0)
+  {
+    CNPLog::GetInstance().Log("In ClientServer::ExecuteCommand() GetPacketError!");
+    return -1;
+  }
+  CNPLog::GetInstance().Log("ClientServer::ExecuteCommand(%p) command=(%d)", this, tPacket.header.command);
 
     switch(tPacket.header.command)
     {
-		// hello packet은 처음 구동될때, 처리되어야 한다.
 /*
     case MCHS_MS_HELLO_RES:
         WorkHello(tPacket);
@@ -40,9 +39,9 @@ const int ClientServer::ExecuteCommand(Thread *_pThread)
 */
     default :
         CNPLog::GetInstance().Log("ClientServer::ExecuteCommand UNKNOWN PDU TYPE(%p) (%d)", this,
-				tPacket.header.command);
+        tPacket.header.command);
     }
 
-	return 0;
+  return 0;
 }
 

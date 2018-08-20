@@ -12,21 +12,21 @@
 //#include "../include/QoSQueue.h"
 
 ThreadQoSEPoll::ThreadQoSEPoll(DownloadServer* const _pMainProcess)
-							:ThreadQoS(_pMainProcess)
+              :ThreadQoS(_pMainProcess)
 {
-	this->SetStarted(true);
-	CNPLog::GetInstance().Log("ThreadQoSEPoll Construct");
+  this->SetStarted(true);
+  CNPLog::GetInstance().Log("ThreadQoSEPoll Construct");
 }
 
 ThreadQoSEPoll::ThreadQoSEPoll()
 {
-	this->SetStarted(false);
+  this->SetStarted(false);
 }
 
 ThreadQoSEPoll::~ThreadQoSEPoll()
 {
-	this->SetStarted(false);
-	CNPLog::GetInstance().Log("ThreadQoSEPoll Destruct");
+  this->SetStarted(false);
+  CNPLog::GetInstance().Log("ThreadQoSEPoll Destruct");
 }
 
 /*
@@ -44,17 +44,17 @@ const int ThreadQoSEPoll::AddQoS(Client* const _pClient, const unsigned int _uiE
 
 const int ThreadQoSEPoll::RemoveQoS(Client* const _pClient)
 {
-	m_pIOMP->DelClient(_pClient);
-	m_pMainProcess->PutSendQueue(_pClient);
+  m_pIOMP->DelClient(_pClient);
+  m_pMainProcess->PutSendQueue(_pClient);
     return 0;
 }
 
 void ThreadQoSEPoll::Run()
 {
-	 m_pIOMP = new IOMP_EPoll(1000);
+   m_pIOMP = new IOMP_EPoll(1000);
 
-	while(1)
-	{
+  while(1)
+  {
         int iEventCount;
 
         if((iEventCount = m_pIOMP->Polling()) <= 0)
@@ -68,39 +68,39 @@ void ThreadQoSEPoll::Run()
         {
             struct  epoll_event *tEvents= m_pIOMP->GetEventStructure();
             Client *pClient = static_cast<Client *>(tEvents[i].data.ptr);
-			if(pClient == NULL)
-			{
+      if(pClient == NULL)
+      {
 CNPLog::GetInstance().Log("ThreadQoSEPoll epoll_Error");
-				m_pIOMP->DelClient(pClient);
-				continue;
-			}
+        m_pIOMP->DelClient(pClient);
+        continue;
+      }
 
             if(tEvents[i].events & (EPOLLERR | EPOLLHUP))
             {
                 CNPLog::GetInstance().Log("QoS In EPOLLERR or EPOLLHUP disconnect (%p) (%d) errno=(%d)(%s)",
                         pClient, pClient->GetSocket()->GetFd(), errno, strerror(errno));
                 errno = 0;
-				m_pIOMP->DelClient(pClient);
+        m_pIOMP->DelClient(pClient);
 
 #ifdef _CLIENT_ARRAY
-	            m_pMainProcess->CloseClient(pClient->GetUserSeq());
+              m_pMainProcess->CloseClient(pClient->GetUserSeq());
 #else
-	            m_pMainProcess->CloseClient(pClient);
+              m_pMainProcess->CloseClient(pClient);
 #endif
             }
-			else
+      else
             if(tEvents[i].events & EPOLLOUT)
             {
-        	    if(static_cast<ClientUserDN*>(pClient)->GetSendTime() < CNPUtil::GetMicroTime())
-        	    //if(pClient->GetSendTime() < CNPUtil::GetMicroTime())
-				{
+              if(static_cast<ClientUserDN*>(pClient)->GetSendTime() < CNPUtil::GetMicroTime())
+              //if(pClient->GetSendTime() < CNPUtil::GetMicroTime())
+        {
 //CNPLog::GetInstance().Log("ThreadQos POLLOUT Send to Sender=>>(%p)", pClient);
-					/*
-					m_pIOMP->DelClient(pClient);
-					m_pMainProcess->PutSendQueue(pClient);
-					*/
-					RemoveQoS(pClient);
-				}
+          /*
+          m_pIOMP->DelClient(pClient);
+          m_pMainProcess->PutSendQueue(pClient);
+          */
+          RemoveQoS(pClient);
+        }
 /*
                 if( ((ClientUserDN*)pClient)->GetSendPacketCount() > 0 &&
                     ((ClientUserDN*)pClient)->GetSendTime() < CNPUtil::GetMicroTime())
@@ -115,9 +115,9 @@ CNPLog::GetInstance().Log("ThreadQoSEPoll epoll_Error");
             continue;
         }
 
-		CNPUtil::NanoSleep(1000000L);   // 0.1
-	}
+    CNPUtil::NanoSleep(1000000L);   // 0.1
+  }
 
-	pthread_exit(NULL);
+  pthread_exit(NULL);
 }
 

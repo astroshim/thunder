@@ -10,34 +10,34 @@
 #include <unistd.h>
 
 ThreadCloser::ThreadCloser()
-					:m_pDownloadServer(NULL)
+          :m_pDownloadServer(NULL)
 {
-	CNPLog::GetInstance().Log("ThreadCloser Construct");
+  CNPLog::GetInstance().Log("ThreadCloser Construct");
 }
 
 ThreadCloser::ThreadCloser(DownloadServer* const _pDownloadServer)
-					:m_pDownloadServer(_pDownloadServer)
+          :m_pDownloadServer(_pDownloadServer)
 {
-	CNPLog::GetInstance().Log("ThreadCloser Construct");
+  CNPLog::GetInstance().Log("ThreadCloser Construct");
 }
 
 ThreadCloser::~ThreadCloser()
 {
-	this->SetStarted(false);
-	CNPLog::GetInstance().Log("ThreadCloser Destruct");
+  this->SetStarted(false);
+  CNPLog::GetInstance().Log("ThreadCloser Destruct");
 }
 
 void ThreadCloser::Run()
 {
-	while(1)
-	{
-		int iPacketLen;
+  while(1)
+  {
+    int iPacketLen;
         Client *pClient = (Client *)CloseQueue::GetInstance().DeQueue();
-		CNPLog::GetInstance().Log("In ThreadCloser [%p]thread Client Geted! (%p) fd=(%d)",  
-							this, pClient, ((Socket *)(pClient->GetSocket()))->GetFd());
-	}
+    CNPLog::GetInstance().Log("In ThreadCloser [%p]thread Client Geted! (%p) fd=(%d)",  
+              this, pClient, ((Socket *)(pClient->GetSocket()))->GetFd());
+  }
 
-	delete this;
-	pthread_exit(NULL);
+  delete this;
+  pthread_exit(NULL);
 }
 

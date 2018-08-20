@@ -8,8 +8,8 @@ pthread_mutex_t CNPUtil::m_lockKey = PTHREAD_MUTEX_INITIALIZER;
 
 void sig_timer(int signo)
 {
-//  setitimer(ITIMER_REAL, &timer, NULL);      /* 타이머를 다시 셋팅 */
-	return;
+//  setitimer(ITIMER_REAL, &timer, NULL);    
+  return;
 }
 
 CNPUtil::CNPUtil()
@@ -18,31 +18,31 @@ CNPUtil::CNPUtil()
 
 int CNPUtil::GetNetworkByteOrder()
 {
-	return m_iEqualNetworkByteOrder;
+  return m_iEqualNetworkByteOrder;
 }
 
 void CNPUtil::SetSignal(int _sec)
 {
-	struct sigaction alrm_sig;
-	struct itimerval timer;      /* setitime용 시간 */
+  struct sigaction alrm_sig;
+  struct itimerval timer;      /* setitime */
 
-	alrm_sig.sa_handler = sig_timer;
-	alrm_sig.sa_flags = 0;
+  alrm_sig.sa_handler = sig_timer;
+  alrm_sig.sa_flags = 0;
 
-   	if( (sigemptyset(&alrm_sig.sa_mask) == -1) || 
+    if( (sigemptyset(&alrm_sig.sa_mask) == -1) || 
          (sigaction(SIGALRM, &alrm_sig, NULL) == -1) )
-	{
-		perror("Failed to set Alarm Signal handler");
-		return ;
-	}
+  {
+    perror("Failed to set Alarm Signal handler");
+    return ;
+  }
 
-	timer.it_value.tv_sec = _sec;
-	timer.it_value.tv_usec = 0;
-	timer.it_interval.tv_usec = 0;
-	timer.it_interval.tv_usec = 0;
-	setitimer(ITIMER_REAL, &timer, NULL);
+  timer.it_value.tv_sec = _sec;
+  timer.it_value.tv_usec = 0;
+  timer.it_interval.tv_usec = 0;
+  timer.it_interval.tv_usec = 0;
+  setitimer(ITIMER_REAL, &timer, NULL);
 
-	return;
+  return;
 }
 
 void CNPUtil::GetIPConfig( unsigned long long *_piMac,  unsigned long *_piIp)
@@ -53,29 +53,29 @@ void CNPUtil::GetIPConfig( unsigned long long *_piMac,  unsigned long *_piIp)
     //sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     sock = socket (PF_INET, SOCK_STREAM, 0);
     if (sock < 0) 
-	{
+  {
         perror("socket() error\n");
         return;
     }
 
     strcpy(ifr.ifr_name, "eth0");
 
-	// Get IP Adress
-	//ret = ioctl(sock, SIOCGIFADDR, &ifr);
+  // Get IP Adress
+  //ret = ioctl(sock, SIOCGIFADDR, &ifr);
     ret = ioctl (sock, SIOCGIFADDR, &ifr);
-	if (ret < 0) 
-	{
-		close(sock);
-		return;
-	}
-	*_piIp = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr;
+  if (ret < 0) 
+  {
+    close(sock);
+    return;
+  }
+  *_piIp = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr;
 
 #ifndef _FREEBSD
     // Get Netmask
     //ret = ioctl(sock, SIOCGIFNETMASK, &ifr);
     ret = ioctl (sock, SIOCGIFHWADDR, &ifr);
     if (ret < 0) 
-	{
+  {
         close(sock);
         return ;
     }
@@ -89,15 +89,15 @@ void CNPUtil::GetIPConfig( unsigned long long *_piMac,  unsigned long *_piIp)
 // Structure of a 48-bit Ethernet address.
 //
 struct  ether_addr {
-	   u_char octet[ETHER_ADDR_LEN];
+     u_char octet[ETHER_ADDR_LEN];
 };
 */
     struct sockaddr *sa = &(ifr.ifr_hwaddr);;
-	memcpy((void *)_piMac, (void *)&(sa->sa_data), 6);
+  memcpy((void *)_piMac, (void *)&(sa->sa_data), 6);
 
-	struct ether_addr haddr;
-	memcpy((void *)&haddr, (void *)_piMac, 6);
-	//printf("\t\t\t\t\t --->> (%s) \n", (char *)ether_ntoa (&haddr));
+  struct ether_addr haddr;
+  memcpy((void *)&haddr, (void *)_piMac, 6);
+  //printf("\t\t\t\t\t --->> (%s) \n", (char *)ether_ntoa (&haddr));
 #else
     _piMac = NULL;
 #endif
@@ -163,19 +163,19 @@ void CNPUtil::NanoSleep(const unsigned long _nsec)
 
 void CNPUtil::LTrim(char *str)
 {
-	char* tmp;
-	for(tmp=str; tmp[0] && isspace(tmp[0]); tmp++);
-	strcpy(str,tmp);
+  char* tmp;
+  for(tmp=str; tmp[0] && isspace(tmp[0]); tmp++);
+  strcpy(str,tmp);
 }
 
 void CNPUtil::RTrim(char *str)
 {
-	char* tmp;
-	for(tmp=str-1; str[0]; str++)
-	{
-    	if(!isspace(str[0])) tmp=str;
-	}
-	tmp[1]=0;    
+  char* tmp;
+  for(tmp=str-1; str[0]; str++)
+  {
+      if(!isspace(str[0])) tmp=str;
+  }
+  tmp[1]=0;    
 }
 
 void CNPUtil::GetTime(struct time_buf  *_time)
@@ -194,29 +194,29 @@ void CNPUtil::GetTime(struct time_buf  *_time)
 **/
 void CNPUtil::GetTime(char *todaystr, char* timestr)
 {
-	time_t tval;
-	struct tm t;
+  time_t tval;
+  struct tm t;
 
-	time(&tval);
-	localtime_r(&tval, &t);
+  time(&tval);
+  localtime_r(&tval, &t);
 
-	if ( todaystr )
-		sprintf(todaystr, "%04d%02d%02d",
-		t.tm_year+1900, t.tm_mon+1, t.tm_mday);
-	if ( timestr )
-		sprintf(timestr, "%02d%02d%02d",
-		t.tm_hour, t.tm_min, t.tm_sec);
+  if ( todaystr )
+    sprintf(todaystr, "%04d%02d%02d",
+    t.tm_year+1900, t.tm_mon+1, t.tm_mday);
+  if ( timestr )
+    sprintf(timestr, "%02d%02d%02d",
+    t.tm_hour, t.tm_min, t.tm_sec);
 }
 
 int CNPUtil::GetTime()
 {
-	time_t tval;
-	struct tm t;
+  time_t tval;
+  struct tm t;
 
-	time(&tval);
-	localtime_r(&tval, &t);
+  time(&tval);
+  localtime_r(&tval, &t);
 
-	return t.tm_hour;
+  return t.tm_hour;
 }
 
 time_t CNPUtil::GetUnixTime()
@@ -232,16 +232,16 @@ time_t CNPUtil::GetUnixTime()
 
 void CNPUtil::GetUnixTimeStr(unsigned long _ulUnixTime, char *_pchTime)
 {
-	time_t tval;
-	struct tm t;
+  time_t tval;
+  struct tm t;
 
-	tval = _ulUnixTime;
-	localtime_r(&tval, &t);
+  tval = _ulUnixTime;
+  localtime_r(&tval, &t);
 
-	if ( _pchTime )
-	{
-		sprintf(_pchTime, "%02d%02d%02d", t.tm_hour, t.tm_min, t.tm_sec);
-	}
+  if ( _pchTime )
+  {
+    sprintf(_pchTime, "%02d%02d%02d", t.tm_hour, t.tm_min, t.tm_sec);
+  }
 }
 
 const double CNPUtil::GetMicroTime(void)
@@ -258,67 +258,67 @@ const double CNPUtil::GetMicroTime(void)
 void CNPUtil::GetMicroTimeStr(double _dTime, char *_pchTime)
 {
     struct timeval tv;
-	struct tm t;
-	//char _pchTimeString[40];
-	
-	if(_dTime < 0.0)
-	{
-		return;
-	}
+  struct tm t;
+  //char _pchTimeString[40];
+  
+  if(_dTime < 0.0)
+  {
+    return;
+  }
 
-	memcpy(&tv, &_dTime, sizeof(struct timeval));
-	// struct tm *t;
-	//t = localtime (&tv.tv_sec); 
+  memcpy(&tv, &_dTime, sizeof(struct timeval));
+  // struct tm *t;
+  //t = localtime (&tv.tv_sec); 
 #ifdef _FREEBSD
-	localtime_r((time_t *)(&(tv.tv_sec)), &t);
+  localtime_r((time_t *)(&(tv.tv_sec)), &t);
 #else
-	localtime_r(&(tv.tv_sec), &t);
+  localtime_r(&(tv.tv_sec), &t);
 #endif
 
-	//strftime (_pchTimeString, 40, "%Y-%m-%d %H:%M:%S", t);
-	if ( _pchTime )
-	{
-		sprintf(_pchTime, "%02d%02d%02d", t.tm_hour, t.tm_min, t.tm_sec);
-	}
+  //strftime (_pchTimeString, 40, "%Y-%m-%d %H:%M:%S", t);
+  if ( _pchTime )
+  {
+    sprintf(_pchTime, "%02d%02d%02d", t.tm_hour, t.tm_min, t.tm_sec);
+  }
 }
 
 void CNPUtil::GetMicroTime(char *_pchTimeString)
 {
-	struct timeval tv;
-	struct tm* ptm;
-//	char _pchTimeString[50];
-//	long milliseconds;
+  struct timeval tv;
+  struct tm* ptm;
+//  char _pchTimeString[50];
+//  long milliseconds;
 
-	/* Obtain the time of day, and convert it to a tm struct. */
-	gettimeofday (&tv, NULL);
+  /* Obtain the time of day, and convert it to a tm struct. */
+  gettimeofday (&tv, NULL);
 #ifdef _FREEBSD
-	ptm = localtime ((time_t *)(&tv.tv_sec));
+  ptm = localtime ((time_t *)(&tv.tv_sec));
 #else
-	ptm = localtime (&tv.tv_sec); 
+  ptm = localtime (&tv.tv_sec); 
 #endif
 
-	 /* Format the date and time, down to a single second. */
-	strftime (_pchTimeString, 50, "%Y-%m-%d %H:%M:%S", ptm);
+   /* Format the date and time, down to a single second. */
+  strftime (_pchTimeString, 50, "%Y-%m-%d %H:%M:%S", ptm);
 
-	 /* Compute milliseconds from microseconds. */
-//	milliseconds = tv.tv_usec / 1000;
+   /* Compute milliseconds from microseconds. */
+//  milliseconds = tv.tv_usec / 1000;
 
-	/* Print the formatted time, in seconds, followed by a decimal point
-   	and the milliseconds. */
-//	printf ("%s.%03ld\n", _pchTimeString, milliseconds);
+  /* Print the formatted time, in seconds, followed by a decimal point
+    and the milliseconds. */
+//  printf ("%s.%03ld\n", _pchTimeString, milliseconds);
 
-	sprintf(_pchTimeString, "%s%ld", _pchTimeString, tv.tv_usec);
+  sprintf(_pchTimeString, "%s%ld", _pchTimeString, tv.tv_usec);
 }
 
 int CNPUtil::GetMin()
 {
-	time_t tval;
-	struct tm t;
+  time_t tval;
+  struct tm t;
 
-	time(&tval);
-	localtime_r(&tval, &t);
+  time(&tval);
+  localtime_r(&tval, &t);
 
-	return t.tm_min;
+  return t.tm_min;
 }
 
 /************************************************************************
@@ -332,13 +332,13 @@ int CNPUtil::GetMin()
 **/
 int CNPUtil::GetCurDay(void)
 {
-	time_t tval;
-	struct tm t;
+  time_t tval;
+  struct tm t;
 
-	time(&tval);
-	localtime_r(&tval, &t);
+  time(&tval);
+  localtime_r(&tval, &t);
 
-	return t.tm_mday;
+  return t.tm_mday;
 }
 
 int CNPUtil::GetResultHtml(char *pchSrc, char *pchDst)
@@ -375,7 +375,7 @@ int CNPUtil::GetQueryPage(char *Data, char *_pchURL)
 }
 
 /**
-*	get the url "xxx.xxx.gameloft.com" from "http://xxx.xxx.gameloft.com/".
+* get the url "xxx.xxx.gameloft.com" from "http://xxx.xxx.gameloft.com/".
 */
 int CNPUtil::GetURL(char *Data, char *_pchURL)
 {   
@@ -417,83 +417,77 @@ printf("ResultCode = (%s) \n", ResultCode);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// 다음은 queue의 특정 위치에서 4 bytes를 읽어 integer로 casting하는
-// routine이다.
 int CNPUtil::Get4Byte(unsigned char *data,int pos)
 {
-	union {
-		int integral;
-		unsigned char chars[4];
-	} bytes;
+  union {
+    int integral;
+    unsigned char chars[4];
+  } bytes;
 
-	if (!m_iEqualNetworkByteOrder) 	// little endian
-	{ 
-		bytes.chars[0] = data[pos+3];
-		bytes.chars[1] = data[pos+2];
-		bytes.chars[2] = data[pos+1];
-		bytes.chars[3] = data[pos];
-	} 
-	else 
-	{
-		bytes.chars[0] = data[pos];
-		bytes.chars[1] = data[pos+1];
-		bytes.chars[2] = data[pos+2];
-		bytes.chars[3] = data[pos+3];
-	}
+  if (!m_iEqualNetworkByteOrder)  // little endian
+  { 
+    bytes.chars[0] = data[pos+3];
+    bytes.chars[1] = data[pos+2];
+    bytes.chars[2] = data[pos+1];
+    bytes.chars[3] = data[pos];
+  } 
+  else 
+  {
+    bytes.chars[0] = data[pos];
+    bytes.chars[1] = data[pos+1];
+    bytes.chars[2] = data[pos+2];
+    bytes.chars[3] = data[pos+3];
+  }
 
-	return  bytes.integral;
+  return  bytes.integral;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// queue의 특정 위치에서 2 bytes를 읽어 short로 casting하는
-// routine이다.
 int CNPUtil::Get2Byte(unsigned char *data,int pos)
 {
-//	CNPLog::GetInstance().Log("====================>> data=(%p) (%d)", data, pos);
+//  CNPLog::GetInstance().Log("====================>> data=(%p) (%d)", data, pos);
 
-	union {
-		unsigned short integral;
-		unsigned char chars[2];
-	} bytes;
+  union {
+    unsigned short integral;
+    unsigned char chars[2];
+  } bytes;
 
-	if (!m_iEqualNetworkByteOrder) 	// little endian
-	{ 
-		bytes.chars[0] = data[pos+1];
-		bytes.chars[1] = data[pos];
-	} 
-	else 
-	{ 
-		bytes.chars[0] = data[pos];
-		bytes.chars[1] = data[pos+1];
-	}
-//	CNPLog::GetInstance().Log("====================>> (%d) (%d) (%d)", bytes.chars[0], bytes.chars[1], bytes.integral);
+  if (!m_iEqualNetworkByteOrder)  // little endian
+  { 
+    bytes.chars[0] = data[pos+1];
+    bytes.chars[1] = data[pos];
+  } 
+  else 
+  { 
+    bytes.chars[0] = data[pos];
+    bytes.chars[1] = data[pos+1];
+  }
+//  CNPLog::GetInstance().Log("====================>> (%d) (%d) (%d)", bytes.chars[0], bytes.chars[1], bytes.integral);
 
-	return  bytes.integral;
+  return  bytes.integral;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// queue의 특정 위치에서 1 bytes를 읽어 short로 casting하는
-// routine이다.
 /*
 int CNPUtil::Get1Byte(unsigned char *data,int pos)
 {
-	union {
-		short integral;
-		char chars[1];
-	} bytes;
+  union {
+    short integral;
+    char chars[1];
+  } bytes;
 
-	if (!m_iEqualNetworkByteOrder) 	// little endian
-	{ 
-		bytes.chars[0] = data[pos+1];
-		bytes.chars[1] = data[pos];
-	} 
-	else 
-	{ 
-		bytes.chars[0] = data[pos];
-		bytes.chars[1] = data[pos+1];
-	}
+  if (!m_iEqualNetworkByteOrder)  // little endian
+  { 
+    bytes.chars[0] = data[pos+1];
+    bytes.chars[1] = data[pos];
+  } 
+  else 
+  { 
+    bytes.chars[0] = data[pos];
+    bytes.chars[1] = data[pos+1];
+  }
 
-	return  bytes.integral;
+  return  bytes.integral;
 }
 */
 
@@ -516,7 +510,6 @@ unsigned long CNPUtil::GetLastChangedTime(const char* const _pchDirName)
     return st.st_mtime;
 }
 
-// 파일수정 시간 + uiTime < 현재시간 이면 지운다.
 void CNPUtil::DeleteFile(const char* const _pchDirName, const unsigned long _uiTime)
 {
     char pchFileName[MAX_FILE_NAME];
@@ -562,11 +555,11 @@ int  CNPUtil::GetByteOrder(void)
     val.i2 = 0x0102; 
     
     if(val.i1[0]==0x02 ) 
-	{
-		return 0;	// little endian system
-	}
+  {
+    return 0; // little endian system
+  }
 
-    return 1;	// big endian system
+    return 1; // big endian system
 }
 
 
@@ -575,14 +568,14 @@ void CNPUtil::Change344To444FormatPhoneNumber(char *src)
     char    Type444PhoneNumber[12];
 
     if( strncmp(src, "10", 2) == 0 ) 
-	{
+  {
         Type444PhoneNumber[0] = '0';
         Type444PhoneNumber[1] = '1';
         Type444PhoneNumber[2] = '0';
         Type444PhoneNumber[3] = '0';
 
         if( strlen(src) == 9 ) 
-		{
+    {
             Type444PhoneNumber[4] = '0';
             Type444PhoneNumber[5] = src[2];
             Type444PhoneNumber[6] = src[3];
@@ -594,7 +587,7 @@ void CNPUtil::Change344To444FormatPhoneNumber(char *src)
             Type444PhoneNumber[11] = src[8];
         }
         else 
-		{
+    {
             Type444PhoneNumber[4] = src[2];
             Type444PhoneNumber[5] = src[3];
             Type444PhoneNumber[6] = src[4];
@@ -607,14 +600,14 @@ void CNPUtil::Change344To444FormatPhoneNumber(char *src)
         }
     }
     else 
-	{
+  {
         Type444PhoneNumber[0] = src[0];
         Type444PhoneNumber[1] = src[1];
         Type444PhoneNumber[2] = src[2];
         Type444PhoneNumber[3] = '0';
 
         if( strlen(src) == 10 ) 
-		{
+    {
             Type444PhoneNumber[4] = '0';
             Type444PhoneNumber[5] = src[3];
             Type444PhoneNumber[6] = src[4];
@@ -627,7 +620,7 @@ void CNPUtil::Change344To444FormatPhoneNumber(char *src)
 
         }
         else 
-		{
+    {
             Type444PhoneNumber[4] = src[3];
             Type444PhoneNumber[5] = src[4];
             Type444PhoneNumber[6] = src[5];
@@ -648,9 +641,9 @@ int CNPUtil::URLDecode(const char *src, char *dst)
     int state = 0, code, i;
 
     if ( !src )
-		return -1;
+    return -1;
 
-	for(i = 0; i < strlen(src); i++) {
+  for(i = 0; i < strlen(src); i++) {
         switch (state) {
         case 0:
             if (src[i] == '%') {
@@ -668,7 +661,7 @@ int CNPUtil::URLDecode(const char *src, char *dst)
             code = src[i] - 48;
         case 2:
             if (state == 2) {
-				/* charicter */
+        /* charicter */
                 if (isdigit(src[i]) == 0) {
                     if (isalnum(src[i]) == 0) {
                         errno = EILSEQ;
@@ -677,7 +670,7 @@ int CNPUtil::URLDecode(const char *src, char *dst)
                     *dst++ = (code * 16) + src[i] - 55;
                 }
                 else {
-				/* digit */
+        /* digit */
                     *dst++ = (code * 16) + src[i] - 48;
                 }
 
@@ -956,16 +949,13 @@ int CNPUtil::GoSha256(char *_pchSource, int _iLen, unsigned char *_pchResult)
 {
     sha256_context ctx;
 
-	sha256_starts( &ctx );
-	sha256_update( &ctx, (uint8 *) _pchSource, _iLen );
-	sha256_finish( &ctx, _pchResult );                              
-	return 0;
+  sha256_starts( &ctx );
+  sha256_update( &ctx, (uint8 *) _pchSource, _iLen );
+  sha256_finish( &ctx, _pchResult );                              
+  return 0;
 }
 
 
-// 실행파일만 다른 서버로 넘기려니 
-// error while loading shared libraries: libcrypto.so.4: cannot open shared object file: No such file or directory
-// 에러가 발생해서 이 부분을 막아놓자.. 어짜피 DS 에서 사용하지 않으니깐.
 #ifdef _CRYPTO
 DWORD CNPUtil::EncryptCharToUCHAR( LPCSTR szOrigin, DWORD dwHowMuch, UCHAR* lpszKey, DWORD dwKeySize, UCHAR* pbCipherText)
 {
@@ -1001,99 +991,74 @@ CNPLog::GetInstance().Log("DecryptUCHARToChar ==> dwHowMuch(%d)", dwHowMuch);
 
 //////////////////////////////////////////////////////////////////////////
 //
-//! RC4를 사용한 암호화 함수
-//! \param pbKey 는 암호화 하는데 사용되는 키 버퍼
-//! \param dwKeySize 는 암호화 하는데 사용되는 키 버퍼의 크기
-//! \param pbPlaintText 는 암호화 하는데 사용되는 원문
-//! \param pbCipherText 는 암호화 된 문장이 저장될 버퍼(원문의 크기 이상이어야 함)
-//! \param dwHowMuch 는 암호화 하는데 사용되는 원문의 크기
-//! \return GetLastError의 반환값, 성공한 경우 0 리턴
-//! \remark 모든 버퍼는 문자열이 아닌 바이트 스트림으로 간주해야 함.
-
 DWORD CNPUtil::Encrypt(UCHAR *pbKey, DWORD dwKeySize, UCHAR *pbPlaintext, UCHAR *pbCipherText, DWORD dwHowMuch)
 {
-	DWORD		dwRet = false;
+  DWORD   dwRet = false;
 
-	//키 구조체를 생성
     RC4_KEY rc4_key;
-	//키값으로 받은 data(key)로 key를 세팅
     RC4_set_key(&rc4_key, dwKeySize, (unsigned char*)pbKey);
 
-	//plaintext를 cipertext로 변환
     RC4(&rc4_key, dwHowMuch, (unsigned char*)pbPlaintext, (unsigned char*)pbCipherText);
 
-	return dwRet;
+  return dwRet;
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-//! RC4를 사용한 암호 해독 함수
-//! \param pbKey 는 암호화 하는데 사용되는 키 버퍼
-//! \param dwKeySize 는 암호화 하는데 사용되는 키 버퍼의 크기
-//! \param pbCipherText 는 암호화된 버퍼
-//! \param pbPlaintText 는 암호가 해독된 원문(암호화된 버퍼 크기 이상이어야 함)
-//! \param dwHowMuch 는 암호화된 버퍼 크기
-//! \return GetLastError의 반환값, 성공한 경우 0 리턴
-//! \remark 모든 버퍼는 문자열이 아닌 바이트 스트림으로 간주해야 함.
 DWORD CNPUtil::Decrypt(UCHAR *pbKey, DWORD dwKeySize, UCHAR *pbCipherText, UCHAR *pbPlaintext, DWORD dwHowMuch)
 {
-	DWORD		dwRet = 0;
-
-	//키 구조체를 생성
+  DWORD   dwRet = 0;
     RC4_KEY rc4_key;
 
-	//키값으로 받은 data(key)로 key를 세팅
     RC4_set_key(&rc4_key, dwKeySize, pbKey);
 
-	// cipertext를 plaintext로 변환
     RC4(&rc4_key, dwHowMuch,
         (unsigned char*)pbCipherText, (unsigned char*)pbPlaintext);
-	return dwRet;
+  return dwRet;
 }
 
 //----------------------------------------------------------------------------------------------------
 // [10/11/2005] Written by Hyun Min Cho
 // FuncName :: CheckLength
-// HowMuch의 값이 맞는지 확인한다.
 //----------------------------------------------------------------------------------------------------
 /*
 DWORD CNPUtil::CheckLength( LPCTSTR lpString,  UINT nTotal)
 {
-	for (int i = nTotal; i>0; i--)
-	{
-		if ( lpString[i-1] != NULL )
-			return i;
-	}
+  for (int i = nTotal; i>0; i--)
+  {
+    if ( lpString[i-1] != NULL )
+      return i;
+  }
 
-	return NULL;
+  return NULL;
 }
 */
 
 DWORD CNPUtil::CheckLength( UCHAR* lpString,  UINT nTotal)
 {
-	for (int i = nTotal; i>0; i--)
-	{
-		if ( lpString[i-1] != 0x00 )
-			return i;
-	}
+  for (int i = nTotal; i>0; i--)
+  {
+    if ( lpString[i-1] != 0x00 )
+      return i;
+  }
 
-	return 0;
+  return 0;
 }
 #endif
 
 /*
 unsigned int CNPUtil::GetSessionKey()
 {
-//	int iRetSessionKey;
-	pthread_mutex_lock(&m_lockKey);
-	unsigned int iRetSessionKey = m_iSessionKey++;
-	//if(m_iSessionKey > 400000000)
-	if(m_iSessionKey > 10)
-	{
-		m_iSessionKey = 1;
-	}
-	pthread_mutex_unlock(&m_lockKey);
-	return iRetSessionKey;
+//  int iRetSessionKey;
+  pthread_mutex_lock(&m_lockKey);
+  unsigned int iRetSessionKey = m_iSessionKey++;
+  //if(m_iSessionKey > 400000000)
+  if(m_iSessionKey > 10)
+  {
+    m_iSessionKey = 1;
+  }
+  pthread_mutex_unlock(&m_lockKey);
+  return iRetSessionKey;
 }
 */
 

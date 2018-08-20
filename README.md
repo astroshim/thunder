@@ -8,3 +8,5 @@ yum install curl-devel
 yum install openssl-devel
 touch /usr/include/stropts.h
 
+## freebsd + ios
+

@@ -6,14 +6,14 @@
 //#include "../include/Socket.h"
 
 ClientDN::ClientDN()
-					:m_iPort(0)
+          :m_iPort(0)
 {
 }
 
 ClientDN::ClientDN(Socket* const _cSocket)
-					:Client(_cSocket, CLIENT_USER),
-					//:Client(_cSocket, CLIENT_DN),
-					m_iPort(0)
+          :Client(_cSocket, CLIENT_USER),
+          //:Client(_cSocket, CLIENT_DN),
+          m_iPort(0)
 {
 }
 
@@ -39,18 +39,18 @@ void ClientDN::WorkDownSize(const T_PACKET &_tPacket)
 
 void ClientDN::WorkDSHello(const T_PACKET &_tPacket)
 {
-	int iSeq, iMaxUser, iShmKey, iShmDSStatus;
+  int iSeq, iMaxUser, iShmKey, iShmDSStatus;
     Tcmd_HELLO_DS_DSM *pClientBody = (Tcmd_HELLO_DS_DSM *)_tPacket.data ;
 
-	SetType(CLIENT_DN);
+  SetType(CLIENT_DN);
     DownloadManager *pManager = NULL;
     if((pManager = dynamic_cast<DownloadManager*>(m_pMainProcess)))
     {
-    	if(pManager->SetDS(&iSeq, &iMaxUser, &iShmKey, &iShmDSStatus, pClientBody->iPid) < 0)
-		{
-			CNPLog::GetInstance().Log("WorkDSHello DS OverFlow");
-			return;
-		}
+      if(pManager->SetDS(&iSeq, &iMaxUser, &iShmKey, &iShmDSStatus, pClientBody->iPid) < 0)
+    {
+      CNPLog::GetInstance().Log("WorkDSHello DS OverFlow");
+      return;
+    }
     }
     else
     {
@@ -59,28 +59,28 @@ void ClientDN::WorkDSHello(const T_PACKET &_tPacket)
 /*
     //if(((DownloadManager *)m_pMainProcess)->SetDS(&iSeq, &iMaxUser, &iShmKey, pClientBody->iPid) < 0)
     if(static_cast<DownloadManager *>(m_pMainProcess)->SetDS(&iSeq, &iMaxUser, &iShmKey, pClientBody->iPid) < 0)
-	{
-    	CNPLog::GetInstance().Log("WorkDSHello DS OverFlow");
-		exit(1);
-		return;
-	}
+  {
+      CNPLog::GetInstance().Log("WorkDSHello DS OverFlow");
+    exit(1);
+    return;
+  }
 */
 
-	SetUserSeq(iSeq);
+  SetUserSeq(iSeq);
 
     T_PACKET tPacket;
     Tcmd_HELLO_DSM_DS *sndbody     = (Tcmd_HELLO_DSM_DS *)tPacket.data;
     memset((char *)&tPacket, 0x00, sizeof(T_PACKET));
-    tPacket.header.command 	= cmd_HELLO_DSM_DS;
-    tPacket.header.length  	= sizeof(Tcmd_HELLO_DSM_DS);
+    tPacket.header.command  = cmd_HELLO_DSM_DS;
+    tPacket.header.length   = sizeof(Tcmd_HELLO_DSM_DS);
 
-	sndbody->iSeq 		= iSeq;
-	sndbody->iMaxUser 	= iMaxUser;
-	sndbody->iShmKey 	= iShmKey;
-	sndbody->iShmDSStatus 	= iShmDSStatus;
+  sndbody->iSeq     = iSeq;
+  sndbody->iMaxUser   = iMaxUser;
+  sndbody->iShmKey  = iShmKey;
+  sndbody->iShmDSStatus   = iShmDSStatus;
 
     CNPLog::GetInstance().Log("WorkDSHello seq=(%d), pid=(%d),maxUser=(%d), shmKey=(%d), shmDSStatusKey=(%d)",
-							iSeq, pClientBody->iPid, iMaxUser, iShmKey, iShmDSStatus);
+              iSeq, pClientBody->iPid, iMaxUser, iShmKey, iShmDSStatus);
     //((Socket *)(GetSocket()))->Write((char *)&tPacket, PDUHEADERSIZE+tPacket.header.length);
     GetSocket()->Write((char *)&tPacket, PDUHEADERSIZE+tPacket.header.length);
 }
@@ -90,24 +90,24 @@ void ClientDN::WorkUserClose(const T_PACKET &_tPacket)
     Tcmd_USER_CLOSE_DS_DSM *pClientBody = (Tcmd_USER_CLOSE_DS_DSM *)_tPacket.data ;
 
     Tcmd_USER_CLOSE_DS_DSM *pClosed = new Tcmd_USER_CLOSE_DS_DSM;
-	memcpy(pClosed, pClientBody, sizeof(Tcmd_USER_CLOSE_DS_DSM));
+  memcpy(pClosed, pClientBody, sizeof(Tcmd_USER_CLOSE_DS_DSM));
 
     CNPLog::GetInstance().Log("Work UserClose pClosed=(%p), nBillNo=(%d), nDownSize=(%llu)",
-							pClosed, pClosed->nBillNo, pClosed->nDownSize);
+              pClosed, pClosed->nBillNo, pClosed->nDownSize);
 /*
     CNPLog::GetInstance().Log("Work UserClose pClosed=(%p), nComCode=(%d), nBillNo=(%d), nDownSize=(%llu)",
-							pClosed, pClosed->nComCode, pClosed->nBillNo, pClosed->nDownSize);
+              pClosed, pClosed->nComCode, pClosed->nBillNo, pClosed->nDownSize);
 */
 
-	DownloadManager *pManager = NULL;
-	if((pManager = dynamic_cast<DownloadManager*>(m_pMainProcess)))
-	{
-   		pManager->PutClosedList(pClosed);
-	}
-	else
-	{
-    	CNPLog::GetInstance().Log("Work UserClose(%p) pManager is NULL!! ", this);
-	}
+  DownloadManager *pManager = NULL;
+  if((pManager = dynamic_cast<DownloadManager*>(m_pMainProcess)))
+  {
+      pManager->PutClosedList(pClosed);
+  }
+  else
+  {
+      CNPLog::GetInstance().Log("Work UserClose(%p) pManager is NULL!! ", this);
+  }
 }
 
 /**
@@ -133,7 +133,7 @@ void ClientDN::WorkDownloadFinishBBS(const T_PACKET &_tPacket)
     DownloadManager *pManager = NULL;
     if((pManager = dynamic_cast<DownloadManager*>(m_pMainProcess)))
     {
-    	sndbody->nDownSize  =
+      sndbody->nDownSize  =
                 pManager->GetClientDownloadSize(pClientBody->nComCode, pClientBody->nBillNo);
     }
     else
@@ -191,7 +191,7 @@ void ClientDN::WorkGetDSInfo(const T_PACKET &_tPacket)
     DownloadManager *pManager = NULL;
     if((pManager = dynamic_cast<DownloadManager*>(m_pMainProcess)))
     {
-    	sndbody->iIP    = pManager->GetIPAddress();
+      sndbody->iIP    = pManager->GetIPAddress();
     }
     else
     {
@@ -232,18 +232,18 @@ void ClientDN::WorkDSMPing(const T_PACKET &_tPacket)
 
 const int ClientDN::ExecuteCommand(Thread *_pThread)
 {
-	T_PACKET tPacket;
+  T_PACKET tPacket;
     PACKET_HEADER *pPacketHeader = (PACKET_HEADER *)m_cCBuff.GetHeaderPoint();
 
-	memset((char *)&tPacket, 0x00, sizeof(tPacket));
-	if(Client::GetPacket((char *)&tPacket, pPacketHeader->length + PDUHEADERSIZE) < 0)
-	{
-		CNPLog::GetInstance().Log("In ClientDN::ExecuteCommand() GetPacketError!");
-		return -1;
-	}
+  memset((char *)&tPacket, 0x00, sizeof(tPacket));
+  if(Client::GetPacket((char *)&tPacket, pPacketHeader->length + PDUHEADERSIZE) < 0)
+  {
+    CNPLog::GetInstance().Log("In ClientDN::ExecuteCommand() GetPacketError!");
+    return -1;
+  }
 
 #ifdef _DEBUG
-	CNPLog::GetInstance().Log("ClientDN::ExecuteCommand(%p) command=(%d)", this, tPacket.header.command);
+  CNPLog::GetInstance().Log("ClientDN::ExecuteCommand(%p) command=(%d)", this, tPacket.header.command);
 #endif
 
     switch(tPacket.header.command)
@@ -251,10 +251,10 @@ const int ClientDN::ExecuteCommand(Thread *_pThread)
     // DS -> DSM
     case cmd_HELLO_DS_DSM:
         WorkDSHello(tPacket);
-		break;
+    break;
     case cmd_USER_CLOSE_DS_DSM:
         WorkUserClose(tPacket);
-		break;
+    break;
 /*
     case cmd_INFORM_FILE:
         WorkInformFile(tPacket);
@@ -265,7 +265,7 @@ const int ClientDN::ExecuteCommand(Thread *_pThread)
 */
 
     // BBS -> DSM
-	// request filesize of client getted.
+  // request filesize of client getted.
     case cmd_BBS_DS_DOWNFINISH_REQ:
         WorkDownloadFinishBBS(tPacket);
         break;
@@ -291,9 +291,9 @@ const int ClientDN::ExecuteCommand(Thread *_pThread)
     default :
         //WorkDSMPing(tPacket);
         CNPLog::GetInstance().Log("ClientDN::ExecuteCommand UNKNOWN PDU TYPE(%p) (%d)", this,
-				tPacket.header.command);
+        tPacket.header.command);
     }
 
-	return 0;
+  return 0;
 }
 

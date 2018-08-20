@@ -7,7 +7,7 @@ void SharedMemory::CreateSM(key_t _shm_key)
     m_Data = NULL;
     m_ShmId = 0;
 
-   	//Destroy();
+    //Destroy();
 
     if(Create(_shm_key))
     {
@@ -27,7 +27,7 @@ void SharedMemory::CreateSM(key_t _shm_key)
 
 SharedMemory::SharedMemory(key_t _shm_key, size_t _size):m_Size(_size)
 {
-	CreateSM(_shm_key);
+  CreateSM(_shm_key);
 }
 
 SharedMemory::SharedMemory(key_t _shm_key, size_t _size, const void *_pAddr):m_Size(_size)
@@ -52,12 +52,12 @@ SharedMemory::SharedMemory(key_t _shm_key, size_t _size, const void *_pAddr):m_S
 
 SharedMemory::SharedMemory(key_t _shm_key):m_Size(0)
 {   
-	CreateSM(_shm_key);
+  CreateSM(_shm_key);
 }
 
 SharedMemory::SharedMemory(size_t _size):m_Size(_size)
 {
-	m_Key = 0;
+  m_Key = 0;
     m_Data = NULL;
     m_ShmId = 0;
 
@@ -66,48 +66,48 @@ SharedMemory::SharedMemory(size_t _size):m_Size(_size)
         //if(Attach(NULL))
         if(Attach(0))
         {
-			m_IsStarted = true;
-		}
+      m_IsStarted = true;
+    }
     }
     else
-	{
-		m_IsStarted = false;
-	}
+  {
+    m_IsStarted = false;
+  }
 
 //cout << "In SharedMemory 2" << endl;
 }
 
 SharedMemory::~SharedMemory()
 {
-   	//Destroy();
+    //Destroy();
     m_Data = NULL;
-	m_IsStarted = false;
+  m_IsStarted = false;
     m_ShmId = 0;
 }
 
 key_t SharedMemory::GetKey()
 {
-	return m_Key;
+  return m_Key;
 }
 
 bool SharedMemory::IsStarted()
 {
-	return m_IsStarted;
+  return m_IsStarted;
 }
 
 bool SharedMemory::Create(key_t _shm_key)
 {
-	//if((m_ShmId = shmget((key_t)_shm_key, m_Size, IPC_PRIVATE)) < 0)
+  //if((m_ShmId = shmget((key_t)_shm_key, m_Size, IPC_PRIVATE)) < 0)
     //if((m_ShmId = shmget (_shm_key, m_Size, IPC_CREAT | IPC_EXCL | 0666)) < 0)
     if((m_ShmId = shmget ((key_t)_shm_key, m_Size, IPC_CREAT | 0666)) < 0)
-	{
-		sleep(1);
-	    if((m_ShmId = shmget (_shm_key, m_Size, IPC_CREAT | 0666)) < 0)
-    	{
-        	perror("SharedMemory::Create 1 ");
-        	return false;
-    	}
-	}
+  {
+    sleep(1);
+      if((m_ShmId = shmget (_shm_key, m_Size, IPC_CREAT | 0666)) < 0)
+      {
+          perror("SharedMemory::Create 1 ");
+          return false;
+      }
+  }
 
 /*
     if((m_ShmId = shmget (_shm_key, m_Size, IPC_CREAT | 0666)) < 0)

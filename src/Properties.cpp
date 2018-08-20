@@ -8,15 +8,15 @@ Properties::~Properties() { }
 
 int Properties::Load(char *_pchfStreamName)
 {
-	char pchLine[MAX_LINE_SIZE];
-	m_strFileName = _pchfStreamName;
+  char pchLine[MAX_LINE_SIZE];
+  m_strFileName = _pchfStreamName;
 
-    fstream fStream(m_strFileName.c_str(), ios::in);		// only read
+    fstream fStream(m_strFileName.c_str(), ios::in);    // only read
 
     if(!fStream.is_open())
-	{
+  {
         return -1;
-	}
+  }
 
     while(fStream.getline(pchLine, MAX_LINE_SIZE))
     {
@@ -30,39 +30,39 @@ int Properties::Load(char *_pchfStreamName)
         AddMap(pchLine);
     }
 
-	fStream.close();
-	return 0;
+  fStream.close();
+  return 0;
 }
 
 /**
-*	add key=value .
+* add key=value .
 */
 void Properties::SetProperty(string _strKey, string _strValue)
 {
-	m_mapProperties.insert(mapValType(_strKey, _strValue));
+  m_mapProperties.insert(mapValType(_strKey, _strValue));
 }
 
 /**
 */
 void Properties::Flush()
 {
-	fstream fStream(m_strFileName.c_str(), ios::in | ios::out);   // read and write
+  fstream fStream(m_strFileName.c_str(), ios::in | ios::out);   // read and write
 
-	if(!fStream.is_open())
-	{
-		return;
-	}
+  if(!fStream.is_open())
+  {
+    return;
+  }
 
-	for(myMapItor itor = m_mapProperties.begin(); 
-						itor != m_mapProperties.end(); ++itor)
-	{
-		char pchLine[MAX_LINE_SIZE];
-		memset(pchLine, 0x00, MAX_LINE_SIZE);
-		snprintf(pchLine, MAX_LINE_SIZE, "%s=%s\n", (*itor).first.c_str(), (*itor).second.c_str());
+  for(myMapItor itor = m_mapProperties.begin(); 
+            itor != m_mapProperties.end(); ++itor)
+  {
+    char pchLine[MAX_LINE_SIZE];
+    memset(pchLine, 0x00, MAX_LINE_SIZE);
+    snprintf(pchLine, MAX_LINE_SIZE, "%s=%s\n", (*itor).first.c_str(), (*itor).second.c_str());
 
-//		fStream.write(pchLine, MAX_LINE_SIZE);
-		fStream<<pchLine;
-	}
+//    fStream.write(pchLine, MAX_LINE_SIZE);
+    fStream<<pchLine;
+  }
 
     fStream.close();
 }
@@ -72,24 +72,24 @@ string Properties::GetProperty(string _strKey)
     myMapItor itor;
 //    map<string, string>::itorator itor;
 
-	itor = m_mapProperties.find(_strKey);
-	if(itor != m_mapProperties.end())
-	{
-		return (*itor).second; 	// same	return itor->second;
-	}
-	
-	return "";
+  itor = m_mapProperties.find(_strKey);
+  if(itor != m_mapProperties.end())
+  {
+    return (*itor).second;  // same return itor->second;
+  }
+  
+  return "";
 }
 
 void Properties::ClsWSpace(char *str)
 {
-	char *start;
+  char *start;
 
-	start = str;
-	do {
-		while (*str == ' ' || *str == '\t') str++;
-		*start++=*str;
-	} while (*str++);
+  start = str;
+  do {
+    while (*str == ' ' || *str == '\t') str++;
+    *start++=*str;
+  } while (*str++);
 }
 
 /*
@@ -102,7 +102,7 @@ void LTrim(char *str)
 */
 
 /**
-*	add key=value in the map.
+* add key=value in the map.
 */
 void Properties::AddMap(char *_pchLine)
 {
@@ -120,15 +120,14 @@ void Properties::AddMap(char *_pchLine)
     if(!strlen(pchName) || !strlen(pchValue)) return;
 
     /**
-    *   char* 를 string으로 변환하려면 그냥 대입하면된다.
     strName     = pchName;
     strValue    = pchValue;
     */
-	CNPUtil::LTrim(pchName);
-	CNPUtil::RTrim(pchName);
-	CNPUtil::LTrim(pchValue);
-	CNPUtil::RTrim(pchValue);
-	//LTrim(pchValue);
+  CNPUtil::LTrim(pchName);
+  CNPUtil::RTrim(pchName);
+  CNPUtil::LTrim(pchValue);
+  CNPUtil::RTrim(pchValue);
+  //LTrim(pchValue);
     m_mapProperties[pchName] = pchValue;
 
 //fprintf(stdout, " [%s] = [%s] \n", pchName, pchValue);
@@ -137,26 +136,25 @@ void Properties::AddMap(char *_pchLine)
 
 void Properties::AddMap(char *_pchLine, myMap &_mapConfig)
 {
-	char *delimitor;
-	char pchName[MAX_KEY_SIZE];
-	char pchValue[MAX_VALUE_SIZE];
+  char *delimitor;
+  char pchName[MAX_KEY_SIZE];
+  char pchValue[MAX_VALUE_SIZE];
 
-	if ((delimitor = strchr(_pchLine, '=')) == NULL) return;
+  if ((delimitor = strchr(_pchLine, '=')) == NULL) return;
 
-	*delimitor = '\0';
+  *delimitor = '\0';
 
-	strncpy(pchName, _pchLine, MAX_KEY_SIZE);
-	strncpy(pchValue, delimitor+1, MAX_VALUE_SIZE);
+  strncpy(pchName, _pchLine, MAX_KEY_SIZE);
+  strncpy(pchValue, delimitor+1, MAX_VALUE_SIZE);
 
-	if(!strlen(pchName) || !strlen(pchValue)) return;
-	
-	/**
-	*	char* 를 string으로 변환하려면 그냥 대입하면된다.
-	strName 	= pchName;
-	strValue 	= pchValue;
-	*/
+  if(!strlen(pchName) || !strlen(pchValue)) return;
+  
+  /**
+  strName   = pchName;
+  strValue  = pchValue;
+  */
 
-	_mapConfig[pchName] = pchValue;
-	return;
+  _mapConfig[pchName] = pchValue;
+  return;
 }
 
