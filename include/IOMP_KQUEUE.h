@@ -34,43 +34,43 @@ const unsigned int EPOLL_SIZE = 200;
 class Client;
 class IOMP_KQUEUE
 {
-private:
-	int 	m_iHandle; 
-	//int		m_iTimeout;
-	unsigned long		m_iTimeout;
+  private:
+    int   m_iHandle; 
+    //int   m_iTimeout;
+    unsigned long   m_iTimeout;
 
-	struct kevent m_stEvent[EPOLL_SIZE];
-	//struct 	epoll_event m_stEvent[EPOLL_SIZE];
+    struct kevent m_stEvent[EPOLL_SIZE];
+    //struct  epoll_event m_stEvent[EPOLL_SIZE];
 
-public:
-	IOMP_KQUEUE();
-	IOMP_KQUEUE(const unsigned long _iSec);
-	~IOMP_KQUEUE();
+  public:
+    IOMP_KQUEUE();
+    IOMP_KQUEUE(const unsigned long _iSec);
+    ~IOMP_KQUEUE();
 
-	/**
-	*	Add socket to fd_set
-	*/
-	//const int 	AddClient(Client* const _pClient, const unsigned int _uiEvents);
-	const int 	AddClient(Client* const _pClient, const short _filter, const unsigned short _usFlags);
+    /**
+     * Add socket to fd_set
+     */
+    //const int   AddClient(Client* const _pClient, const unsigned int _uiEvents);
+    const int   AddClient(Client* const _pClient, const short _filter, const unsigned short _usFlags);
 
-	/**
-	*	Modify socket to fd_set
-	*/
-	const int 	ModifyFd(Client* const _pClient,  const unsigned int _uiEvents);
+    /**
+     * Modify socket to fd_set
+     */
+    const int   ModifyFd(Client* const _pClient,  const unsigned int _uiEvents);
 
-	/**
-	*	Delete socket to fd_set
-	*/
-	const int 	DelFd(const int _iFd, const short _filter);
-	const int 	DelClient(Client * const _pClient, const short _filter);
-	
-	/**
-	*	Function polling
-	*/
-	const int	Polling();
-	void		SetTimeout(const unsigned long _iSec);
+    /**
+     * Delete socket to fd_set
+     */
+    const int   DelFd(const int _iFd, const short _filter);
+    const int   DelClient(Client * const _pClient, const short _filter);
 
-	struct  	kevent* const GetEventStructure();
+    /**
+     * Function polling
+     */
+    const int Polling();
+    void    SetTimeout(const unsigned long _iSec);
+
+    struct    kevent* const GetEventStructure();
 };
 
 #endif

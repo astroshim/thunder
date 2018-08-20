@@ -5,9 +5,9 @@
 
 #include "./Include.h"
 
-const int MAXPDUSIZE			= 4096;	/* 4KB */
-const int PDUHEADERSIZE 		= 4;
-const int PDUBODYSIZE			= (MAXPDUSIZE-PDUHEADERSIZE);
+const int MAXPDUSIZE      = 4096; /* 4KB */
+const int PDUHEADERSIZE     = 4;
+const int PDUBODYSIZE     = (MAXPDUSIZE-PDUHEADERSIZE);
 
 // command length
 const unsigned int COMMAND_SIZE = 2;
@@ -15,12 +15,12 @@ const unsigned int CLIENT_DATA_SIZE = (MAXPDUSIZE - PDUHEADERSIZE);
 
 /*----------------------------------------------------------------------------
  *  Download Server Manager(DSM) <------> Download Server(DS)
- * 	just push
+ *  just push
  *  --------------------------------------------------------------------------*/
 /*
-const unsigned short cmd_INFORM_FILE                  	= 1800;
-const unsigned short cmd_DOWNLOAD_SIZE                  = 1801;
-*/
+   const unsigned short cmd_INFORM_FILE                    = 1800;
+   const unsigned short cmd_DOWNLOAD_SIZE                  = 1801;
+ */
 
 const unsigned short cmd_HELLO_DS_DSM                   = 1802;
 const unsigned short cmd_HELLO_DSM_DS                   = 1803;
@@ -31,8 +31,8 @@ const unsigned short cmd_USER_CLOSE_DS_DSM              = 1804;
 /*----------------------------------------------------------------------------
  *  BBS <------> Download Server Manager(DSM)
  *  --------------------------------------------------------------------------*/
-const unsigned short cmd_BBS_DS_DOWNFINISH_REQ  		= 1612;
-const unsigned short cmd_BBS_DS_DOWNFINISH_RES  		= 1613;
+const unsigned short cmd_BBS_DS_DOWNFINISH_REQ      = 1612;
+const unsigned short cmd_BBS_DS_DOWNFINISH_RES      = 1613;
 
 /*----------------------------------------------------------------------------
  *  Download Client(DC) <------> Download Server Manager(DSM) CMD 1600~1699
@@ -44,13 +44,13 @@ const unsigned short cmd_GOODBYE_DSM_DC                 = 1603;
 const unsigned short cmd_GET_DS_INFO_DC_DSM             = 1604;
 const unsigned short cmd_GET_DS_INFO_DSM_DC             = 1605;
 const unsigned short cmd_DS_NOT_EXIST                   = 1606;
-const unsigned short cmd_GET_GRIDCDN_BILL_DC_DSM 		= 1607;
-const unsigned short cmd_GET_GRIDCDN_BILL_DSM_DC 		= 1608;
+const unsigned short cmd_GET_GRIDCDN_BILL_DC_DSM    = 1607;
+const unsigned short cmd_GET_GRIDCDN_BILL_DSM_DC    = 1608;
 const unsigned short cmd_BILLINFO_NOT_EXIST             = 1609;
 const unsigned short cmd_HEARTBEAT_DC_DSM               = 1610;
 const unsigned short cmd_HEARTBEAT_DSM_DC               = 1611;
-const unsigned short cmd_IBAS_DS_DOWNFINISH_REQ  		= 1612;
-const unsigned short cmd_IBAS_DS_DOWNFINISH_RES  		= 1613;
+const unsigned short cmd_IBAS_DS_DOWNFINISH_REQ     = 1612;
+const unsigned short cmd_IBAS_DS_DOWNFINISH_RES     = 1613;
 
 /*----------------------------------------------------------------------------
  *  Download Client(DC) <------> Download Server(DS) CMD 1700~1799
@@ -63,8 +63,8 @@ const unsigned short cmd_GET_FILE_DC_DS                 = 1704;
 const unsigned short cmd_GET_FILE_DS_DC                 = 1705;
 const unsigned short cmd_DFILE_NOT_EXIST                = 1706;
 const unsigned short cmd_DFILE_ERROR                    = 1707;
-const unsigned short cmd_GET_FILE_GRIDCDN_DC_DS			= 1708;
-const unsigned short cmd_GET_FILE_GRIDCDN_DS_DC  		= 1709;
+const unsigned short cmd_GET_FILE_GRIDCDN_DC_DS     = 1708;
+const unsigned short cmd_GET_FILE_GRIDCDN_DS_DC     = 1709;
 const unsigned short cmd_HEARTBEAT_DC_DS                = 1710;
 const unsigned short cmd_HEARTBEAT_DS_DC                = 1711;
 const unsigned short cmd_HELLO_COMCODE_DC_DS            = 1712;
@@ -76,21 +76,21 @@ const unsigned short cmd_GET_FSIZE_DS_DC                = 1714;
 //////////////////////////////////////////////////////////////////////////////////////
 // Enswer
 //////////////////////////////////////////////////////////////////////////////////////
-const unsigned short cmd_CHECK_VIOLATION_DC_DS          = 1720;     //¿£¼­Áî °ü·Ã Ãß°¡
-const unsigned short cmd_CHECK_VIOLATION_DS_DC          = 1721;  //¿£¼­Áî °ü·Ã Ãß°¡
+const unsigned short cmd_CHECK_VIOLATION_DC_DS          = 1720;     //ì—”ì„œì¦ˆ ê´€ë ¨ ì¶”ê°€
+const unsigned short cmd_CHECK_VIOLATION_DS_DC          = 1721;  //ì—”ì„œì¦ˆ ê´€ë ¨ ì¶”ê°€
 
-// ÆÄÀÏÀÌ¸§ Æ÷ÇÔµÊ.
-const unsigned short cmd_CHECK_VIOLATION_DC_DS2         = 1722;  //¿£¼­Áî °ü·Ã Ãß°¡
-const unsigned short cmd_CHECK_VIOLATION_DS_DC2         = 1723;  //¿£¼­Áî °ü·Ã Ãß°¡
+// íŒŒì¼ì´ë¦„ í¬í•¨ë¨.
+const unsigned short cmd_CHECK_VIOLATION_DC_DS2         = 1722;  //ì—”ì„œì¦ˆ ê´€ë ¨ ì¶”ê°€
+const unsigned short cmd_CHECK_VIOLATION_DS_DC2         = 1723;  //ì—”ì„œì¦ˆ ê´€ë ¨ ì¶”ê°€
 
 
 const unsigned int  MAX_ENSWER_COUNT = 256;
 
 // added
-// Çì´õ 4byte¸¦ ¸ÕÀú º¸³»°í sendfile() È£ÃâÇÑ´Ù.
+// í—¤ë” 4byteë¥¼ ë¨¼ì € ë³´ë‚´ê³  sendfile() í˜¸ì¶œí•œë‹¤.
 const unsigned short cmd_GET_FSIZE_DC_DS2                = 1721;
 //const unsigned short cmd_GET_FILE_DC_DS2                = 1720;
-//const unsigned short cmd_GET_FILE_DS_DC2                = 1721; // recevie ´Â cmd_GET_FILE_DS_DC ±×´ë·Î »ç¿ëÇÑ´Ù.
+//const unsigned short cmd_GET_FILE_DS_DC2                = 1721; // recevie ëŠ” cmd_GET_FILE_DS_DC ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
 
 const unsigned int FILE_SZ  = 98;
 const unsigned int ID_SZ = 16;
@@ -99,7 +99,7 @@ const unsigned int DIR_SZ = 256;
 #ifdef _CDN
 #endif
 //CDN
-const short cmd_HELLO_CODES_DC_DS       = 1750; // cmd_HELLO_CODES_DC_DSÀÇ ÀÀ´äÀº cmd_HELLO_DS_DC ·Î ÇÑ´Ù.
+const short cmd_HELLO_CODES_DC_DS       = 1750; // cmd_HELLO_CODES_DC_DSì˜ ì‘ë‹µì€ cmd_HELLO_DS_DC ë¡œ í•œë‹¤.
 
 const short cmd_GET_FILE_EX_DC_DS       = 1751;
 const short cmd_GET_FILE_EX_DS_DC       = 1752;
@@ -107,154 +107,153 @@ const short cmd_GET_FILE_EX_DS_DC       = 1752;
 // cmd_HELLO_CODES_DC_DS
 typedef struct
 {
-	uint32_t nComCode;
-	uint32_t nSvcCode;
+  uint32_t nComCode;
+  uint32_t nSvcCode;
 }Tcmd_HELLO_CODES_DC_DS;
 
 // cmd_GET_FILE_EX_DC_DS
 typedef struct
 {
-	union
-	{
-		struct
-		{
-			unsigned short  iCmd;
-			char            pchFileName[FILE_SZ];
-			uint64_t        nOffset;
-			uint64_t        nDownSize;
-			char            pchID[ID_SZ];
-			uint32_t        nBillNo;
-			char            sDir[DIR_SZ];
-			uint32_t        nDFlag; // 1: patch or full, 2: each file
-		} d;
-		unsigned char m_aBuf[136+DIR_SZ+4];
-	} _Data;
+  union
+  {
+    struct
+    {
+      unsigned short  iCmd;
+      char            pchFileName[FILE_SZ];
+      uint64_t        nOffset;
+      uint64_t        nDownSize;
+      char            pchID[ID_SZ];
+      uint32_t        nBillNo;
+      char            sDir[DIR_SZ];
+      uint32_t        nDFlag; // 1: patch or full, 2: each file
+    } d;
+    unsigned char m_aBuf[136+DIR_SZ+4];
+  } _Data;
 } Tcmd_GET_FILE_EX_DC_DS;
 
 #pragma pack(push, 2)
 typedef struct
 {
-	unsigned short    command;
-	unsigned short    length;
+  unsigned short    command;
+  unsigned short    length;
 }PACKET_HEADER;
 
 typedef struct
 {
-	PACKET_HEADER   header;
-	char            data[PDUBODYSIZE];
+  PACKET_HEADER   header;
+  char            data[PDUBODYSIZE];
 }T_PACKET;
 
 /*************************************************************
-  * DS ---> DSM
-*************************************************************/
+ * DS ---> DSM
+ *************************************************************/
 /*
-// C->S·Î GET_FSIZE ÆĞÅ¶ÀÌ ¿Ã¶§ DNMgr·Î °ü¸® ´ë»ó ÆÄÀÏÁ¤º¸¸¦ º¸³½´Ù.
+// C->Së¡œ GET_FSIZE íŒ¨í‚·ì´ ì˜¬ë•Œ DNMgrë¡œ ê´€ë¦¬ ëŒ€ìƒ íŒŒì¼ì •ë³´ë¥¼ ë³´ë‚¸ë‹¤.
 typedef struct
 {
-	uint32_t nComCode;
-	uint32_t nBandWidth;
-	uint64_t nFileSize;
-	char	 pchID[16];
-	char     pchFileName[98];
+uint32_t nComCode;
+uint32_t nBandWidth;
+uint64_t nFileSize;
+char   pchID[16];
+char     pchFileName[98];
 } Tcmd_INFORM_FILE;
-
-// ÁÖ±âÀûÀ¸·Î DS°¡ DNMgr·Î ¹ŞÀºÆÄÀÏ size¸¦ º¸³½´Ù.
+// ì£¼ê¸°ì ìœ¼ë¡œ DSê°€ DNMgrë¡œ ë°›ì€íŒŒì¼ sizeë¥¼ ë³´ë‚¸ë‹¤.
 typedef struct
 {
-	uint32_t nComCode;
-	uint32_t nBillNo;
-	uint64_t nDownSize;
+uint32_t nComCode;
+uint32_t nBillNo;
+uint64_t nDownSize;
 } Tcmd_DOWNLOAD_SIZE;
-*/
+ */
 
 
 // hello DS -> DSM
 typedef struct
 {
-	uint32_t iPid;
+  uint32_t iPid;
 }Tcmd_HELLO_DS_DSM;
 
 // hello DSM -> DS
 typedef struct
 {
-	uint32_t iSeq;
-	uint32_t iPid;
-	uint32_t iMaxUser;
-	uint32_t iShmKey;
-	uint32_t iShmDSStatus;
-	double   dHelloTime;
+  uint32_t iSeq;
+  uint32_t iPid;
+  uint32_t iMaxUser;
+  uint32_t iShmKey;
+  uint32_t iShmDSStatus;
+  double   dHelloTime;
 }Tcmd_HELLO_DSM_DS;
 
 // hello DS -> DSM
 typedef struct
 {
-	uint32_t nComCode;
-	uint32_t nBillNo;
-	uint64_t nDownSize;
-	double   dClosedTime;
+  uint32_t nComCode;
+  uint32_t nBillNo;
+  uint64_t nDownSize;
+  double   dClosedTime;
 }Tcmd_USER_CLOSE_DS_DSM;
 
 /*************************************************************
-  * BBS <---> DSM
-*************************************************************/
+ * BBS <---> DSM
+ *************************************************************/
 typedef struct
 {
-	uint32_t nComCode;
-	uint32_t nBillNo;
+  uint32_t nComCode;
+  uint32_t nBillNo;
 } Tcmd_BBS_DS_DOWNFINISH_REQ;
 
 typedef struct
 {
-	uint32_t nRet;
-	uint32_t nComCode;
-	uint32_t nBillNo;
-	uint64_t nDownSize;
+  uint32_t nRet;
+  uint32_t nComCode;
+  uint32_t nBillNo;
+  uint64_t nDownSize;
 } Tcmd_BBS_DS_DOWNFINISH_RES;
 
 
 /*************************************************************
-  * DC <---> DSM
-*************************************************************/
+ * DC <---> DSM
+ *************************************************************/
 // DSM -> DC (get ds info)
 typedef struct
 {
-	unsigned short iCmd;
-	unsigned short iPort;
-	unsigned int   iIP;
+  unsigned short iCmd;
+  unsigned short iPort;
+  unsigned int   iIP;
 } Tcmd_GET_DS_INFO_DSM_DC;
 
 
 /*************************************************************
-  * DC <---> DS
-*************************************************************/
+ * DC <---> DS
+ *************************************************************/
 // DC -> DS
 typedef struct
 {
-	unsigned int iComCode;
+  unsigned int iComCode;
 } Tcmd_HELLO_DC_DS;
 
-// DC <-> DS	(Get File size)
-// ±×´ë·Î Ã¤¿ö¼­ return ÇÑ´Ù.
+// DC <-> DS  (Get File size)
+// ê·¸ëŒ€ë¡œ ì±„ì›Œì„œ return í•œë‹¤.
 typedef struct
 {
-	unsigned short  iCmd;   	// ack °ªÀÌ´Ù.
-								// cmd_DFILE_NOT_EXIST     = 1706;
-								// const short cmd_DFILE_ERROR      = 1707;
-	//char            sFileName[DEF_FILENAME_SIZE];
-	char            pchFileName[98];
-	uint64_t 		nFSize;
-	char			pchID[16];
+  unsigned short  iCmd;     // ack ê°’ì´ë‹¤.
+  // cmd_DFILE_NOT_EXIST     = 1706;
+  // const short cmd_DFILE_ERROR      = 1707;
+  //char            sFileName[DEF_FILENAME_SIZE];
+  char            pchFileName[98];
+  uint64_t    nFSize;
+  char      pchID[16];
 }Tcmd_GET_FSIZE_DC_DS;
 
-// DC -> DS	(Download file info)
+// DC -> DS (Download file info)
 typedef struct
 {
-	unsigned short  iCmd;	// ¿¡·¯³ª¸é ¿¡·¯ÄÚµå, ¾Æ´Ï¸é main command
-	char			pchFileName[98];
-	uint64_t 		nOffset;
-	uint64_t 		nDownSize;
-	char			pchID[16];
-    uint32_t		nBillNo;
+  unsigned short  iCmd; // ì—ëŸ¬ë‚˜ë©´ ì—ëŸ¬ì½”ë“œ, ì•„ë‹ˆë©´ main command
+  char      pchFileName[98];
+  uint64_t    nOffset;
+  uint64_t    nDownSize;
+  char      pchID[16];
+  uint32_t    nBillNo;
 } Tcmd_GET_FILE_DC_DS;
 
 typedef struct
@@ -275,46 +274,46 @@ typedef struct
 } Tcmd_GOODBYE_DC_DS;
 
 /*
+   typedef struct
+   {
+   unsigned long nComCode;
+   char pchID[16];
+   char pchFileName[98];
+   }Tcmd_CHECK_VIOLATION_DC_DS;
+//ì••ì¶•íŒŒì¼ì¼ ê²½ìš° ê°ê°ì˜ ë‚´ë¶€íŒŒì¼ë“¤ì„ ë”°ë¡œ ê²€ì‚¬í•œë‹¤ê³  ìƒê°í•˜ê³ 
+//ì—¬ëŸ¬ê°œì˜ ì‘ë‹µì„ í•œêº¼ë²ˆì— ë°›ì„ ìˆ˜ ìˆë„ë¡ ë§Œë“  í”„ë¡œí† ì½œ.
+//í˜„ì¬ nCountëŠ” ì—”ì„œì¦ˆ ì²´í¬ê°€ ì„±ê³µí–ˆì„ ê²½ìš° 1ë¡œ ì„¤ì •ë˜ê³  ì‹¤íŒ¨í•  ê²½ìš° 0ìœ¼ë¡œ ì„¤ì •ë¨
+//nRetCodeì™€ nIDì˜ ê°’ì€ [0]ì—ë§Œ ê°’ì´ ë“¤ì–´ì˜¤ë„ë¡ ë˜ì–´ìˆë‹¤.
 typedef struct
 {
-	unsigned long nComCode;
-	char pchID[16];
-	char pchFileName[98];
-}Tcmd_CHECK_VIOLATION_DC_DS;
-
-//¾ĞÃàÆÄÀÏÀÏ °æ¿ì °¢°¢ÀÇ ³»ºÎÆÄÀÏµéÀ» µû·Î °Ë»çÇÑ´Ù°í »ı°¢ÇÏ°í
-//¿©·¯°³ÀÇ ÀÀ´äÀ» ÇÑ²¨¹ø¿¡ ¹ŞÀ» ¼ö ÀÖµµ·Ï ¸¸µç ÇÁ·ÎÅäÄİ.
-//ÇöÀç nCount´Â ¿£¼­Áî Ã¼Å©°¡ ¼º°øÇßÀ» °æ¿ì 1·Î ¼³Á¤µÇ°í ½ÇÆĞÇÒ °æ¿ì 0À¸·Î ¼³Á¤µÊ
-//nRetCode¿Í nIDÀÇ °ªÀº [0]¿¡¸¸ °ªÀÌ µé¾î¿Àµµ·Ï µÇ¾îÀÖ´Ù.
-typedef struct
-{
-	int nRet;		//¾Ø¼­Áî Ã¼Å©°¡ ½ÇÆĞÇÒ °æ¿ì ¿¡·¯ÄÚµå(API_define.h ¹× EnswerAPI¹®¼­ ÂüÁ¶, ½ÇÆĞ½Ã -°ª, ¼º°ø½Ã 0)
-	int nCount;		//nRetÀÌ 0 ÀÏ°æ¿ì ¹İµå½Ã 1
-	int nRetCode[MAX_ENSWER_COUNT];	//Ã¼Å© °á°ú ÄÚµå(API_define.h ¹× EnswerAPI¹®¼­ ÂüÁ¶)
-	int nID[MAX_ENSWER_COUNT];	//¿£¼­Áî ID(¿£¼­Áî ³»ºÎÀûÀ¸·Î ÄÁÅÙÃ÷¸¦ ±¸ºĞÇÏ´Â °íÀ¯°ª. EnswerAPI¹®¼­ ÂüÁ¶)
+int nRet;   //ì•¤ì„œì¦ˆ ì²´í¬ê°€ ì‹¤íŒ¨í•  ê²½ìš° ì—ëŸ¬ì½”ë“œ(API_define.h ë° EnswerAPIë¬¸ì„œ ì°¸ì¡°, ì‹¤íŒ¨ì‹œ -ê°’, ì„±ê³µì‹œ 0)
+int nCount;   //nRetì´ 0 ì¼ê²½ìš° ë°˜ë“œì‹œ 1
+int nRetCode[MAX_ENSWER_COUNT]; //ì²´í¬ ê²°ê³¼ ì½”ë“œ(API_define.h ë° EnswerAPIë¬¸ì„œ ì°¸ì¡°)
+int nID[MAX_ENSWER_COUNT];  //ì—”ì„œì¦ˆ ID(ì—”ì„œì¦ˆ ë‚´ë¶€ì ìœ¼ë¡œ ì»¨í…ì¸ ë¥¼ êµ¬ë¶„í•˜ëŠ” ê³ ìœ ê°’. EnswerAPIë¬¸ì„œ ì°¸ì¡°)
 }Tcmd_CHECK_VIOLATION_DS_DC;
-*/
+ */
 
 typedef struct
 {
-    unsigned long nComCode;
-    char pchID[16];
-    char pchHashName[98];
-    char pchFileName[256];
+  unsigned long nComCode;
+  char pchID[16];
+  char pchHashName[98];
+  char pchFileName[256];
 }Tcmd_CHECK_VIOLATION_DC_DS2;
 
-//¾ĞÃàÆÄÀÏÀÏ °æ¿ì °¢°¢ÀÇ ³»ºÎÆÄÀÏµéÀ» µû·Î °Ë»çÇÑ´Ù°í »ı°¢ÇÏ°í
-//¿©·¯°³ÀÇ ÀÀ´äÀ» ÇÑ²¨¹ø¿¡ ¹ŞÀ» ¼ö ÀÖµµ·Ï ¸¸µç ÇÁ·ÎÅäÄİ.
-//ÇöÀç nCount´Â ¿£¼­Áî Ã¼Å©°¡ ¼º°øÇßÀ» °æ¿ì 1·Î ¼³Á¤µÇ°í ½ÇÆĞÇÒ °æ¿ì 0À¸·Î ¼³Á¤µÊ
-//nRetCode¿Í nIDÀÇ °ªÀº [0]¿¡¸¸ °ªÀÌ µé¾î¿Àµµ·Ï µÇ¾îÀÖ´Ù.
+//ì••ì¶•íŒŒì¼ì¼ ê²½ìš° ê°ê°ì˜ ë‚´ë¶€íŒŒì¼ë“¤ì„ ë”°ë¡œ ê²€ì‚¬í•œë‹¤ê³  ìƒê°í•˜ê³ 
+//ì—¬ëŸ¬ê°œì˜ ì‘ë‹µì„ í•œêº¼ë²ˆì— ë°›ì„ ìˆ˜ ìˆë„ë¡ ë§Œë“  í”„ë¡œí† ì½œ.
+//í˜„ì¬ nCountëŠ” ì—”ì„œì¦ˆ ì²´í¬ê°€ ì„±ê³µí–ˆì„ ê²½ìš° 1ë¡œ ì„¤ì •ë˜ê³  ì‹¤íŒ¨í•  ê²½ìš° 0ìœ¼ë¡œ ì„¤ì •ë¨
+//nRetCodeì™€ nIDì˜ ê°’ì€ [0]ì—ë§Œ ê°’ì´ ë“¤ì–´ì˜¤ë„ë¡ ë˜ì–´ìˆë‹¤.
 typedef struct
 {
-    int nRet;       //¾Ø¼­Áî Ã¼Å©°¡ ½ÇÆĞÇÒ °æ¿ì ¿¡·¯ÄÚµå(API_define.h ¹× EnswerAPI¹®¼­ ÂüÁ¶, ½ÇÆĞ½Ã -°ª, ¼º°ø½Ã 0)
-    int nCount;     //nRetÀÌ 0 ÀÏ°æ¿ì ¹İµå½Ã 1
-    int nRetCode[MAX_ENSWER_COUNT]; //Ã¼Å© °á°ú ÄÚµå(API_define.h ¹× EnswerAPI¹®¼­ ÂüÁ¶)
-    int nID[MAX_ENSWER_COUNT];  //¿£¼­Áî ID(¿£¼­Áî ³»ºÎÀûÀ¸·Î ÄÁÅÙÃ÷¸¦ ±¸ºĞÇÏ´Â °íÀ¯°ª. EnswerAPI¹®¼­ ÂüÁ¶)
+  int nRet;       //ì•¤ì„œì¦ˆ ì²´í¬ê°€ ì‹¤íŒ¨í•  ê²½ìš° ì—ëŸ¬ì½”ë“œ(API_define.h ë° EnswerAPIë¬¸ì„œ ì°¸ì¡°, ì‹¤íŒ¨ì‹œ -ê°’, ì„±ê³µì‹œ 0)
+  int nCount;     //nRetì´ 0 ì¼ê²½ìš° ë°˜ë“œì‹œ 1
+  int nRetCode[MAX_ENSWER_COUNT]; //ì²´í¬ ê²°ê³¼ ì½”ë“œ(API_define.h ë° EnswerAPIë¬¸ì„œ ì°¸ì¡°)
+  int nID[MAX_ENSWER_COUNT];  //ì—”ì„œì¦ˆ ID(ì—”ì„œì¦ˆ ë‚´ë¶€ì ìœ¼ë¡œ ì»¨í…ì¸ ë¥¼ êµ¬ë¶„í•˜ëŠ” ê³ ìœ ê°’. EnswerAPIë¬¸ì„œ ì°¸ì¡°)
 }Tcmd_CHECK_VIOLATION_DS_DC2;
 
 #pragma pack(pop)
 
 #endif
+

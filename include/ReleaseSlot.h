@@ -6,66 +6,67 @@
 #include <string.h>
 #include <unistd.h>
 
-//a << b == a * (2ÀÇ b½Â)
+
+//a << b == a * (2ì˜ bìŠ¹)
 
 /*
--- argument·Î ¹ÞÀÚ
-unsigned const int MAX_SLOT_CNT =   1024 ;                       // °ü¸® ÇÒ slot °³¼ö
-unsigned const int BYTE_CNT     =   MAX_SLOT_CNT/BIT_PER_BYTE ;  // ÇÊ¿äÇÑ byte ¼ö
-*/
+   -- argumentë¡œ ë°›ìž
+   unsigned const int MAX_SLOT_CNT =   1024 ;                       // ê´€ë¦¬ í•  slot ê°œìˆ˜
+   unsigned const int BYTE_CNT     =   MAX_SLOT_CNT/BIT_PER_BYTE ;  // í•„ìš”í•œ byte ìˆ˜
+ */
 
-unsigned const int BIT_PER_BYTE =   8;                      	// 1byte ÀÇ bit ¼ö
-unsigned const int MV_BYTE      = 	3;
+unsigned const int BIT_PER_BYTE =   8;                        // 1byte ì˜ bit ìˆ˜
+unsigned const int MV_BYTE      =   3;
 
 unsigned const char BYTE_KEY = 0xFF;
-unsigned const int g_BitValue[] = {0x01, 	// 1
-									0x02, 	// 2
-									0x04, 	// 4
-									0x08, 	// 8
-									0x10, 	// 16
-									0x20, 	// 32
-									0x40, 	// 64
-									0x80,	// 128
-									0x100, 	// 256
-									0x200, 	// 512
-									0x400, 	// 1024
-									0x800, 	// 2048
-									0x1000,	// 4096
-									0x2000,	// 8192
-									0x4000,	
-									0x8000,	
-									0x10000,	
-									0x20000,
-									0x40000,
-									0x80000	// 524288
-									 };
+unsigned const int g_BitValue[] = {0x01,  // 1
+  0x02,   // 2
+  0x04,   // 4
+  0x08,   // 8
+  0x10,   // 16
+  0x20,   // 32
+  0x40,   // 64
+  0x80, // 128
+  0x100,  // 256
+  0x200,  // 512
+  0x400,  // 1024
+  0x800,  // 2048
+  0x1000, // 4096
+  0x2000, // 8192
+  0x4000,
+  0x8000,
+  0x10000,
+  0x20000,
+  0x40000,
+  0x80000 // 524288
+};
 class ReleaseSlot
 {
-public:
+  public:
     ReleaseSlot(int _maxSlotCnt);
 
     ~ReleaseSlot();
-    
+
     int BitOn(int _byte_pos, int _free_slot);
     int BitOff(int _bit_pos);
     int PutSlot(int iSlot);
-    
+
     int GetFreeSlot();
-    int PrintBit(); 
+    int PrintBit();
 
-    bool 	IsStarted(); 
+    bool  IsStarted();
 
-private:
-	int m_MaxSlotCnt;				/* °ü¸®ÇÒ slot °³¼ö */
-	int m_MemByteCnt;				/* ÇÊ¿äÇÑ ¸Þ¸ð¸® byte ¼ö */
-	unsigned char *m_Slot;
+  private:
+    int m_MaxSlotCnt;       /* ê´€ë¦¬í•  slot ê°œìˆ˜ */
+    int m_MemByteCnt;       /* í•„ìš”í•œ ë©”ëª¨ë¦¬ byte ìˆ˜ */
+    unsigned char *m_Slot;
 
-	int 	get_free_bit(int _byte_pos);
-	int 	get_free_byte();
-	void 	CreateClass(int _maxSlotCnt);
+    int   get_free_bit(int _byte_pos);
+    int   get_free_byte();
+    void  CreateClass(int _maxSlotCnt);
 
-	bool m_IsStarted;
-};  
+    bool m_IsStarted;
+};
 
 #endif
 

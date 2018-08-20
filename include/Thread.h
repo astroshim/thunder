@@ -6,27 +6,26 @@
 #include "./NonCopyable.h"
 
 /**
-*	NonCopyable Class ¿¹Á¦..
-*	class Thread : private NonCopyable
-*/
+ * NonCopyable Class
+ */
 class Thread  : private NonCopyable
 {
-public:
-	Thread();
-	virtual ~Thread();
-	virtual void Run()=0;
+  public:
+    Thread();
+    virtual ~Thread();
+    virtual void Run()=0;
 
-	const bool 	Spawn(void* const pThread);
-	const int 	GetThreadID();
-	
-	const bool	GetStarted();
-	void		SetStarted(const bool _bStart);
+    const bool  Spawn(void* const pThread);
+    const int   GetThreadID();
 
-protected:
+    const bool  GetStarted();
+    void    SetStarted(const bool _bStart);
 
-private:
-	bool		m_bIsStarted;
-	pthread_t 	m_ThreadID;
+  protected:
+
+  private:
+    bool    m_bIsStarted;
+    pthread_t   m_ThreadID;
 };
 
 #endif

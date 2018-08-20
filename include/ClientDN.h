@@ -5,22 +5,22 @@
 
 class ClientDN: public Client
 {
-private:
-	int m_iPort;
-	char m_pchIpAddr[MAX_IP_LEN];
+  private:
+    int m_iPort;
+    char m_pchIpAddr[MAX_IP_LEN];
 
-	// Download Server information
-/*
-	int	m_iSeq;
-	int	m_iPid;
-	int	m_iMaxUser;
-	int	m_iShmKey;
-*/
+    // Download Server information
+    /*
+       int m_iSeq;
+       int m_iPid;
+       int m_iMaxUser;
+       int m_iShmKey;
+     */
 
-public:	
-	ClientDN();
-	ClientDN(Socket* const _cSocket);
-	virtual ~ClientDN();
+  public: 
+    ClientDN();
+    ClientDN(Socket* const _cSocket);
+    virtual ~ClientDN();
 
     // BBS command
     void WorkDownloadFinishBBS(const T_PACKET &_tPacket);
@@ -35,13 +35,13 @@ public:
     void WorkDSMPing(const T_PACKET &_tPacket);
     void WorkGoodBye(const T_PACKET &_tPacket);
 
-/*
-    void WorkInformFile(const T_PACKET &_tPacket);
-    void WorkDownSize(const T_PACKET &_tPacket);
-*/
+    /*
+       void WorkInformFile(const T_PACKET &_tPacket);
+       void WorkDownSize(const T_PACKET &_tPacket);
+     */
 
-	//const int ExecuteCommand();
-	const int ExecuteCommand(Thread *_pThread);
+    //const int ExecuteCommand();
+    const int ExecuteCommand(Thread *_pThread);
 };
 
 #endif

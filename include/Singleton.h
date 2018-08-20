@@ -5,69 +5,70 @@
 template <typename TYPE>
 class Singleton
 {
-protected:
-	static TYPE *m_spInstance;
-	
-	static bool m_sbAlreadyCreate;
-	
-	static pthread_mutex_t m_sLock;
+  protected:
+    static TYPE *m_spInstance;
 
-public:
-	virtual ~Singleton()
-	{
-		clear();
-	}
+    static bool m_sbAlreadyCreate;
 
-	static TYPE* instance()
-	{
-		if(m_spInstance == 0 && m_sbAlreadyCreate == false)
-		{
-			pthread_mutex_lock(&m_sLock);
+    static pthread_mutex_t m_sLock;
 
-			if(m_spInstance == 0)
-			{
-				m_spInstance = new TYPE;
-				m_sbAlreadyCreate = true;
-			}
+  public:
+    virtual ~Singleton()
+    {
+      clear();
+    }
 
-			pthread_mutex_unlock(&m_sLock);
-		}
+    static TYPE* instance()
+    {
+      if(m_spInstance == 0 && m_sbAlreadyCreate == false)
+      {
+        pthread_mutex_lock(&m_sLock);
 
-		return m_spInstance;
-	}
+        if(m_spInstance == 0)
+        {
+          m_spInstance = new TYPE;
+          m_sbAlreadyCreate = true;
+        }
 
-	static void clear()
-	{
-		if(m_spInstance != 0)
-		{
-			pthread_mutex_lock(&m_sLock);
-			if(m_spInstance != 0)
-			{
-				TYPE *pInstance = m_spInstance;
+        pthread_mutex_unlock(&m_sLock);
+      }
 
-				// ¹Ì¸® 0À¸·Î ¼³Á¤ÇÏÁö ¾ÊÀ¸¸é deleteµÇ¾î clearÇÔ¼ö°¡ È£ÃâµÉ ¶§
-				// ¶Ç´Ù½Ã ¿©±â¸¦ µé¾î¿Â´Ù.(++Loozend 2004/09/09)
-				m_spInstance = 0;
-				delete pInstance;
-			}
+      return m_spInstance;
+    }
 
-			pthread_mutex_unlock(&m_sLock);
-		}
-	}
+    static void clear()
+    {
+      if(m_spInstance != 0)
+      {
+        pthread_mutex_lock(&m_sLock);
+        if(m_spInstance != 0)
+        {
+          TYPE *pInstance = m_spInstance;
 
-protected:
-	/// ±âº» »ı¼ºÀÚ´Â ¿ÜºÎ »ı¼ºÀ» ¸·±â À§ÇØ protected·Î ¼±¾ğÇÑ´Ù.
-	Singleton();
 
-private:
-	/// º¹»ç »ı¼ºÀÚ´Â ¿ÜºÎ »ı¼ºÀ» ¸·±â À§ÇØ privateÀ¸·Î ¼±¾ğÇÑ´Ù.
-	Singleton(const Singleton<TYPE>&) {}
-	
-	/// ´ëÀÔ ¿¬»êÀÚ´Â ¿ÜºÎ »ı¼ºÀ» ¸·±â À§ÇØ privateÀ¸·Î ¼±¾ğÇÑ´Ù.
-	const Singleton<TYPE>& operator = (const Singleton<TYPE> &) 
-	{
-		return *this;
-	}
+          // ë¯¸ë¦¬ 0ìœ¼ë¡œ ì„¤ì •í•˜ì§€ ì•Šìœ¼ë©´ deleteë˜ì–´ clearí•¨ìˆ˜ê°€ í˜¸ì¶œë  ë•Œ
+          // ë˜ë‹¤ì‹œ ì—¬ê¸°ë¥¼ ë“¤ì–´ì˜¨ë‹¤.(++Loozend 2004/09/09)
+          m_spInstance = 0;
+          delete pInstance;
+        }
+
+        pthread_mutex_unlock(&m_sLock);
+      }
+    }
+
+  protected:
+    /// ê¸°ë³¸ ìƒì„±ìëŠ” ì™¸ë¶€ ìƒì„±ì„ ë§‰ê¸° ìœ„í•´ protectedë¡œ ì„ ì–¸í•œë‹¤.
+    Singleton();
+
+  private:
+    /// ë³µì‚¬ ìƒì„±ìëŠ” ì™¸ë¶€ ìƒì„±ì„ ë§‰ê¸° ìœ„í•´ privateìœ¼ë¡œ ì„ ì–¸í•œë‹¤.
+    Singleton(const Singleton<TYPE>&) {}
+
+    /// ëŒ€ì… ì—°ì‚°ìëŠ” ì™¸ë¶€ ìƒì„±ì„ ë§‰ê¸° ìœ„í•´ privateìœ¼ë¡œ ì„ ì–¸í•œë‹¤.
+    const Singleton<TYPE>& operator = (const Singleton<TYPE> &)
+    {
+      return *this;
+    }
 
 };
 

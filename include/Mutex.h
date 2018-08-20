@@ -18,26 +18,26 @@ class Lock;
 
 class Mutex 
 {
-public:
-	Mutex();
-  	virtual ~Mutex();
+  public:
+    Mutex();
+    virtual ~Mutex();
 
-//protected:
-  	virtual void Lock();
-  	virtual void UnLock();
-  	virtual void Wait();
+    //protected:
+    virtual void Lock();
+    virtual void UnLock();
+    virtual void Wait();
 
-//private:
-  	Mutex(const Mutex& src );
-  	Mutex& operator=(const Mutex& right);
-  	void Notify();
-  	void NotifyAll();
+    //private:
+    Mutex(const Mutex& src );
+    Mutex& operator=(const Mutex& right);
+    void Notify();
+    void NotifyAll();
 
-private:
-  	pthread_mutex_t     mutex;
-  	pthread_mutexattr_t mutexAttr;
-  	pthread_cond_t      cond;
-  	pthread_condattr_t  condAttr;
+  private:
+    pthread_mutex_t     mutex;
+    pthread_mutexattr_t mutexAttr;
+    pthread_cond_t      cond;
+    pthread_condattr_t  condAttr;
 };
 
 #endif

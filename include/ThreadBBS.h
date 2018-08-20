@@ -6,15 +6,15 @@
 class DownloadManager;
 class ThreadBBS: public Thread
 {
-private :
-	DownloadManager *m_pDNMgr;
+  private :
+    DownloadManager *m_pDNMgr;
 
-public:
-	ThreadBBS();
-	ThreadBBS(DownloadManager* const _pDNMgr);
-	~ThreadBBS();
+  public:
+    ThreadBBS();
+    ThreadBBS(DownloadManager* const _pDNMgr);
+    ~ThreadBBS();
 
-	void Run();
+    void Run();
 
 };
 

@@ -13,70 +13,67 @@
 //unsigned const key_t sem_key = 9191;
 unsigned const int sem_key = 9191;
 
-union semun 
+union semun
 {
-	int             val;
-    struct semid_ds *buf;
-    unsigned short int        *array;
+  int             val;
+  struct semid_ds *buf;
+  unsigned short int        *array;
 };
 
 /*
-union semun {
-   int val;                    // value for SETVAL 
-   struct semid_ds *buf;       // buffer for IPC_STAT, IPC_SET 
-   unsigned short int *array;  // array for GETALL, SETALL 
-   struct seminfo *__buf;      // buffer for IPC_INFO 
-};
-*/
+   union semun {
+   int val;                    // value for SETVAL
+   struct semid_ds *buf;       // buffer for IPC_STAT, IPC_SET
+   unsigned short int *array;  // array for GETALL, SETALL
+   struct seminfo *__buf;      // buffer for IPC_INFO
+   };
+ */
 
 /*
-semctl ÀÌ¶õ ÇÔ¼ö¸¦ ÀÌ¿ëÇØ¼­ ¿ì¸®´Â ¼¼¸¶Æ÷¾î¸¦ Á¶Á¤ÇÒ¼ö ÀÖ´Ù. semctl Àº semid_ds ±¸Á¶Ã¼¸¦ º¯°æÇÔÀ¸·Î½á ¼¼¸¶Æ÷¾îÀÇ Æ¯¼ºÀ» Á¶Á¤ÇÑ´Ù.
+   semctl ì´ë€ í•¨ìˆ˜ë¥¼ ì´ìš©í•´ì„œ ìš°ë¦¬ëŠ” ì„¸ë§ˆí¬ì–´ë¥¼ ì¡°ì •í• ìˆ˜ ìˆë‹¤. semctl ì€ semid_ds êµ¬ì¡°ì²´ë¥¼ ë³€ê²½í•¨ìœ¼ë¡œì¨ ì„¸ë§ˆí¬ì–´ì˜ íŠ¹ì„±ì„ ì¡°ì •í•œë‹¤.
+   ì²«ë²ˆì§¸ ì•„ê·œë¨¼íŠ¸ì¸ semid ëŠ” ì„¸ë§ˆí¬ì–´ ì§€ì‹œìì´ë‹¤. semnum ì€ ì„¸ë§ˆí¬ì–´ ë°°ì—´ì„ ë‹¤ë£° ê²½ìš° ì‚¬ìš©ë˜ë©°, ë³´í†µì€ 0ì´ë‹¤. cmd ëŠ” ì„¸ë§ˆí¬ì–´ ì¡°ì‘ëª…ë ¹ì–´ ì…‹ìœ¼ë¡œ ë‹¤ìŒê³¼ ê°™ì€ ì¡°ì‘ëª…ë ¹ì–´ë“¤ì„ ê°€ì§€ê³  ìˆë‹¤. ì•„ë˜ëŠ” ê·¸ì¤‘ ì¤‘ìš”í•˜ë‹¤ê³  ìƒê°ë˜ëŠ” ê²ƒë“¤ë§Œì„ ì„¤ëª…í•˜ì˜€ë‹¤. ë” ìì„¸í•œ ë‚´ìš©ì€ semctl ì— ëŒ€í•œ man í˜ì´ì§€ë¥¼ ì°¸ê³ í•˜ê¸° ë°”ë€ë‹¤.
+   IPC_STAT
+   ì„¸ë§ˆí¬ì–´ ìƒíƒœê°’ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•´ ì‚¬ìš©ë˜ë©°, ìƒíƒœê°’ì€ arg ì— ì €ì¥ëœë‹¤.
+   IPC_RMID
+   ì„¸ë§ˆí¬ì–´ ë¥¼ ì‚­ì œí•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©í•œë‹¤.
+   IPC_SET
+   semid_ds ì˜ ipc_perm ì •ë³´ë¥¼ ë³€ê²½í•¨ìœ¼ë¡œì¨ ì„¸ë§ˆí¬ì–´ì— ëŒ€í•œ ê¶Œí•œì„ ë³€ê²½í•œë‹¤.
+ */
 
-Ã¹¹øÂ° ¾Æ±Ô¸ÕÆ®ÀÎ semid ´Â ¼¼¸¶Æ÷¾î Áö½ÃÀÚÀÌ´Ù. semnum Àº ¼¼¸¶Æ÷¾î ¹è¿­À» ´Ù·ê °æ¿ì »ç¿ëµÇ¸ç, º¸ÅëÀº 0ÀÌ´Ù. cmd ´Â ¼¼¸¶Æ÷¾î Á¶ÀÛ¸í·É¾î ¼ÂÀ¸·Î ´ÙÀ½°ú °°Àº Á¶ÀÛ¸í·É¾îµéÀ» °¡Áö°í ÀÖ´Ù. ¾Æ·¡´Â ±×Áß Áß¿äÇÏ´Ù°í »ı°¢µÇ´Â °Íµé¸¸À» ¼³¸íÇÏ¿´´Ù. ´õ ÀÚ¼¼ÇÑ ³»¿ëÀº semctl ¿¡ ´ëÇÑ man ÆäÀÌÁö¸¦ Âü°íÇÏ±â ¹Ù¶õ´Ù. 
-IPC_STAT 
-¼¼¸¶Æ÷¾î »óÅÂ°ªÀ» ¾ò¾î¿À±â À§ÇØ »ç¿ëµÇ¸ç, »óÅÂ°ªÀº arg ¿¡ ÀúÀåµÈ´Ù. 
-IPC_RMID 
-¼¼¸¶Æ÷¾î ¸¦ »èÁ¦ÇÏ±â À§ÇØ¼­ »ç¿ëÇÑ´Ù. 
-IPC_SET 
-semid_ds ÀÇ ipc_perm Á¤º¸¸¦ º¯°æÇÔÀ¸·Î½á ¼¼¸¶Æ÷¾î¿¡ ´ëÇÑ ±ÇÇÑÀ» º¯°æÇÑ´Ù. 
-*/
-
-class Semaphore 
+class Semaphore
 {
-private:
-	int m_SemId;
+  private:
+    int m_SemId;
 
-public:
-	Semaphore(const key_t _sema_key);
-	~Semaphore();
+  public:
+    Semaphore(const key_t _sema_key);
+    ~Semaphore();
 
-	const bool SemaCreate(const key_t mykey);
-	const bool SemaDelete();
-	const bool set_semvalue();
-	const bool del_semvalue();
-	const bool Lock();
-	const bool Unlock();
+    const bool SemaCreate(const key_t mykey);
+    const bool SemaDelete();
+    const bool set_semvalue();
+    const bool del_semvalue();
+    const bool Lock();
+    const bool Unlock();
 
-	const bool Locked();
+    const bool Locked();
 
-/* ¼¼¸¶Æ÷¾î ÁıÇÕ Áß °¢°¢ÀÇ ¼¼¸¶Æ÷¾î semid µ¥ÀÌÅÍ ±¸Á¶Ã¼ */ 
-/*
-struct semid_ds { 
-  struct ipc_perm sem_perm;            // permissions .. see ipc.h 
-  time_t          sem_otime;           // last semop time 
-  time_t          sem_ctime;           // last change time 
-  struct sem      *sem_base;           // ptr to first semaphore in array 
-  struct sem_queue *sem_pending;       // pending operations to be processed 
-  struct sem_queue **sem_pending_last; // last pending operation 
-  struct sem_undo *undo;         // undo requests on this array 
-  ushort          sem_nsems;           // no. of semaphores in array 
-}; 
-*/
-	const int CountEvents();
-	const time_t GetLastOpTime();
-	const time_t GetLastChangeTime();
+    /* ì„¸ë§ˆí¬ì–´ ì§‘í•© ì¤‘ ê°ê°ì˜ ì„¸ë§ˆí¬ì–´ semid ë°ì´í„° êµ¬ì¡°ì²´ */
+    /*
+       struct semid_ds {
+       struct ipc_perm sem_perm;            // permissions .. see ipc.h
+       time_t          sem_otime;           // last semop time
+       time_t          sem_ctime;           // last change time
+       struct sem      *sem_base;           // ptr to first semaphore in array
+       struct sem_queue *sem_pending;       // pending operations to be processed
+       struct sem_queue **sem_pending_last; // last pending operation
+       struct sem_undo *undo;         // undo requests on this array
+       ushort          sem_nsems;           // no. of semaphores in array
+       };
+     */
+    const int CountEvents();
+    const time_t GetLastOpTime();
+    const time_t GetLastChangeTime();
 };
 
 #endif // __SEMAPHORE_H
-
-

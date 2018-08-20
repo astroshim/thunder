@@ -6,15 +6,15 @@
 class DownloadManager;
 class ThreadWorker: public Thread
 {
-private :
-	DownloadManager *m_pDNMgr;
+  private :
+    DownloadManager *m_pDNMgr;
 
-public:
-	ThreadWorker();
-	ThreadWorker(DownloadManager* const _pDNMgr);
-	~ThreadWorker();
+  public:
+    ThreadWorker();
+    ThreadWorker(DownloadManager* const _pDNMgr);
+    ~ThreadWorker();
 
-	void Run();
+    void Run();
 
 };
 

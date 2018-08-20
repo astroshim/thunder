@@ -5,16 +5,16 @@
 
 class ClientServer: public Client
 {
-private:
-	int m_iPort;
-	char m_pchIpAddr[MAX_IP_LEN];
+  private:
+    int m_iPort;
+    char m_pchIpAddr[MAX_IP_LEN];
 
-public:	
-	ClientServer();
-	ClientServer(Socket* const _cSocket);
-	virtual ~ClientServer();
+  public: 
+    ClientServer();
+    ClientServer(Socket* const _cSocket);
+    virtual ~ClientServer();
 
-	const int ExecuteCommand(Thread *_pThread);
+    const int ExecuteCommand(Thread *_pThread);
 };
 
 #endif

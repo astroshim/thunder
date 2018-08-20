@@ -10,23 +10,22 @@ class Thread;
 
 class ThreadManager : public NonCopyable
 {
-public:
-	static	ThreadManager*	GetInstance();
-	static	void			ReleaseInstance();
+  public:
+    static  ThreadManager*  GetInstance();
+    static  void      ReleaseInstance();
 
-	bool Spawn(Thread *pThread);
+    bool Spawn(Thread *pThread);
 
-	/* 
-	*	µî·ÏµÈ threadÁß ÀÛ¾÷ ¿Ï·áµÈ thread¸¦ »èÁ¦ÇØÁÖ´Â ·çÆ¾ÀÌ µé¾î°¡¾ß ÇÑ´Ù. 
-	**/
+    /*
+     * ë“±ë¡ëœ threadì¤‘ ì‘ì—… ì™„ë£Œëœ threadë¥¼ ì‚­ì œí•´ì£¼ëŠ” ë£¨í‹´ì´ ë“¤ì–´ê°€ì•¼ í•œë‹¤.
+     **/
 
-private:
-	ThreadManager();
-	virtual ~ThreadManager();
+  private:
+    ThreadManager();
+    virtual ~ThreadManager();
 
-	static	ThreadManager*		m_SelfInstance;
-	std::list	< Thread* >	m_lstThreadHandle;
+    static  ThreadManager*    m_SelfInstance;
+    std::list < Thread* > m_lstThreadHandle;
 
 };
 #endif
-

@@ -41,7 +41,7 @@
 #include <linux/sockios.h>
 #include <netinet/ether.h>
 #include <net/if.h>
-*/
+ */
 
 #include <iostream>
 using namespace std;
@@ -51,119 +51,114 @@ using namespace std;
 #include "./NPDebug.h"
 #include "./NPLog.h"
 
-const char ON 	= 1;
-const char OFF 	= 0;
+const char ON   = 1;
+const char OFF  = 0;
 
-//const int RECV_NOT_ENOUGH 	= 0;	// CircularBuff�� ����Ÿ�� Get�Ҹ�ŭ ������� ���ϴ�.
-const int RECV_NOT_ENOUGH 	= -2;	// CircularBuff�� ����Ÿ�� Get�Ҹ�ŭ ������� ���ϴ�.
-const int RECV_ERROR	 	= -1;	// CircularBuff�� ���ִ� ����Ÿ�� �̻��ϴ�.!!
+//const int RECV_NOT_ENOUGH   = 0;  // CircularBuff
+const int RECV_NOT_ENOUGH   = -2; // CircularBuff
+const int RECV_ERROR    = -1; // CircularBuff
 
-const unsigned int UNIX_PATH_MAX 	= 256;
-const unsigned int LOG_FILE_LEN 	= 256;
+const unsigned int UNIX_PATH_MAX  = 256;
+const unsigned int LOG_FILE_LEN   = 256;
 const int MAX_IP_LEN        = 20;
-const int MAX_PORT_CNT      = 10;   // �� ������ ������ �ִ� ServerPort ����
+const int MAX_PORT_CNT      = 10;
 
 const int MAX_USER_ID       = 24;
 const int MAX_PASSWD        = 24;
 
-const int MAX_PHONE_LEN 	= 16;
+const int MAX_PHONE_LEN   = 16;
 
-const int MAX_CLIENT_COUNT 	= 200;	// �� ���μ������� �����ϴ� �ִ� client count
+const int MAX_CLIENT_COUNT  = 200;
 
-const int D_D 	= 9999999;
+const int D_D   = 9999999;
 
 /**
  * *   Server socket type define
  * */
 typedef enum
 {
-    SERVER_PORT = 0,   	/* To receive client */
-    SERVER_PORT_MGR,
-    SERVER_PORT_PC     	/* nothing */
+  SERVER_PORT = 0,    /* To receive client */
+  SERVER_PORT_MGR,
+  SERVER_PORT_PC      /* nothing */
 }ENUM_SERVERSOCKET_TYPE;
 
 /**
-*   Client class Type
-*/
-typedef enum
-{
-    CLIENT_NOTHING = 0,		/*  */
-    CLIENT_USER,        	/* User */
-    CLIENT_SERVER,        	/* for Server Socket */
-    CLIENT_DN        		/* Download Server */
-//    CLIENT_MEMBER,       	/* Member Server */
-//    CLIENT_SMEMBER       	/* SubMember Server */
-}ENUM_CLIENT_TYPE;
-
-/**
- *	Client Status
+ *   Client class Type
  */
 typedef enum
 {
-	STATE_WAIT = 1,
-	STATE_SEND = 2,
-	STATE_CLOSED = 4
+  CLIENT_NOTHING = 0,   /*  */
+  CLIENT_USER,          /* User */
+  CLIENT_SERVER,          /* for Server Socket */
+  CLIENT_DN           /* Download Server */
+    //    CLIENT_MEMBER,        /* Member Server */
+    //    CLIENT_SMEMBER        /* SubMember Server */
+}ENUM_CLIENT_TYPE;
 
-	/*
-    STATE_ADD,				// accept �� ����
-    STATE_MODIFY,			// epoll oneshot
-    STATE_USER_CLOSE		// ��������� ����
-	*/
+/**
+ *  Client Status
+ */
+typedef enum
+{
+  STATE_WAIT = 1,
+  STATE_SEND = 2,
+  STATE_CLOSED = 4
+
 }ENUM_CLIENT_STATE;
 
 /**
-*   Thread type define
-*/
+ *   Thread type define
+ */
 typedef enum
 {
-    THREAD_WORKER = 0,   	/* WORKER  */
-    THREAD_SENDER,       	/* SENDER */
-    THREAD_RECEIVER         /* receiver */
+  THREAD_WORKER = 0,    /* WORKER  */
+  THREAD_SENDER,        /* SENDER */
+  THREAD_RECEIVER         /* receiver */
 }ENUM_THREAD_TYPE;
 
 // file send mode
 typedef enum
 {
-	SEND_ONLY_FILE = 0,
-	SEND_WIDTH_HEADER
+  SEND_ONLY_FILE = 0,
+  SEND_WIDTH_HEADER
 }ENUM_SEND_MODE;
 
 
 // DS <-> SHM <-> DSM
 struct scoreboard_file {
-    char cUse;
-    int isupload;
-    unsigned int comcode;
-    unsigned int billno;
+  char cUse;
+  int isupload;
+  unsigned int comcode;
+  unsigned int billno;
 
-    unsigned int count;
-    unsigned int kcps;
-    uint64_t    iFSize;
-    uint64_t    iDNSize;
-    char id[16];
-    char filename[128];
-    double      tAccessTime;      // Access time
-    //time_t      tAccessTime;      // Access time
+  unsigned int count;
+  unsigned int kcps;
+  uint64_t    iFSize;
+  uint64_t    iDNSize;
+  char id[16];
+  char filename[128];
+  double      tAccessTime;      // Access time
+  //time_t      tAccessTime;      // Access time
 };
 
 // shm to check DS Status
 // use DSMgr
 struct TDSStatus {
-	unsigned int pid;
-	unsigned int seq;
-	char status;
+  unsigned int pid;
+  unsigned int seq;
+  char status;
 };
 
 struct TStatistics {
-    unsigned int comcode;
-	unsigned long long kcps;
+  unsigned int comcode;
+  unsigned long long kcps;
 };
 
 /******************************************************************************
-*	ACK List
-******************************************************************************/
-const int ACK_OK					= 1;
-const int ACK_ERROR					= -1;
+ * ACK List
+ ******************************************************************************/
+const int ACK_OK          = 1;
+const int ACK_ERROR         = -1;
 
 
 void   ProcessParent();

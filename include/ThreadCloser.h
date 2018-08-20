@@ -7,15 +7,15 @@ class DownloadServer;
 
 class ThreadCloser: public Thread
 {
-private :
-	DownloadServer *m_pDownloadServer;
+  private :
+    DownloadServer *m_pDownloadServer;
 
-public:
-	ThreadCloser();
-	ThreadCloser(DownloadServer* const _pDownloadServer);
-	~ThreadCloser();
+  public:
+    ThreadCloser();
+    ThreadCloser(DownloadServer* const _pDownloadServer);
+    ~ThreadCloser();
 
-	void Run();
+    void Run();
 };
 
 #endif

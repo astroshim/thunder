@@ -6,19 +6,19 @@
 class Process;
 class ThreadTic: public Thread
 {
-private :
-	Process 	*m_pMainProcess;
+  private :
+    Process   *m_pMainProcess;
 
-/*
-	int PostData();
-	void SendStorageInfo(void);
-*/
+    /*
+       int PostData();
+       void SendStorageInfo(void);
+     */
 
-public:
-	ThreadTic(Process* const _pMainProcess);
-	~ThreadTic();
+  public:
+    ThreadTic(Process* const _pMainProcess);
+    ~ThreadTic();
 
-	void Run();
+    void Run();
 };
 
 #endif

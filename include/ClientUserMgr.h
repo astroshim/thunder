@@ -5,17 +5,17 @@
 
 class ClientUserMgr: public Client
 {
-private:
-	int m_iPort;
-	char m_pchIpAddr[MAX_IP_LEN];
+  private:
+    int m_iPort;
+    char m_pchIpAddr[MAX_IP_LEN];
 
-public:	
-	ClientUserMgr();
-	ClientUserMgr(Socket* const _cSocket);
-	virtual ~ClientUserMgr();
+  public: 
+    ClientUserMgr();
+    ClientUserMgr(Socket* const _cSocket);
+    virtual ~ClientUserMgr();
 
-	//const int ExecuteCommand();
-	const int ExecuteCommand(Thread *_pThread);
+    //const int ExecuteCommand();
+    const int ExecuteCommand(Thread *_pThread);
 };
 
 #endif

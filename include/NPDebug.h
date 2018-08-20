@@ -16,18 +16,20 @@ using namespace std;
 
 const unsigned int MAX_DEBUG_MSG = 1024;
 
-// ÆÄÀÏ¿¡´Ù ±â·ÏÇÏ´Â Assert ÇÔ¼ö
+
+// íŒŒì¼ì—ë‹¤ ê¸°ë¡í•˜ëŠ” Assert í•¨ìˆ˜
 void processAssert(const char *filename, int lineNumber, const char  *message);
 #define Assert(x, msg) { if (!bool(x)) { processAssert( __FILE__, __LINE__,  msg); } }
 
 //void Assert(const char  *message, ...);
 
-/// Æ÷ÀÎÅÍ °Ë»ç ¸ÅÅ©·Î
+/// í¬ì¸í„° ê²€ì‚¬ ë§¤í¬ë¡œ
 #define AssertPtr(ptr) \
-			if(!ptr || sizeof(*ptr) <= 0) \
-				Assert(false, "Invalid Ptr"); \
+  if(!ptr || sizeof(*ptr) <= 0) \
+Assert(false, "Invalid Ptr"); \
 
 // Get current date and time
 void GetLogTime(char *todaystr, char* timestr);
 
 #endif
+

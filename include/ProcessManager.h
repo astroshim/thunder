@@ -5,33 +5,28 @@
 
 class ProcessManager
 {
-public:
-    static  ProcessManager*  	GetInstance();
-    static  void            	ReleaseInstance();
+  public:
+    static  ProcessManager*   GetInstance();
+    static  void              ReleaseInstance();
 
     bool Spawn(Process *_pProcess);
 
-	bool DeleteProcess(pid_t _pid);
+    bool DeleteProcess(pid_t _pid);
 
-	bool WatchProcess();
+    bool WatchProcess();
 
-private:
-	/**
-	*	Process Create
-	*/
-/*
-Process Class 로 옮긴다.
-
-	bool SpawnProcess(Process *_pProcess);
-*/
-	bool SpawnProcess(pid_t _pid);
+  private:
+    /**
+     * Process Create
+     */
+    bool SpawnProcess(pid_t _pid);
 
 
     ProcessManager();
     virtual ~ProcessManager();
 
-    static  	ProcessManager*     m_SelfInstance;
-    std::list   < Process* > 		m_LstProcess;
+    static    ProcessManager*     m_SelfInstance;
+    std::list   < Process* >    m_LstProcess;
 };
 
 #endif

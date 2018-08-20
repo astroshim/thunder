@@ -9,25 +9,25 @@ class IOMP_EPoll;
 
 class ThreadQoSEPoll: public ThreadQoS
 {
-private :
-	//DownloadServer *m_pMainProcess;
-	IOMP_EPoll *m_pIOMP;
+  private :
+    //DownloadServer *m_pMainProcess;
+    IOMP_EPoll *m_pIOMP;
 
-public:
-	ThreadQoSEPoll();
-	ThreadQoSEPoll(DownloadServer* const _pMainProcess);
-	~ThreadQoSEPoll();
+  public:
+    ThreadQoSEPoll();
+    ThreadQoSEPoll(DownloadServer* const _pMainProcess);
+    ~ThreadQoSEPoll();
 
     //const int AddQoS(Client* const _pClient);
     const int AddQoS(Client* const _pClient, const unsigned int _uiEvents);
     const int RemoveQoS(Client* const _pClient);
 
-/*
-	const int UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents);
-	const int AddEPoll(Client* const _pClient, const unsigned int _uiEvents);
-*/
+    /*
+       const int UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents);
+       const int AddEPoll(Client* const _pClient, const unsigned int _uiEvents);
+     */
 
-	void Run();
+    void Run();
 };
 
 #endif

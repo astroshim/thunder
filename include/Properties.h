@@ -11,67 +11,65 @@
 #include <string.h>
 using namespace std;
 
-const unsigned int MAX_LINE_SIZE 	= 1024;
-const unsigned int MAX_KEY_SIZE 	= 512;
-const unsigned int MAX_VALUE_SIZE 	= 512;
+const unsigned int MAX_LINE_SIZE  = 1024;
+const unsigned int MAX_KEY_SIZE   = 512;
+const unsigned int MAX_VALUE_SIZE   = 512;
 
 /**
-//. ÄÚµåÀÇ ÀÔ·Â°ú °¡µ¶¼ºÀ» µ½±â À§ÇÑ typedefµé
+//. ì½”ë“œì˜ ì…ë ¥ê³¼ ê°€ë…ì„±ì„ ë•ê¸° ìœ„í•œ typedefë“¤
 typedef map<int, string> isMap;
 typedef isMap::value_type mapValType;
 typedef isMap::iterator isMapItor;
-
 isMap c;
-
-//. Å°-°ª ½ÖµéÀ» »ğÀÔ
+//. í‚¤-ê°’ ìŒë“¤ì„ ì‚½ì…
 c.insert(mapValType(100, "One Hundered"));
 c.insert(mapValType(3, "Three"));
 c.insert(mapValType(150, "One Hundred Fifty"));
 c.insert(mapValType(99, "Ninety Nine"));
-
-//. ¸ğµç Å°µé°ú °ªµéÀ» Ãâ·Â
+//. ëª¨ë“  í‚¤ë“¤ê³¼ ê°’ë“¤ì„ ì¶œë ¥
 for(isMapItor itor = c.begin(); itor != c.end(); ++itor)
-	cout << "Key = " << (*itor).first << ", Value = " << (*itor).second << endl;
-*/
+cout << "Key = " << (*itor).first << ", Value = " << (*itor).second << endl;
+ */
 
 typedef map<string, string> myMap;
-typedef myMap::value_type 	mapValType;
-typedef myMap::iterator 	myMapItor;
+typedef myMap::value_type   mapValType;
+typedef myMap::iterator   myMapItor;
 
 class Properties
 {
-private:
-	string 	m_strFileName;
-//	map<string, string> m_mapProperties;
-	myMap 	m_mapProperties;
+  private:
+    string  m_strFileName;
+    //  map<string, string> m_mapProperties;
+    myMap   m_mapProperties;
 
-public:
-	Properties();
-	~Properties();
+  public:
+    Properties();
+    ~Properties();
 
-	/// ÁÖ¾îÁø ÆÄÀÏ¸íÀ¸·Î propertiy list¸¦ ÀĞ´Â´Ù.
-	int Load(char *_pchileName);
+    /// ì£¼ì–´ì§„ íŒŒì¼ëª…ìœ¼ë¡œ propertiy listë¥¼ ì½ëŠ”ë‹¤.
+    int Load(char *_pchileName);
 
-	/// m_mapProperties º¯¼ö¿¡ °ªÀ» µî·ÏÇÑ´Ù.
-	void SetProperty(string _strKey, string _strValue);
+    /// m_mapProperties ë³€ìˆ˜ì— ê°’ì„ ë“±ë¡í•œë‹¤.
+    void SetProperty(string _strKey, string _strValue);
 
-	/// map¿¡ ÀÖ´Â º¯¼ö¸¦ property ÆÄÀÏ¿¡ µî·ÏÇÑ´Ù.
-	void Flush();
+    /// mapì— ìˆëŠ” ë³€ìˆ˜ë¥¼ property íŒŒì¼ì— ë“±ë¡í•œë‹¤.
+    void Flush();
 
-	/// key·Î ÁÖ¾îÁø value¸¦ ¾ò´Â´Ù.
-	string GetProperty(string _strKey);
+    /// keyë¡œ ì£¼ì–´ì§„ valueë¥¼ ì–»ëŠ”ë‹¤.
+    string GetProperty(string _strKey);
 
-private:
-	/// ¹®ÀÚ¿­¿¡¼­ °ø¹éÀ» ¾ø¾Ø´Ù.
-	void ClsWSpace(char *str);
+  private:
+    /// ë¬¸ìì—´ì—ì„œ ê³µë°±ì„ ì—†ì•¤ë‹¤.
+    void ClsWSpace(char *str);
 
-	/// ÁÖ¾îÁø map º¯¼ö¿¡ ¿¡ key=value ·Î »ğÀÔ.
-//	void AddMap(char *_pchLine, map<string,string> &_mapConfig);
-	void AddMap(char *_pchLine, myMap &_mapConfig);
+    /// ì£¼ì–´ì§„ map ë³€ìˆ˜ì— ì— key=value ë¡œ ì‚½ì….
+    //  void AddMap(char *_pchLine, map<string,string> &_mapConfig);
+    void AddMap(char *_pchLine, myMap &_mapConfig);
 
-	/// m_mapProperties ¿¡ key=value ·Î »ğÀÔ.
-	void AddMap(char *_pchLine);
+    /// m_mapProperties ì— key=value ë¡œ ì‚½ì….
+    void AddMap(char *_pchLine);
 };
 
 #endif
+
 

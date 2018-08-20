@@ -3,72 +3,69 @@
 
 #include "./Include.h"
 /*
-#include "./Packet.h"
-#include "./Socket.h"
-*/
+ * #include "./Packet.h" #include "./Socket.h"
+ */
 
-//const unsigned int CIR_BUFSIZE	= 1024000;		/* 1M bytes */ 
-const unsigned int CIR_BUFSIZE	= 4096;		/* 4k bytes */ 
-const int NOT_ENOUGH_BUFFER 	= -10;		
+// const unsigned int CIR_BUFSIZE = 1024000;  /* 1M bytes */
+const unsigned int CIR_BUFSIZE = 4096;  /* 4k bytes */
+const int NOT_ENOUGH_BUFFER = -10;
 
-class Socket;
+class   Socket;
 
-class CircularBuff
+class   CircularBuff
 {
-public:
-	CircularBuff();
-	virtual ~CircularBuff();
+  public:
+    CircularBuff();
+    virtual ~ CircularBuff();
 
     /* put data in the CircularBuffer */
-    const int     Put(const char* const _pchBuffer, const int _iLength);
+    const int     Put(const char *const _pchBuffer, const int _iLength);
     /* get data in the CircularBuffer */
-    const int     Get(char* const _pchBuffer, const int _iLength);
+    const int     Get(char *const _pchBuffer, const int _iLength);
 
     /* put data in the CircularBuffer use socket */
-	const int Put(Socket* const _pSocket);
+    const int     Put(Socket * const _pSocket);
 
     /* get data in the CircularBuffer */
-//	int Get(T_PACKET *_pstPacket);
-//	int Get(char *_pchPacket);
+    //int Get(T_PACKET * _pstPacket);
+    //int Get(char *_pchPacket);
 
     const int     GetTotalSize();
     const int     GetUsedSize();
     const int     GetFreeSize();
 
     /* put ClosePacket in the CircularBuffer */
-    void     PutClosePacket();
+    void      PutClosePacket();
 
-//    int     IsValid();
+    //int IsValid();
 
-    virtual inline void BufferClear()
-    {
-        memset( m_pchBuffer, 0x00, m_iBufferSize);
-        m_iHead = m_iTail = 0;
-        m_iUseBufferSize = 0;
+    virtual inline void BufferClear() {
+      memset(m_pchBuffer, 0x00, m_iBufferSize);
+      m_iHead = m_iTail = 0;
+      m_iUseBufferSize = 0;
     }
 
-	const unsigned char* const GetHeaderPoint();
+    const unsigned char *const GetHeaderPoint();
 
-	void PrintBufferDump();
-	void InitBuffer();
+    void      PrintBufferDump();
+    void      InitBuffer();
 
-private:
+  private:
     /* Main Buffer Head */
-    int m_iHead;
+    int       m_iHead;
 
     /* Main Buffer Tail */
-    int m_iTail;
+    int       m_iTail;
 
-    /* Buffer sizeâ */
-    int m_iBufferSize;
- 
+    int       m_iBufferSize;
+
     /* use Main Buffer */
-    int m_iUseBufferSize;
+    int       m_iUseBufferSize;
 
-    /* Buffer */ 
-    char* m_pchBuffer;
+    /* Buffer */
+    char           *m_pchBuffer;
 
-	void Resize();
+    void      Resize ();
     /* alloc buffer */
     const int     NewBuffer(const int iSize);
 };

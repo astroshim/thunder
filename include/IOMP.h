@@ -3,16 +3,16 @@
 
 class IOMP
 {
-public:
-	IOMP() {;};
-	virtual ~IOMP() {;};
+  public:
+    IOMP() {;};
+    virtual ~IOMP() {;};
 
-	virtual void 	AddFd(const int iFd)=0;
-	virtual void 	DelFd(const int iFd)=0;
-	virtual const int 	Polling()=0;
-	virtual const int	CheckEvent(const int iFd)=0;
+    virtual void  AddFd(const int iFd)=0;
+    virtual void  DelFd(const int iFd)=0;
+    virtual const int   Polling()=0;
+    virtual const int CheckEvent(const int iFd)=0;
 
-//	virtual void	InitRFdSet()=0;
+    //  virtual void  InitRFdSet()=0;
 };
 
 #endif

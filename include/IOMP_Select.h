@@ -28,50 +28,50 @@
 
 class IOMP_Select : public IOMP
 {
-private:
-	int		m_iMaxFd;
-	int		m_iSec;
-	int		m_iMSec;
-	struct timeval *m_stTimeout;	
+  private:
+    int   m_iMaxFd;
+    int   m_iSec;
+    int   m_iMSec;
+    struct timeval *m_stTimeout;  
 
-	fd_set	m_Rfds;
-	fd_set 	m_Wfds;
-	fd_set	m_Efds;
-	fd_set	m_Allfds;
+    fd_set  m_Rfds;
+    fd_set  m_Wfds;
+    fd_set  m_Efds;
+    fd_set  m_Allfds;
 
-	/**
-	*	Init fd_set
-	*/
-	void 	InitFdSet(fd_set* const _fds);
+    /**
+     * Init fd_set
+     */
+    void  InitFdSet(fd_set* const _fds);
 
-public:
-	IOMP_Select();
-	IOMP_Select(const int _iSec, const int _iUsec);
-	~IOMP_Select();
+  public:
+    IOMP_Select();
+    IOMP_Select(const int _iSec, const int _iUsec);
+    ~IOMP_Select();
 
-	/**
-	*	Add socket to fd_set
-	*/
-	void 	AddFd(const int _iFd);
-	void 	AddWriteFd(const int _iFd);
+    /**
+     * Add socket to fd_set
+     */
+    void  AddFd(const int _iFd);
+    void  AddWriteFd(const int _iFd);
 
-	/**
-	*	Delete socket to fd_set
-	*/
-	void 	DelFd(const int _iFd);
-	void 	DelWriteFd(const int _iFd);
-	
-	/**
-	*	Function polling
-	*/
-	const int		Polling();
-	const int		WritePolling();
-	void	SetTimeout();
+    /**
+     * Delete socket to fd_set
+     */
+    void  DelFd(const int _iFd);
+    void  DelWriteFd(const int _iFd);
 
-	/**
-	*	Function geting polling result
-	*/
-	const int 	CheckEvent(const int _iFd);
+    /**
+     * Function polling
+     */
+    const int   Polling();
+    const int   WritePolling();
+    void  SetTimeout();
+
+    /**
+     * Function geting polling result
+     */
+    const int   CheckEvent(const int _iFd);
 };
 
 #endif

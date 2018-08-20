@@ -6,15 +6,15 @@
 class DownloadServer;
 class ThreadAcceptor: public Thread
 {
-private :
-	DownloadServer *m_pMainProcess;
+  private :
+    DownloadServer *m_pMainProcess;
 
-public:
-	ThreadAcceptor();
-	ThreadAcceptor(DownloadServer* const _pMainProcess);
-	~ThreadAcceptor();
+  public:
+    ThreadAcceptor();
+    ThreadAcceptor(DownloadServer* const _pMainProcess);
+    ~ThreadAcceptor();
 
-	void Run();
+    void Run();
 };
 
 #endif

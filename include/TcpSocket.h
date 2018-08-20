@@ -6,30 +6,30 @@
 //class Socket;
 class TcpSocket : public Socket
 {
-private:
+  private:
     struct sockaddr_in  m_ServerAddr;
     struct sockaddr_in  m_ClientAddr;
-//protected:
+    //protected:
 
-public :
-	TcpSocket();
-	TcpSocket(const int _iFd);	// for ClientSocket
-	virtual ~TcpSocket();
+  public :
+    TcpSocket();
+    TcpSocket(const int _iFd);  // for ClientSocket
+    virtual ~TcpSocket();
 
     struct sockaddr_in* const GetServerAddr();
     struct sockaddr_in* const GetClientAddr();
 
-	virtual void  SetClientAddr();
-	virtual void  SetClientAddr(struct sockaddr_in* const _pstSockAddr);
+    virtual void  SetClientAddr();
+    virtual void  SetClientAddr(struct sockaddr_in* const _pstSockAddr);
 
-	const char* const GetClientIpAddr();
+    const char* const GetClientIpAddr();
 
-	const unsigned int GetClientIp();
-	const unsigned int GetServerIp();
-/*
-	const char* const GetClientIp();
-	const char* const GetServerIp();
-*/
+    const unsigned int GetClientIp();
+    const unsigned int GetServerIp();
+    /*
+       const char* const GetClientIp();
+       const char* const GetServerIp();
+     */
 };
 
 #endif

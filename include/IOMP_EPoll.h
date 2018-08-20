@@ -23,49 +23,51 @@
 #include <fcntl.h>
 #include <time.h>
 #include <math.h>
-#include <sys/epoll.h> 
-#include <map> 
+#include <sys/epoll.h>
+#include <map>
 
 const unsigned int EPOLL_SIZE = 200;
 
 class Client;
 class IOMP_EPoll
 {
-private:
-	int 	m_iEpollHandle; // epoll 디스크립터 
-	int		m_iTimeout;
+  private:
+    int   m_iEpollHandle; // epoll
 
-	struct 	epoll_event m_stEvent[EPOLL_SIZE];
+    int   m_iTimeout;
 
-public:
-	IOMP_EPoll();
-	IOMP_EPoll(const int _iSec);
-	~IOMP_EPoll();
+    struct  epoll_event m_stEvent[EPOLL_SIZE];
 
-	/**
-	*	Add socket to fd_set
-	*/
-	const int 	AddClient(Client* const _pClient, const unsigned int _uiEvents);
+  public:
+    IOMP_EPoll();
+    IOMP_EPoll(const int _iSec);
+    ~IOMP_EPoll();
 
-	/**
-	*	Modify socket to fd_set
-	*/
-	const int 	ModifyFd(Client* const _pClient,  const unsigned int _uiEvents);
+    /**
+     * Add socket to fd_set
+     */
+    const int   AddClient(Client* const _pClient, const unsigned int _uiEvents);
 
-	/**
-	*	Delete socket to fd_set
-	*/
-	const int 	DelFd(const int _iFd);
-	const int 	DelClient(Client * const _pClient);
-	
-	/**
-	*	Function polling
-	*/
-	const int	Polling();
-	void		SetTimeout(const int _iSec);
+    /**
+     * Modify socket to fd_set
+     */
+    const int   ModifyFd(Client* const _pClient,  const unsigned int _uiEvents);
 
-	struct  	epoll_event* const GetEventStructure();
+    /**
+     * Delete socket to fd_set
+     */
+    const int   DelFd(const int _iFd);
+    const int   DelClient(Client * const _pClient);
+
+    /**
+     * Function polling
+     */
+    const int Polling();
+    void    SetTimeout(const int _iSec);
+
+    struct    epoll_event* const GetEventStructure();
 };
 
 #endif
+
 

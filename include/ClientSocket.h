@@ -5,13 +5,13 @@
 
 class ClientSocket : public TcpSocket
 {
-public :
-	ClientSocket();
-	ClientSocket(const int _iFd);
-	virtual ~ClientSocket();
+  public :
+    ClientSocket();
+    ClientSocket(const int _iFd);
+    virtual ~ClientSocket();
 
-	const int Connect(const char* const _pchAddr, const int iPort);
-	const int NonBlockConnect(const char* const _pchAddr, const int iPort);
+    const int Connect(const char* const _pchAddr, const int iPort);
+    const int NonBlockConnect(const char* const _pchAddr, const int iPort);
 };
 
 #endif

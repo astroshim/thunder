@@ -7,15 +7,15 @@ class DownloadServer;
 
 class ThreadSender: public Thread
 {
-private :
-	DownloadServer *m_pDownloadServer;
+  private :
+    DownloadServer *m_pDownloadServer;
 
-public:
-	ThreadSender();
-	ThreadSender(DownloadServer* const _pDownloadServer);
-	~ThreadSender();
+  public:
+    ThreadSender();
+    ThreadSender(DownloadServer* const _pDownloadServer);
+    ~ThreadSender();
 
-	void Run();
+    void Run();
 
 };
 

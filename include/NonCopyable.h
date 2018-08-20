@@ -3,36 +3,36 @@
 
 //////////////////////////////////////////////////////////////////////////////
 /// \class NonCopyable
-/// \brief º¹»ç »ı¼ºÀÚ³ª ´ëÀÔ ¿¬»êÀÚ°¡ »ç¿ëµÇ¸é °ï¶õÇÑ Å¬·¡½ºµéÀº ÀÌ Å¬·¡½º¸¦ 
-/// privateÀ¸·Î »ó¼ÓÇÏ¸é, ÄÄÆÄÀÏ ¶§ ¿¡·¯°¡ ¹ß»ıÇÏ¸é¼­ º¹»ç »ı¼ºÀÚ³ª ´ëÀÔ 
-/// ¿¬»êÀÚ¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù°í ¾Ë·ÁÁØ´Ù.
+/// \brief ë³µì‚¬ ìƒì„±ìë‚˜ ëŒ€ì… ì—°ì‚°ìê°€ ì‚¬ìš©ë˜ë©´ ê³¤ë€í•œ í´ë˜ìŠ¤ë“¤ì€ ì´ í´ë˜ìŠ¤ë¥¼
+/// privateìœ¼ë¡œ ìƒì†í•˜ë©´, ì»´íŒŒì¼ ë•Œ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ì„œ ë³µì‚¬ ìƒì„±ìë‚˜ ëŒ€ì…
+/// ì—°ì‚°ìë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤ê³  ì•Œë ¤ì¤€ë‹¤.
 //////////////////////////////////////////////////////////////////////////////
 
 class NonCopyable
 {
-protected:
-	NonCopyable() {}
-	~NonCopyable() {}
+  protected:
+    NonCopyable() {}
+    ~NonCopyable() {}
 
 
-private:
-	NonCopyable(const NonCopyable&);
-	const NonCopyable& operator = (const NonCopyable&);
+  private:
+    NonCopyable(const NonCopyable&);
+    const NonCopyable& operator = (const NonCopyable&);
 };
 
 #ifdef _MSC_VER
-	// º¹»ç »ı¼ºÀÚ¸¦ »ı¼ºÇÏÁö ¸øÇß½À´Ï´Ù.
-	#pragma warning(disable:4511)
+// ë³µì‚¬ ìƒì„±ìë¥¼ ìƒì„±í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.
+#pragma warning(disable:4511)
 
-	// ÄÄÆÄÀÏ·¯¿¡¼­ ÁÖ¾îÁø Å¬·¡½º¿¡ ´ëÇÑ ´ëÀÔ ¿¬»êÀÚ¸¦ »ı¼ºÇÒ ¼ö ¾ø½À´Ï´Ù.
-	#pragma warning(disable:4512)
+// ì»´íŒŒì¼ëŸ¬ì—ì„œ ì£¼ì–´ì§„ í´ë˜ìŠ¤ì— ëŒ€í•œ ëŒ€ì… ì—°ì‚°ìë¥¼ ìƒì„±í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+#pragma warning(disable:4512)
 #endif
 
-/// »çÁ¤»ó NonCopyableÀ» ¹Ù·Î »ó¼Ó¹ŞÁö ¸øÇÏ´Â Å¬·¡½º¿¡¼­, 
-/// º¹»ç »ı¼ºÀÚ ¹× ¿¬»êÀÚ¸¦ ¸·±â À§ÇÑ ¸ÅÅ©·Î
+/// ì‚¬ì •ìƒ NonCopyableì„ ë°”ë¡œ ìƒì†ë°›ì§€ ëª»í•˜ëŠ” í´ë˜ìŠ¤ì—ì„œ,
+/// ë³µì‚¬ ìƒì„±ì ë° ì—°ì‚°ìë¥¼ ë§‰ê¸° ìœ„í•œ ë§¤í¬ë¡œ
 #define DECLARE_NONCOPYABLE(NAME) private: \
-	NAME(const NAME&) {} \
-	NAME& operator = (const NAME&) { return *this; }
+  NAME(const NAME&) {} \
+  NAME& operator = (const NAME&) { return *this; }
 
 #endif //__NONCOPYABLE_H
 

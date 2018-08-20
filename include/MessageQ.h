@@ -5,78 +5,79 @@
 
 const int  MAX_DATA_SIZE = 256;
 
+
+
 /**
-*   UboneQManager Class ¿¡¼­ ¸í·ÉÀ» ¹Ş¾Æ µéÀÌ´Â ¸Ş¼¼ÁöÅ¥
-*/
+ *   UboneQManager Class ì—ì„œ ëª…ë ¹ì„ ë°›ì•„ ë“¤ì´ëŠ” ë©”ì„¸ì§€í
+ */
 //const key_t MQKEY_uboneQManager = 10001;
 
 /**
-*   TrProcess ¿¡°Ô ÇÊ¿äÇÑÀÎÀÚ(Queue/shm Key, ip, port µî)À» ³Ñ±â±â À§ÇÑ ¸Ş¼¼ÁöÅ¥
-*/
+ *   TrProcess ì—ê²Œ í•„ìš”í•œì¸ì(Queue/shm Key, ip, port ë“±)ì„ ë„˜ê¸°ê¸° ìœ„í•œ ë©”ì„¸ì§€í
+ */
 /*
-const key_t MQKEY_TrProcess 	= 10002;
-*/
+   const key_t MQKEY_TrProcess   = 10002;
+ */
 
 /**
-*   UboneQManager process ID
-*/
-const int P_uboneQManager 	= 1000;
-const int P_Console 		= 1001;
+ *   UboneQManager process ID
+ */
+const int P_uboneQManager   = 1000;
+const int P_Console     = 1001;
 
 /*
-const int P_uboneQManager2 	= 1010;
-const int P_TrProcess	 	= 1011;
-*/
+   const int P_uboneQManager2  = 1010;
+   const int P_TrProcess   = 1011;
+ */
 
 const int Q_BLOCK = 0;
 
-class MessageQ 
+class MessageQ
 {
-public:
-	struct extend_msg_t
-	{
-		int iReceiver;
-		int iSender;
-		int iCommand;
-		int iLength;
-/*
-		long int iReceiver;
-		long int iSender;
-		long int iCommand;
-		long int iLength;
-*/
-		char chData[MAX_DATA_SIZE];
-	}__attribute__((packed)); 
+  public:
+    struct extend_msg_t
+    {
+      int iReceiver;
+      int iSender;
+      int iCommand;
+      int iLength;
+      /*
+         long int iReceiver;
+         long int iSender;
+         long int iCommand;
+         long int iLength;
+       */
+      char chData[MAX_DATA_SIZE];
+    }__attribute__((packed));
 
-	struct base_msg_t
-	{
-		int 	iLength;
-		char 	chData[MAX_DATA_SIZE];	/* Data */
-	} __attribute__((packed));
+    struct base_msg_t
+    {
+      int   iLength;
+      char  chData[MAX_DATA_SIZE];  /* Data */
+    } __attribute__((packed));
 
-	MessageQ();
-	MessageQ(const key_t _key);
-	MessageQ(const key_t _key, bool _bCreator);
-	virtual ~MessageQ();
+    MessageQ();
+    MessageQ(const key_t _key);
+    MessageQ(const key_t _key, bool _bCreator);
+    virtual ~MessageQ();
 
-	bool 	IsStarted();
-	key_t 	GetKey();
-	int	 	GetQid();		/* console¿¡¼­ Å¥¸¦ »èÁ¦ ÇÏ±â À§ÇØ Á¦°øÇÑ´Ù. */
+    bool  IsStarted();
+    key_t   GetKey();
+    int   GetQid();   /* consoleì—ì„œ íë¥¼ ì‚­ì œ í•˜ê¸° ìœ„í•´ ì œê³µí•œë‹¤. */
 
-	bool EnQueue(int _sender, int _receiver, int _command, int _msg_length, char *_msg, int falg, int _timeout);
-	bool DeQueue(int *_sender, int _receiver,int *_command, int *_msg_length, char *_msg, int falg, int _timeout);
+    bool EnQueue(int _sender, int _receiver, int _command, int _msg_length, char *_msg, int falg, int _timeout);
+    bool DeQueue(int *_sender, int _receiver,int *_command, int *_msg_length, char *_msg, int falg, int _timeout);
 
-	bool EnQueue(char *_msg, int _msg_length, int falg, int _timeout);
-	bool DeQueue(char *_msg, int *_msg_length, int falg, int _timeout);
+    bool EnQueue(char *_msg, int _msg_length, int falg, int _timeout);
+    bool DeQueue(char *_msg, int *_msg_length, int falg, int _timeout);
 
-private:
-	void SetDeleteOK(bool _bDelete);
-	void CreateMQ(const key_t _key);
+  private:
+    void SetDeleteOK(bool _bDelete);
+    void CreateMQ(const key_t _key);
 
-	key_t 	m_Key;
-	int 	m_QID;
-	bool	m_IsStarted;
-	bool	m_bDeleteOK;
+    key_t   m_Key;
+    int   m_QID;
+    bool  m_IsStarted;
+    bool  m_bDeleteOK;
 };
 #endif
-
