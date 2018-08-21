@@ -42,6 +42,11 @@
 #include "../include/SharedMemory.h"
 #include "../include/ReleaseSlot.h"
 
+#include <iostream>
+#include <sstream>
+#include <vector>
+
+
 DownloadServer::DownloadServer()
   :m_pServerInfo(NULL)
   ,m_iConnCount(0)
@@ -85,6 +90,7 @@ DownloadServer::DownloadServer(Properties& _cProperties)
   this->SetStarted(false);
   pthread_mutex_init(&m_lockClient, NULL);
   m_pServerInfo = new ServerInfoDN(_cProperties);
+
   //CNPLog::GetInstance().Log("================ Create DownloadServer m_pServerInfo=(%p)==", m_pServerInfo);
 #ifdef _CLIENT_ARRAY
   for(int i = 0; i < MAX_CLIENT; i++)
@@ -227,12 +233,35 @@ const unsigned int DownloadServer::GetBandwidth(const char _chID)
   return m_pServerInfo->GetBandwidth(_chID);
 }
 
+using namespace std;
+
+// for string delimiter
+vector<string> split(string s, string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+    while ((pos_end = s.find(delimiter, pos_start)) != string::npos) {
+        token = s.substr(pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back(token);
+    }
+    res.push_back(s.substr(pos_start));
+    return res;
+}
+
 
 const int DownloadServer::ConnectToMgr()
 {
   int iMgrPort = m_pServerInfo->GetPort(SERVER_PORT_MGR);
-  CNPLog::GetInstance().Log("Trying Connect to Mgr (%s)(%d)",
-      m_pServerInfo->GetIPAddr(), iMgrPort);
+
+  vector<string> v = split(m_pServerInfo->GetManagerIpAddresses(), ",");
+  for (const string& part : v) {
+    CNPLog::GetInstance().Log("--> (%s)", part.c_str());
+  }
+  return 0;
+
+
+  CNPLog::GetInstance().Log("Trying Connect to Mgr.. (%s)(%s)(%d)", m_pServerInfo->GetManagerIpAddresses(), m_pServerInfo->GetIPAddr(), iMgrPort);
 
   //m_pSendPipe = new ClientSocket();
   //if(m_pSendPipe->NonBlockConnect(m_pServerInfo->GetIPAddr(), iMgrPort) < 0)
@@ -256,13 +285,6 @@ const int DownloadServer::ConnectToMgr()
   tHelloPacket.header.length = sizeof(Tcmd_HELLO_DS_DSM);
 
   sndbody->iPid = GetPid();
-
-  //if (dynamic_cast<CDerived*>(p)) { : : }
-  /*
-     if (dynamic_cast<Socket*>(pCSocket))
-     {
-     }
-     */
 
   if(pCSocket->Write((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DS_DSM)) < 0)
     //if(static_cast<Socket *>(pCSocket)->Write((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DS_DSM)) < 0)
@@ -292,7 +314,6 @@ const int DownloadServer::ConnectToMgr()
   }
 
   m_pSendPipe = pCSocket;
-  //  m_pSendPipe = new ClientUserDN(pMemberSocket, CLIENT_MEMBER);
 
   Tcmd_HELLO_DSM_DS *pRcvBody = (Tcmd_HELLO_DSM_DS *)tHelloPacket.data;
   CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Recv seq=(%d), shmKey=(%d), maxUser=(%d)",
@@ -361,38 +382,6 @@ void DownloadServer::HealthCheckUsers()
   }
   pthread_mutex_unlock(&m_lockClient);
 #endif
-
-  /*
-     std::list<Client*>::iterator pos, itrClientPrev;
-
-     pos = m_lstClient.begin();
-     while( pos != m_lstClient.end() )
-     {
-     itrClientPrev = pos++;
-     Client *pClient = static_cast<Client *>(*itrClientPrev);
-
-     if(CNPUtil::GetMicroTime()-pClient->GetAccessTime() > TIME_ALIVE)
-     {
-     m_pIOMP->DelClient(pClient);
-
-     CNPLog::GetInstance().Log("DownloadServer::HealthCheckUsers Kill Client [%p] fd=(%d)=(%f)\n",
-     pClient,
-  //((Socket *) (pClient->GetSocket()))->GetFd(),
-  pClient->GetSocket()->GetFd(),
-  CNPUtil::GetMicroTime()-pClient->GetAccessTime());
-
-
-  m_lstClient.erase( itrClientPrev );
-
-  m_pSlot->PutSlot(pClient->GetUserSeq());
-  memset(&(m_pShm[pClient->GetUserSeq()]), 0, sizeof(struct scoreboard_file));
-
-  delete pClient;
-  m_iConnCount--;
-  //delete (Client *)*itrClientPrev;
-  }
-  }
-  */
 }
 
 Client* const DownloadServer::GetServerSocket()
@@ -468,15 +457,15 @@ void DownloadServer::AcceptClient(const int _iClientFD)
   static_cast<TcpSocket *>(m_arrClient[iSlot]->GetSocket())->SetClientAddr();
   pthread_mutex_unlock(&m_lockClient);
 
-  #ifndef _ONESHOT
+#ifndef _ONESHOT
   if(m_pIOMP->AddClient(m_arrClient[iSlot], EPOLLIN) < 0)
-  #else
-    #ifdef _FREEBSD
+#else
+#ifdef _FREEBSD
     if(m_pIOMP->AddClient(m_arrClient[iSlot], EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR) < 0)
-    #else
-    if(m_pIOMP->AddClient(m_arrClient[iSlot], EPOLLIN|EPOLLET|EPOLLONESHOT) < 0)
-    #endif
-  #endif
+#else
+      if(m_pIOMP->AddClient(m_arrClient[iSlot], EPOLLIN|EPOLLET|EPOLLONESHOT) < 0)
+#endif
+#endif
       {
         CloseClient(iSlot);
         return;
@@ -514,15 +503,15 @@ void DownloadServer::AcceptClient(Socket* const _pClientSocket)
       pNewClient->GetUserSeq());
   pthread_mutex_unlock(&m_lockClient);
 
-  #ifndef _ONESHOT
+#ifndef _ONESHOT
   if(m_pIOMP->AddClient(pNewClient, EPOLLIN) < 0)
-  #else
-    #ifdef _FREEBSD
+#else
+#ifdef _FREEBSD
     if(m_pIOMP->AddClient(pNewClient, EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR) < 0)
-    #else
-    if(m_pIOMP->AddClient(pNewClient, EPOLLIN|EPOLLET|EPOLLONESHOT) < 0)
-    #endif
-  #endif
+#else
+      if(m_pIOMP->AddClient(pNewClient, EPOLLIN|EPOLLET|EPOLLONESHOT) < 0)
+#endif
+#endif
       {
         CloseClient(pNewClient);
         //    delete _pClientSocket;
@@ -687,33 +676,6 @@ const int DownloadServer::GetComCodeIdx(const int _iComCode)
 
   return i;
 }
-/*
-   void DownloadServer::SetComCodeIdx(ClientUserDN* const _pClient)
-   {
-   if(!_pClient)
-   {
-   return;
-   }
-
-   for(int i = 1; i < MAX_COMPANY; i++)
-   {
-   if(m_pShmKcps[i].comcode == _pClient->GetComCode())
-   {
-   CNPLog::GetInstance().Log("1.DownloadServer::SetComCodeIdx=(%d) idx=(%d)",  m_pShmKcps[i].comcode, i);
-   _pClient->SetComCodeIdx(i);
-   break;
-   }
-
-   if(m_pShmKcps[i].comcode == 0)
-   {
-   CNPLog::GetInstance().Log("2.DownloadServer::SetComCodeIdx=(%d) idx=(%d)",  m_pShmKcps[i].comcode, i);
-   m_pShmKcps[i].comcode = _pClient->GetComCode();
-   _pClient->SetComCodeIdx(i);
-   break;
-   }
-   }
-   }
-   */
 
 void DownloadServer::SetD()
 {
@@ -743,16 +705,20 @@ void DownloadServer::Run()
   CNPLog::GetInstance().SetFileName(pchLogFileName);
 
   /*
-  if(CNPLog::GetInstance().SetFileName(m_pServerInfo->GetLogFileName()));
-  CNPLog::GetInstance().Log("DownloadServer::Run forked GetNetworkByteOrder=(%d), pid=(%d)",
-  CNPUtil::GetNetworkByteOrder(), GetPid());
-  */
+     if(CNPLog::GetInstance().SetFileName(m_pServerInfo->GetLogFileName()));
+     CNPLog::GetInstance().Log("DownloadServer::Run forked GetNetworkByteOrder=(%d), pid=(%d)",
+     CNPUtil::GetNetworkByteOrder(), GetPid());
+     */
   sleep(3);
   // using socket
   if(ConnectToMgr() < 0)
   {
     return;
   }
+
+  CNPLog::GetInstance().Log("SERVER_PORT_DNMGR = (%d)", m_pServerInfo->GetPort(SERVER_PORT_MGR));
+  CNPLog::GetInstance().Log("SERVER_PORT = (%d)", m_pServerInfo->GetPort(SERVER_PORT));
+
 
   // create release slot
   m_pSlot = new ReleaseSlot(GetMaxUser());
@@ -782,28 +748,6 @@ void DownloadServer::Run()
     printf("smKcps is NULL \n");
     return;
   }
-  //*m_pShmD = 0;
-
-
-  /*
-  // for statistics 20090331
-  // Create SharedMemory
-  SharedMemory smKcps((key_t)m_pServerInfo->GetShmKey(), sizeof(unsigned long long));
-  if(!smKcps.IsStarted())
-  {
-  printf("smKcps SharedMemory ���� ����! \n");
-  return ;
-  }
-
-  m_pShmKcps = (unsigned long long *)smKcps.GetDataPoint();
-  if(m_pShmKcps == NULL)
-  {
-  printf("smKcps is NULL \n");
-  return;
-  }
-  //memset(m_pShmKcps, 0, sizeof(unsigned long long));
-   *m_pShmKcps = 0;
-   */
 
   // for statistics 20090527
   SharedMemory smKcps((key_t)m_pServerInfo->GetShmKey(), sizeof(TStatistics)*MAX_COMPANY);
@@ -846,11 +790,11 @@ void DownloadServer::Run()
   ThreadManager::GetInstance()->Spawn(tTic);
 
 #ifdef _ONESHOT
-#ifdef _FREEBSD
+  #ifdef _FREEBSD
   m_pTQoS = new ThreadQoSSelect(this);
-#else // linux
+  #else // linux
   m_pTQoS = new ThreadQoSEPoll(this);
-#endif
+  #endif
   ThreadManager::GetInstance()->Spawn(m_pTQoS);
 #endif
 
@@ -945,9 +889,9 @@ void DownloadServer::Run()
         //if(tEvents[i].events & EVFILT_READ)
         if(tEvents[i].filter == EVFILT_READ)
         {
-#ifdef _DEBUG
+  #ifdef _DEBUG
           CNPLog::GetInstance().Log("EPOLLIN Client %p", pClient);
-#endif
+  #endif
           pClient->SetAccessTime();
           PutReceiveQueue(pClient);
         }
@@ -969,9 +913,9 @@ void DownloadServer::Run()
       else
         if(tEvents[i].events & EPOLLIN)
         {
-#ifdef _DEBUG
+  #ifdef _DEBUG
           CNPLog::GetInstance().Log("EPOLLIN Client %p, events=(%d)", pClient, tEvents[i].events);
-#endif
+  #endif
 
   #ifndef _ONESHOT
           m_pIOMP->DelClient(pClient);
@@ -995,7 +939,6 @@ void DownloadServer::Run()
   #endif
 
 #endif
-
       continue;
     }
   }

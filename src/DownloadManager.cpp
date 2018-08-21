@@ -134,37 +134,37 @@ const char* const DownloadManager::GetLogFileName()
 }
 
 /*
-   ���Ϻл� url : http://211.37.6.118/hotfile/ftpstat.php
-   id /pw = wizsolution/������
+파일분산 url : http://211.37.6.118/hotfile/ftpstat.php
+id /pw = wizsolution/위즈대박
 
-   filename                    user    multi
-   9bba0aac873499a598a558a4c0843ea8_808775680  2       6       3613
-   809c3586a94da1273171005217c8761d_723888128  1       1       51
-   69e34b10a87230acc97a80666718e2ef_734056448  1       3       1428
-   total      4       10      5092
+                filename                    user    multi
+9bba0aac873499a598a558a4c0843ea8_808775680  2       6       3613
+809c3586a94da1273171005217c8761d_723888128  1       1       51
+69e34b10a87230acc97a80666718e2ef_734056448  1       3       1428
+                                 total      4       10      5092
 
-   ftpcount= 4     : User��
-   ftpfiles= 3     : ���� ������
-   multicount= 10  : session��
-   ftpkcps = 5092
+ftpcount= 4     : User수
+ftpfiles= 3     : 파일 종류수
+multicount= 10  : session수
+ftpkcps = 5092
 
-   ftpwho =9bba0aac873499a598a558a4c0843ea8_808775680,2,3613,465545,6|809c3586a94da1273171005217c8761d_723888128,1,51,465545,1
-   .....
+ftpwho =9bba0aac873499a598a558a4c0843ea8_808775680,2,3613,465545,6|809c3586a94da1273171005217c8761d_723888128,1,51,465545,1
+.....
 
-   filename, count, kcps,size, multi | filename, count, kcps,size, multi | filename, count, kcps,size, multi
+filename, count, kcps,size, multi | filename, count, kcps,size, multi | filename, count, kcps,size, multi
 
 
-   ======================================================================================
-   ��������
-   ftpcount(����count)
-   ftpfiles
-   ftpdownload(���ϰ��� = ftpfiles�� ������ ��)
-   ftpkcps
-   cMac
+======================================================================================
+기존꺼는
+ftpcount(파일count)
+ftpfiles
+ftpdownload(파일개수 = ftpfiles와 동일한 값)
+ftpkcps
+cMac
 
-   ftpwho = filename, id, count, kcps, size | ....
-   ======================================================================================
-   */
+ftpwho = filename, id, count, kcps, size | ....
+======================================================================================
+*/
 const int DownloadManager::GetStatistics(
     struct scoreboard_file* const pSt,
     struct scoreboard_file** const _pNext,
@@ -172,9 +172,9 @@ const int DownloadManager::GetStatistics(
     uint32_t* const _piFCount,  // file count
     uint32_t* const _piUserCnt, // id count
     uint32_t* const _piKcps,  // kcps
-    uint32_t* const _piSameCnt) // ���� ������ �ǳ� �ٱ� ���ؼ�..
+    uint32_t* const _piSameCnt) // 같은 파일은 건너 뛰기 위해서..
 {
-  // ������ ������ ���� �� �ִ�..
+  // 문제의 소지가 있을 수 있다..
   struct scoreboard_file *pNext = pSt + 1;
   if(_iPos+1 > MAX_CLIENT)
   {
@@ -189,15 +189,15 @@ const int DownloadManager::GetStatistics(
       *_piUserCnt += 1;
     }
 
-    //*_piFCount += 1;  // _piFCount �� ���� �̸��� �ٸ���.. (���������ϱ�..)
-    *_piSameCnt += 1; // ���� ������ �ǳ� �ٱ� ���ؼ�
+    *_piSameCnt += 1; // 같은 파일은 건너 뛰기 위해서
     *_piKcps += pSt->kcps;
+
     _iPos += 1;
     GetStatistics(pNext, &pNext, _iPos, _piFCount, _piUserCnt, _piKcps, _piSameCnt);
   }
   else
   {
-    *_piSameCnt += 1; // ���� ������ �ǳ� �ٱ� ���ؼ�
+    *_piSameCnt += 1; // 같은 파일은 건너 뛰기 위해서
     *_piFCount += 1;
     *_piKcps += pSt->kcps;
   }
@@ -476,7 +476,6 @@ void DownloadManager::SendStorageInfoOld()
   strcat(m_pchStatistics, pchTmp);
 #endif
 
-
   /*
      CNPLog::GetInstance().Log("SendToWeb=(%s) URL=(%s)", m_pchStatistics, GetMRTGURL());
      CNPLog::GetInstance().Log("SendToWeb=(%d) URL=(%s) iTotalUserCnt=(%d)", strlen(m_pchStatistics), GetMRTGURL(), iTotalUserCnt);
@@ -490,7 +489,8 @@ void DownloadManager::SendStorageInfoOld()
 
 void DownloadManager::SendStorageInfo()
 {
-  SendStorageInfoOld();
+	// do nothing because broadcasting server don't need to send statistics.
+  //SendStorageInfoOld();
   return;
 
   /*
@@ -824,8 +824,8 @@ void DownloadManager::SettingDS(const int _iPos, int* const _piSeq, int* const _
   *_piShmKey    = m_pServerInfo->GetShmKey();
   *_piShmDSStatus = m_pServerInfo->GetShmDSStatus();
 
-  // DS ���� Hello �� ����, pid, pos �� �����ϰ�, DS status�� OFF �� �����Ѵ�.
-  // DS ���� thread ���� ������ ������, status �� ON �Ѵ�.
+  // DS 에서 Hello 가 오면, pid, pos 를 세팅하고, DS status를 OFF 로 세팅한다.
+  // DS 에서 thread 까지 생성이 끝날때, status 를 ON 한다.
   m_pShmDSStatus[_iPos].pid = _iPid;
   m_pShmDSStatus[_iPos].seq = _iPos;
   m_pShmDSStatus[_iPos].status = OFF;
@@ -853,6 +853,11 @@ const int DownloadManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* 
       {
         CNPLog::GetInstance().Log("SetDS slot(%d) (%d)=>(%d)", i, m_pDSInfo[i].iPid, _iPid);
 
+#if 0
+        CNPLog::GetInstance().Log("죽은 프로세스 이므로 다시 할당된다.slot(%d) (%d)=>(%d)",
+                    i, m_pDSInfo[i].iPid, _iPid);
+#endif
+
         SettingDS(i, _piSeq,_piMaxUser,_piShmKey, _piShmDSStatus, _iPid);
         break;
       }
@@ -864,13 +869,12 @@ const int DownloadManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* 
     return -1;
   }
 
-  /*
-     for(i = 0; i < m_pServerInfo->GetDNCnt(); i++)
-     {
-     CNPLog::GetInstance().Log("DS ��Ȳ.slot(%d) (%d),(%d)",
-     i, m_pDSInfo[i].iPid, _iPid);
-     }
-     */
+/*
+  for(i = 0; i < m_pServerInfo->GetDNCnt(); i++)
+  {
+    CNPLog::GetInstance().Log("DS 현황.slot(%d) (%d),(%d)", i, m_pDSInfo[i].iPid, _iPid);
+  }
+*/
 
   return 0;
 }
@@ -931,7 +935,7 @@ void DownloadManager::DoFork(Process *_pProcess)
   {
     return;
   }
-  if(pServerSocket->Listen(100) < 0)
+  if(pServerSocket->Listen(1000) < 0)
   {
     return;
   }
@@ -948,7 +952,7 @@ void DownloadManager::DoFork(Process *_pProcess)
   SharedMemory sm((key_t)m_pServerInfo->GetShmKey(), MAX_CLIENT * sizeof(struct scoreboard_file));
   if(!sm.IsStarted())
   {
-    printf("SharedMemory ���� ����1 \n");
+    printf("Creating SharedMemory failed! \n");
 
     // 2. destroy
     SharedMemory sm1((key_t)m_pServerInfo->GetShmKey());

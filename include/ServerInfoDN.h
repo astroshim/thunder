@@ -38,6 +38,7 @@ class ServerInfoDN
     char    m_pchMRTGURL[MAX_URL];
     char    m_pchVolName[MAX_VOLUME];
     char    m_pchDirName[MAX_DIRNAME];
+    char    m_pchManagerIpAddresses[MAX_URL];
 
     // added 090423
     unsigned int iBandwidth[MAX_BAND_CNT];
@@ -59,6 +60,7 @@ class ServerInfoDN
     const char* const GetMRTGURL();
     const char* const GetVolName();
     const char* const GetDirName();
+    const char* const GetManagerIpAddresses();
 
     const serverInfoMap&    GetPortMap();
     const int GetPort(const ENUM_SERVERSOCKET_TYPE _type);  // ��û�� port type�� ���� �ش� port�� return �Ѵ�.
