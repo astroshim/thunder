@@ -8,3 +8,5 @@ logs/
 **/*.exe
 **/*.core
 tags
+__assertion_failed.log
+.vscode/
