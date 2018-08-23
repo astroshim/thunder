@@ -15,7 +15,7 @@ class Process
     virtual void      HealthCheckUsers()=0;
     virtual const char* const GetMRTGURL()=0;
     virtual const int   GetDNServerPort()=0;
-    virtual void    SendStorageInfo()=0;
+    // virtual void    SendStorageInfo()=0;
     virtual const char* const GetLogFileName()=0;
 
 

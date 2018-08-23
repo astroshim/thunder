@@ -1,5 +1,5 @@
 #include "../include/ThreadReceiver.h"
-#include "../include/DownloadServer.h"
+#include "../include/ChatServer.h"
 #ifdef _FREEBSD
 #include "../include/IOMP_KQUEUE.h"
 #else
@@ -9,15 +9,15 @@
 #include "../include/NPLog.h"
 
 ThreadReceiver::ThreadReceiver()
-  :m_pDownloadServer(NULL)
+    : m_pChatServer(NULL)
 {
   CNPLog::GetInstance().Log("ThreadReceiver Construct");
 }
 
-ThreadReceiver::ThreadReceiver(DownloadServer* const _pDownloadServer)
-  :m_pDownloadServer(_pDownloadServer)
+ThreadReceiver::ThreadReceiver(ChatServer *const _pChatServer)
+    : m_pChatServer(_pChatServer)
 {
-  m_pDownloadServer = _pDownloadServer;
+  m_pChatServer = _pChatServer;
   CNPLog::GetInstance().Log("ThreadReceiver Construct");
 }
 
@@ -31,69 +31,68 @@ void ThreadReceiver::Run()
 {
   this->SetStarted(true);
 
-  while(1)
+  while (1)
   {
-    Client *pClient = (Client *)m_pDownloadServer->GetReceiveQueue();
+    Client *pClient = (Client *)m_pChatServer->GetReceiveQueue();
 #ifdef _DEBUG
-    CNPLog::GetInstance().Log("In ThreadReceiver [%p]thread Client Geted! (%p) fd=(%d)",
-        this, pClient, pClient->GetSocket()->GetFd());
+    CNPLog::GetInstance().Log("In ThreadReceiver [%p]thread Client got! (%p) fd=(%d)",
+                              this, pClient, pClient->GetSocket()->GetFd());
 #endif
 
-    int iRet;
-    if((iRet = pClient->FillFromSocket()) <= 0)
+    int iRet = 0;
+    if ((iRet = pClient->FillFromSocket()) <= 0)
     {
-      if(iRet == USER_CLOSE)
+      if (iRet == USER_CLOSE)
       {
         //CNPLog::GetInstance().Log("Close In ThreadReceiver.(%p)", pClient);
 #ifdef _DEBUG
 #endif
 
 #ifdef _CLIENT_ARRAY
-        m_pDownloadServer->CloseClient(pClient->GetUserSeq());
+        m_pChatServer->CloseClient(pClient->GetUserSeq());
 #else
-        m_pDownloadServer->CloseClient(pClient);
+        m_pChatServer->CloseClient(pClient);
 #endif
         continue;
       }
     }
     else
     {
-      int iPacketLen;
+      int iPacketLen = 0;
 #ifndef _ONESHOT
-      while((iPacketLen = pClient->IsValidPacket()) > 0)
-        //if(pClient->IsValidPacket() > 0)
+      while ((iPacketLen = pClient->IsValidPacket()) > 0)
       {
-        if(pClient->ExecuteCommand(this) < 0)
+        if (pClient->ExecuteCommand(this) < 0)
         {
           break;
         }
       }
 #else
-      if(pClient->IsValidPacket() > 0)
+      if (pClient->IsValidPacket() > 0)
       {
-        if(pClient->ExecuteCommand(this) > 0)
+        if (pClient->ExecuteCommand(this) > 0)
         {
           //CNPLog::GetInstance().Log("In ThreadReceiver Go To the Sender (%p) fd=(%d)",  pClient, pClient->GetSocket()->GetFd());
-          m_pDownloadServer->PutSendQueue(pClient);
+          m_pChatServer->PutSendQueue(pClient);
           continue;
         }
       }
 #endif
 
 #ifdef _DEBUG
-      CNPLog::GetInstance().Log("In ThreadReceiver [%p]thread Client Geted! (%p) fd=(%d), iPacketLen=(%d)",
-          this, pClient, pClient->GetSocket()->GetFd(), iPacketLen);
+      CNPLog::GetInstance().Log("In ThreadReceiver [%p]thread Client (%p) fd=(%d), iPacketLen=(%d)",
+                                this, pClient, pClient->GetSocket()->GetFd(), iPacketLen);
 #endif
     }
 
 #ifndef _ONESHOT
-    m_pDownloadServer->AddEPoll(pClient, EPOLLIN|EPOLLOUT);
+    m_pChatServer->AddEPoll(pClient, EPOLLIN | EPOLLOUT);
 #else
     //CNPLog::GetInstance().Log("In ThreadReceiver Go To the Main (%p) fd=(%d)",  pClient, pClient->GetSocket()->GetFd());
 #ifdef _FREEBSD
-    m_pDownloadServer->AddEPoll(pClient, EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR);
+    m_pChatServer->AddEPoll(pClient, EVFILT_READ, EV_ADD | EV_ENABLE | EV_ONESHOT | EV_ERROR);
 #else
-    m_pDownloadServer->UpdateEPoll(pClient, EPOLLIN|EPOLLET|EPOLLONESHOT);
+    m_pChatServer->UpdateEPoll(pClient, EPOLLIN | EPOLLET | EPOLLONESHOT);
 #endif
 #endif
   }
@@ -101,4 +100,3 @@ void ThreadReceiver::Run()
   delete this;
   pthread_exit(NULL);
 }
-

@@ -50,6 +50,9 @@ const unsigned short cmd_HEARTBEAT_DSM_DC               = 1611;
 const unsigned short cmd_IBAS_DS_DOWNFINISH_REQ     = 1612;
 const unsigned short cmd_IBAS_DS_DOWNFINISH_RES     = 1613;
 
+const unsigned short cmd_CHAT_DS_DSM                = 2100;
+const unsigned short cmd_CHAT_DSM_DS                = 2101;
+
 /*----------------------------------------------------------------------------
  *  Download Client(DC) <------> Download Server(DS) CMD 1700~1799
  *  --------------------------------------------------------------------------*/
@@ -68,6 +71,9 @@ const unsigned short cmd_HEARTBEAT_DS_DC                = 1711;
 const unsigned short cmd_HELLO_COMCODE_DC_DS            = 1712;
 const unsigned short cmd_GET_FSIZE_DC_DS                = 1713;
 const unsigned short cmd_GET_FSIZE_DS_DC                = 1714;
+
+const unsigned short cmd_CHAT_DC_DS                = 2000;
+const unsigned short cmd_CHAT_DS_DC                = 2001;
 
 #pragma     pack(push, 1)
 typedef struct

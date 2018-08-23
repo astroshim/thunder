@@ -3,11 +3,11 @@
 
 #include "./Client.h"
 
-class ClientDN: public Client
+class ClientChatServer: public Client
 {
   private:
-    int m_iPort;
-    char m_pchIpAddr[MAX_IP_LEN];
+    // int m_iPort;
+    // char m_pchIpAddr[MAX_IP_LEN];
 
     // Download Server information
     /*
@@ -18,12 +18,9 @@ class ClientDN: public Client
      */
 
   public: 
-    ClientDN();
-    ClientDN(Socket* const _cSocket);
-    virtual ~ClientDN();
-
-    // BBS command
-    void WorkDownloadFinishBBS(const T_PACKET &_tPacket);
+    ClientChatServer();
+    ClientChatServer(Socket* const _cSocket);
+    virtual ~ClientChatServer();
 
     // DC->DSM command
     void WorkDSHello(const T_PACKET &_tPacket);

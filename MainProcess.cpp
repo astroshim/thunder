@@ -1,23 +1,20 @@
-/*
-   AIX
-*/
 #include "./include/Include.h"
-#include "./include/DownloadManager.h"
-#include "./include/DownloadServer.h"
+#include "./include/ChatManager.h"
+#include "./include/ChatServer.h"
 #include "./include/Properties.h"
 #include "./include/NPLog.h"
 #include "./include/NPDebug.h"
 
-static char *g_Version = "1.4.0";
+static const char *g_Version = "1.0.1";
 
 void SetLimit()
 {
-  struct rlimit   new_rl;
+  struct rlimit new_rl;
 
   new_rl.rlim_cur = 20000;
   new_rl.rlim_max = 20000;
 
-  if(setrlimit(RLIMIT_NOFILE, &new_rl) < 0)
+  if (setrlimit(RLIMIT_NOFILE, &new_rl) < 0)
   {
     Assert(false, "can't set file no limit ");
   }
@@ -52,9 +49,9 @@ void SetSignal()
 
 int main(int _argc, char *_argv[])
 {
-  if(_argc > 1)
+  if (_argc > 1)
   {
-    if(strcmp(_argv[1], "-v") == 0)
+    if (strcmp(_argv[1], "-v") == 0)
     {
       //printf("DNServer version [%s] \n", g_Version);
       printf("%s\n", g_Version);
@@ -68,25 +65,24 @@ int main(int _argc, char *_argv[])
   /**
    *   Properties Load
    */
-  Properties cDNMgrProperties;
-  if(cDNMgrProperties.Load(DOWNLOADMANAGER_PROPERTIES) < 0)
+  Properties managerProperties;
+  if (managerProperties.Load(MANAGER_PROPERTIES) < 0)
   {
     Assert(false, "Properties Load Error! ");
   }
 
-  Properties cDNProperties;
-  if(cDNProperties.Load(DOWNLOADSERVER_PROPERTIES) < 0)
+  Properties chatProperties;
+  if (chatProperties.Load(CHATSERVER_PROPERTIES) < 0)
   {
     Assert(false, "Properties Load Error! ");
   }
-  DownloadServer  *pDNServer    = new DownloadServer(cDNProperties);
-  DownloadManager *pDNMgrServer   = new DownloadManager(cDNMgrProperties);
+  ChatServer *pChatServer = new ChatServer(chatProperties);
+  ChatManager *pChatManager = new ChatManager(managerProperties);
 
-  pDNMgrServer->DoFork(pDNServer);
+  pChatManager->DoFork(pChatServer);
 
-  delete pDNServer;
-  delete pDNMgrServer;
+  delete pChatServer;
+  delete pChatManager;
 
   return 0;
 }
-

@@ -3,15 +3,15 @@
 
 #include "./Thread.h"
 
-class DownloadManager;
+class ChatManager;
 class ThreadWorker: public Thread
 {
   private :
-    DownloadManager *m_pDNMgr;
+    ChatManager *m_chatManager;
 
   public:
     ThreadWorker();
-    ThreadWorker(DownloadManager* const _pDNMgr);
+    ThreadWorker(ChatManager* const chatManager);
     ~ThreadWorker();
 
     void Run();

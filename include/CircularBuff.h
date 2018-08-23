@@ -7,7 +7,7 @@
  */
 
 // const unsigned int CIR_BUFSIZE = 1024000;  /* 1M bytes */
-const unsigned int CIR_BUFSIZE = 4096;  /* 4k bytes */
+const unsigned int CIR_BUFSIZE = 1024;  /* 1k bytes */
 const int NOT_ENOUGH_BUFFER = -10;
 
 class   Socket;
@@ -40,7 +40,7 @@ class   CircularBuff
     //int IsValid();
 
     virtual inline void BufferClear() {
-      memset(m_pchBuffer, 0x00, m_iBufferSize);
+      memset(m_pchBufferHeader, 0x00, m_iBufferSize);
       m_iHead = m_iTail = 0;
       m_iUseBufferSize = 0;
     }
@@ -63,7 +63,7 @@ class   CircularBuff
     int       m_iUseBufferSize;
 
     /* Buffer */
-    char           *m_pchBuffer;
+    char           *m_pchBufferHeader;
 
     void      Resize ();
     /* alloc buffer */

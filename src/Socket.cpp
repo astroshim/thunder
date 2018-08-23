@@ -2,6 +2,7 @@
 #include "../include/Socket.h"
 #include "../include/NPLog.h"
 #include "../include/NPDebug.h"
+#include "../include/Packet.h"
 
 Socket::Socket()
   :m_iFd(-1)
@@ -49,18 +50,18 @@ const int Socket::Close()
    }
    */
 
-const int Socket::Read(void* const _vPtr, const size_t _n)
+const int Socket::Read(void* const _vPtr, const size_t _messageLengthInSocket)
 {
-  size_t    nLeft;
+  size_t    remainMessageLength;
   ssize_t   nRead;
   char    *pchPtr = NULL;
 
   pchPtr = (char *)_vPtr;
-  nLeft = _n;
+  remainMessageLength = _messageLengthInSocket;
 
-  while(nLeft > 0)
+  while(remainMessageLength > 0)
   {
-    if( (nRead = read(m_iFd, pchPtr, nLeft)) < 0 )
+    if( (nRead = read(m_iFd, pchPtr, remainMessageLength)) < 0 )
     {
       if(errno == EINTR)
       {
@@ -76,64 +77,85 @@ const int Socket::Read(void* const _vPtr, const size_t _n)
       break;
     }
 
-    nLeft   -= nRead;
+    remainMessageLength   -= nRead;
     pchPtr  += nRead;
 
   }
 
-  return (_n - nLeft);
+  // return (_messageLengthInSocket - remainMessageLength);
+  return nRead;
 }
 
-const int Socket::ReadLine(void* const _vPtr, const size_t _n)
-{
-  size_t    nLeft;
-  ssize_t   nRead;
-  char    *pchPtr = NULL;
+// const int Socket::ReadLine(void* const _vPtr, const size_t _messageLengthInSocket)
+// {
+//   size_t    remainMessageLength;
+//   ssize_t   nRead;
+//   // char    *pchPtr = NULL;
 
-  pchPtr = (char *)_vPtr;
-  nLeft = _n;
+//   // T_PACKET *pMessage = new T_PACKET;
+//   // memset((char *)pMessage, 0x00, sizeof(T_PACKET));
+//   // pMessage->header.command = cmd_BBS_DS_DOWNFINISH_RES;
+//   // pMessage->header.length = sizeof(Tcmd_BBS_DS_DOWNFINISH_RES);
 
-  while(nLeft > 0)
-  {
-    if( (nRead = read(m_iFd, pchPtr, nLeft)) < 0 )
-    {
-      if(errno == EINTR)
-      {
-        nRead = 0;
-      }
-      else
-      {
-        return -1;
-      }
-    }
-    else if(nRead == 0)
-    {
-      break;
-    }
-    //else  /* 'numRead' must be 1 if we get here */
-    //{
-    //  if (totRead < n - 1) {      /* Discard > (n - 1) bytes */
-    //    totRead++;
-    //    *buf++ = ch;
-    //  }
+//   char message[1024];
+//   memset(message, 0x00, sizeof(message));
 
-    //  if (ch == '\n')
-    //    break;
-    //}
+//   // pchPtr = (char *)_vPtr;
+//   remainMessageLength = _messageLengthInSocket;
 
-    nLeft   -= nRead;
-    pchPtr  += nRead;
+//   while(remainMessageLength > 0)
+//   {
+//     // if( (nRead = read(m_iFd, pchPtr, remainMessageLength)) < 0 )
+//     if( (nRead = read(m_iFd, message, remainMessageLength)) < 0 )
+//     {
+//       CNPLog::GetInstance().Log("######## read failed is %d \n", nRead);
+//       if(errno == EINTR)
+//       {
+//         nRead = 0;
+//       }
+//       else
+//       {
+//         return -1;
+//       }
+//     }
+//     else if(nRead == 0)
+//     {
+//       CNPLog::GetInstance().Log("######## nRead is 0 \n");
+//       break;
+//     }
 
-    if (*(pchPtr-1) == '\n') {
-#ifdef _DEBUG
-      CNPLog::GetInstance().Log("Socket Break because linefeed \n", pchPtr);
-#endif
-      break;
-    }
-  }
+//     //else  /* 'numRead' must be 1 if we get here */
+//     //{
+//     //  if (totRead < n - 1) {      /* Discard > (n - 1) bytes */
+//     //    totRead++;
+//     //    *buf++ = ch;
+//     //  }
 
-  return (_n - nLeft);
-}
+//     //  if (ch == '\n')
+//     //    break;
+//     //}
+
+//     remainMessageLength   -= nRead;
+//     // pchPtr  += nRead;
+
+//     // if (*(pchPtr-1) == '\n') {
+//     if (message[nRead] == '\n') {
+// #ifdef _DEBUG
+//       CNPLog::GetInstance().Log("ReadLine Break because linefeed \n");
+// #endif
+
+//       memcpy(_vPtr, message, nRead);
+//       break;
+//     }
+//   }
+
+// #ifdef _DEBUG
+//   CNPLog::GetInstance().Log("ReadLine messageLengthInSocket: %ld, remain message size in socket: %ld, nRead: %ld \n", _messageLengthInSocket, remainMessageLength, nRead);
+// #endif
+
+//   return nRead;
+//   // return (_messageLengthInSocket - remainMessageLength);
+// }
 
 const int Socket::Write(const void* const _vPtr,  const size_t _n)
 {

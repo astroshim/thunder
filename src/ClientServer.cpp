@@ -1,6 +1,5 @@
 #include "../include/ClientServer.h"
 #include "../include/NPUtil.h"
-#include "../include/DownloadServer.h"
 
 ClientServer::ClientServer()
           :m_iPort(0)

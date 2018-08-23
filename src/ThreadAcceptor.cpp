@@ -1,13 +1,13 @@
 #include "../include/ThreadAcceptor.h"
-#include "../include/DownloadServer.h"
+#include "../include/ChatServer.h"
 #include "../include/TcpSocket.h"
 #include "../include/ServerSocket.h"
 #include "../include/Client.h"
-#include "../include/ClientUserDN.h"
+#include "../include/ChatUser.h"
 #include "../include/IOMP_Select.h"
 #include "../include/NPLog.h"
 
-ThreadAcceptor::ThreadAcceptor(DownloadServer* const _pMainProcess)
+ThreadAcceptor::ThreadAcceptor(ChatServer* const _pMainProcess)
   :m_pMainProcess(_pMainProcess)
 {
   this->SetStarted(true);

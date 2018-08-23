@@ -1,13 +1,9 @@
-#.SUFFIXES = .c .o 
-#CC     = gcc
-
 .SUFFIXES = .cpp .o 
 LDFLAGS= -Wl,--hash-style=sysv
-CC     = g++  -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY
-#CC     = g++  -D_REENTRANT -D_FILE_OFFSET_BITS=64 
+# CC     = g++  -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -I /usr/local/opt/openssl/include
+CC     = g++  -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -I /usr/local/opt/openssl/include
 
 CFLAGS = -g -Wall 
-#CFLAGS = -O2 -g
 
 BASE		= $(HOME)/thunder/src
 BIN			= $(BASE)
@@ -17,9 +13,9 @@ BIN			= $(BASE)
 ######################################################################
 OBJS = 	CircularBuff.o		\
 		Client.o			\
-		ClientUserDN.o		\
+		ChatUser.o		\
+		ClientChatServer.o		\
 		ClientServer.o		\
-		ClientDN.o			\
 		ClientSocket.o		\
 		IOMP_Select.o		\
 		IOMP_KQUEUE.o		\
@@ -41,36 +37,24 @@ OBJS = 	CircularBuff.o		\
 		ThreadWorker.o		\
 		ThreadReceiver.o	\
 		ThreadSender.o		\
+		BroadcastMessage.o		\
+		ThreadBroadcaster.o		\
 		ThreadTic.o			\
-		ThreadQoS.o			\
 		CircularQueue.o		\
 		ReleaseSlot.o		\
-		DownloadManager.o	\
-		DownloadServer.o				
-#		ThreadTicDN.o		\
-#		ThreadTicDNMgr.o	\
-#		ClientUserMgr.o		\
-#		SendQueue.o			\
-#		FDQueue.o			\
-#		EventQueue.o		\
-#		ClientMember.o		\
-#		ThreadCloser.o		\
-#		CloseQueue.o		\
-#		UniqueID.o			\
-#		ProcessManager.o	\
-#		ThreadAcceptor.o	\
+		ChatManager.o	\
+		ChatServer.o			
 
 SRCS      	= $(OBJS:.o=.cpp) 
 
 ######################################################################
 ####### Compile definition
 ######################################################################
-TARGET = Blank	# object 파일을 만들기 위해서 임시로 Blank 를 만든다.
+TARGET = Blank	
 
 all : $(TARGET) 
 
 $(TARGET) : $(OBJS)
-#	$(CC) $(CFLAGS) -c $(SRCS) 	# 컴파일 안해도 된다.
 
 dep :
 	gccmakedep $(SRCS)

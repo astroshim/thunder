@@ -1,8 +1,8 @@
 /**
  * Author:  astrosim
  */
-#include "../include/DownloadManager.h"
-#include "../include/DownloadServer.h"
+#include "../include/ChatManager.h"
+#include "../include/ChatServer.h"
 #include "../include/TcpSocket.h"
 #include "../include/ServerSocket.h"
 #include "../include/Thread.h"
@@ -14,7 +14,7 @@
 #include "../include/NPLog.h"
 #include "../include/NPDebug.h"
 #include "../include/ClientServer.h"
-#include "../include/ClientDN.h"
+#include "../include/ClientChatServer.h"
 
 #ifdef _FREEBSD
 #include "../include/IOMP_KQUEUE.h"
@@ -30,7 +30,7 @@
 #include <curl/curl.h>
 #endif
 
-DownloadManager::DownloadManager()
+ChatManager::ChatManager()
   :m_pIOMP(NULL)
   ,m_iConnCount(0)
   ,m_iMacAddr(0)
@@ -38,7 +38,7 @@ DownloadManager::DownloadManager()
   ,m_pServerInfo(NULL)
   ,m_pWorkQueue(NULL)
   ,m_pDSInfo(NULL)
-  ,m_pShm(NULL)
+  // ,m_pShm(NULL)
    ,m_pShmDSStatus(NULL)
 {
   this->SetStarted(false);
@@ -47,14 +47,14 @@ DownloadManager::DownloadManager()
   m_pchStatistics = new char[MAX_STATISTICS];
 }
 
-DownloadManager::DownloadManager(Properties& _cProperties)
+ChatManager::ChatManager(Properties& _cProperties)
   :m_pIOMP(NULL)
   ,m_iConnCount(0)
   ,m_iMacAddr(0)
   ,m_iIPAddr(0)
   ,m_pWorkQueue(new CircularQueue())
   ,m_pDSInfo(NULL)
-  ,m_pShm(NULL)
+  // ,m_pShm(NULL)
    ,m_pShmDSStatus(NULL)
 {
   this->SetStarted(false);
@@ -63,10 +63,10 @@ DownloadManager::DownloadManager(Properties& _cProperties)
   pthread_mutex_init(&m_lockClosed, NULL);
   m_pServerInfo = new ServerInfoDNMgr(_cProperties);
   m_pchStatistics = new char[MAX_STATISTICS];
-  //    CNPLog::GetInstance().Log("================ Create DownloadManager =====================");
+  //    CNPLog::GetInstance().Log("================ Create ChatManager =====================");
 }
 
-DownloadManager::~DownloadManager()
+ChatManager::~ChatManager()
 {
   this->SetStarted(false);
   //  DeleteAllMember();
@@ -76,13 +76,13 @@ DownloadManager::~DownloadManager()
   //  delete m_pRecvPipe;
   //  delete m_pSlot;
   delete m_pDSInfo;
-  delete m_pShm;
+  // delete m_pShm;
   delete m_pShmDSStatus;
   //  delete m_pMQ;
   delete [] m_pchStatistics;
 }
 
-const int DownloadManager::GetCurrentUserCount()
+const int ChatManager::GetCurrentUserCount()
 {
   /*
      return m_mapConnectList.size();
@@ -98,37 +98,37 @@ const int DownloadManager::GetCurrentUserCount()
   return m_iConnCount;
 }
 
-const int DownloadManager::GetMaxUser()
+const int ChatManager::GetMaxUser()
 {
   return m_pServerInfo->GetMaxUser() + m_pServerInfo->GetDNCnt();
 }
 
-const char* const DownloadManager::GetIPAddr()
+const char* const ChatManager::GetIPAddr()
 {
   return m_pServerInfo->GetIPAddr();
 }
 
-const char* const DownloadManager::GetMRTGURL()
+const char* const ChatManager::GetMRTGURL()
 {
   return m_pServerInfo->GetMRTGURL();
 }
 
-const int DownloadManager::GetDNServerPort()
+const int ChatManager::GetDNServerPort()
 {
   return m_pServerInfo->GetDNPort();
 }
 
-const unsigned int DownloadManager::GetMacAddress()
+const unsigned int ChatManager::GetMacAddress()
 {
   return m_iMacAddr;
 }
 
-const unsigned int DownloadManager::GetIPAddress()
+const unsigned int ChatManager::GetIPAddress()
 {
   return m_iIPAddr;
 }
 
-const char* const DownloadManager::GetLogFileName()
+const char* const ChatManager::GetLogFileName()
 {
   return m_pServerInfo->GetLogFileName();
 }
@@ -165,48 +165,48 @@ cMac
 ftpwho = filename, id, count, kcps, size | ....
 ======================================================================================
 */
-const int DownloadManager::GetStatistics(
-    struct scoreboard_file* const pSt,
-    struct scoreboard_file** const _pNext,
-    uint32_t _iPos,
-    uint32_t* const _piFCount,  // file count
-    uint32_t* const _piUserCnt, // id count
-    uint32_t* const _piKcps,  // kcps
-    uint32_t* const _piSameCnt) // 같은 파일은 건너 뛰기 위해서..
-{
-  // 문제의 소지가 있을 수 있다..
-  struct scoreboard_file *pNext = pSt + 1;
-  if(_iPos+1 > MAX_CLIENT)
-  {
-    return 0;
-  }
+// const int ChatManager::GetStatistics(
+//     struct scoreboard_file* const pSt,
+//     struct scoreboard_file** const _pNext,
+//     uint32_t _iPos,
+//     uint32_t* const _piFCount,  // file count
+//     uint32_t* const _piUserCnt, // id count
+//     uint32_t* const _piKcps,  // kcps
+//     uint32_t* const _piSameCnt) // 같은 파일은 건너 뛰기 위해서..
+// {
+//   // 문제의 소지가 있을 수 있다..
+//   struct scoreboard_file *pNext = pSt + 1;
+//   if(_iPos+1 > MAX_CLIENT)
+//   {
+//     return 0;
+//   }
 
-  //if( strncmp(pSt->filename, pNext->filename, 2) == 0)
-  if( strcmp(pSt->filename, pNext->filename) == 0)
-  {
-    if(strcmp(pSt->id, pNext->id) != 0)
-    {
-      *_piUserCnt += 1;
-    }
+//   //if( strncmp(pSt->filename, pNext->filename, 2) == 0)
+//   if( strcmp(pSt->filename, pNext->filename) == 0)
+//   {
+//     if(strcmp(pSt->id, pNext->id) != 0)
+//     {
+//       *_piUserCnt += 1;
+//     }
 
-    *_piSameCnt += 1; // 같은 파일은 건너 뛰기 위해서
-    *_piKcps += pSt->kcps;
+//     *_piSameCnt += 1; // 같은 파일은 건너 뛰기 위해서
+//     *_piKcps += pSt->kcps;
 
-    _iPos += 1;
-    GetStatistics(pNext, &pNext, _iPos, _piFCount, _piUserCnt, _piKcps, _piSameCnt);
-  }
-  else
-  {
-    *_piSameCnt += 1; // 같은 파일은 건너 뛰기 위해서
-    *_piFCount += 1;
-    *_piKcps += pSt->kcps;
-  }
+//     _iPos += 1;
+//     GetStatistics(pNext, &pNext, _iPos, _piFCount, _piUserCnt, _piKcps, _piSameCnt);
+//   }
+//   else
+//   {
+//     *_piSameCnt += 1; // 같은 파일은 건너 뛰기 위해서
+//     *_piFCount += 1;
+//     *_piKcps += pSt->kcps;
+//   }
 
-  *_pNext = pNext;
-  return 0;
-}
+//   *_pNext = pNext;
+//   return 0;
+// }
 
-const int DownloadManager::PostData(const char* _pData, const char* _pchURL, const char *_pchAuth)
+const int ChatManager::PostData(const char* _pData, const char* _pchURL, const char *_pchAuth)
 {
 #ifndef _FREEBSD
 
@@ -276,74 +276,8 @@ const int DownloadManager::PostData(const char* _pData, const char* _pchURL, con
   return 0;
 }
 
-const int DownloadManager::PostData(const char* _pData, const char* _pchURL)
+const int ChatManager::PostData(const char* _pData, const char* _pchURL)
 {
-  /*
-     int     sock;
-     int     port;
-     int     ret;
-     char    send_data[1024*10];
-     char    recv_data[1024*10];
-
-     struct hostent * host_info;
-     struct in_addr inAddr;
-     struct timeval timeout;
-
-     int iDNCnt = 0;
-
-     timeout.tv_sec = (long)10;
-     timeout.tv_usec = 0;
-
-     char pchHost[128];
-     char pchPage[128];
-
-     memset(pchHost, 0x00, sizeof(pchHost));
-     memset(pchPage, 0x00, sizeof(pchPage));
-
-     GetMRTGURL();
-
-     host_info = gethostbyname("gm.gridcdn.com");
-     port = 80;
-
-     if( host_info != NULL )
-     inAddr = *(struct in_addr *)host_info->h_addr;
-     else    //  get ip fail
-     return -1;
-
-     memset(send_data, 0x00, sizeof(send_data));
-
-http://wizsolution:dnlwmeoqkr@211.37.6.118/hotfile/postftpwho_multi.php
-�̷��Ŵ� ��� �����ϳ�~
-*/
-  //  sprintf(send_data,   "POST /remote/getAgentInfo.php HTTP/1.1\r\nAccept: */*\r\nConnection: Keep-Alive\r\nContent-Length: %d\r\nHost: %s\r\n\r\n%s\r\n",
-  //                          strlen(_pData), _pData);
-
-  /*
-     Log("Trying to connect to '%s' port=%d data=(%s)", inet_ntoa(inAddr), port, send_data);
-     if ( (sock = connect_tcp_socket( inet_ntoa(inAddr), port)) == -1 ) {
-     Log("In CallWeb, Connection NOT established");
-     return -1;
-     }
-
-     ret = timed_send(sock, send_data, strlen(send_data), &timeout);
-     if( ret <= 0 )
-     {
-     Log("In CallWeb, write ret = '%d', reason='%s'", ret, strerror(errno));
-     close(sock);
-     return -1;
-     }
-
-     ret = timed_recv(sock, recv_data, sizeof(recv_data), &timeout);
-     if( ret <= 0 ) {
-     Log("In CallWeb, read ret = '%d', reason='%s'", ret, strerror(errno));
-     close(sock);
-     return -1;
-     }
-
-     printf("post => (%s)", recv_data);
-     close(sock);
-     */
-
 #ifndef _FREEBSD
   CURL *curl;
   CURLcode res;
@@ -374,239 +308,239 @@ http://wizsolution:dnlwmeoqkr@211.37.6.118/hotfile/postftpwho_multi.php
   return 0;
 }
 
-int cmpfileinfo(const void *p1, const void *p2)
-{
-  // arrange with filename
-  if(strcmp((*(struct scoreboard_file *)p1).filename, (*(struct scoreboard_file *)p2).filename) > 0 &&
-      (*(struct scoreboard_file *)p1).cUse == 1)
-  {
-    return -1;
-  }
+// int cmpfileinfo(const void *p1, const void *p2)
+// {
+//   // arrange with filename
+//   if(strcmp((*(struct scoreboard_file *)p1).filename, (*(struct scoreboard_file *)p2).filename) > 0 &&
+//       (*(struct scoreboard_file *)p1).cUse == 1)
+//   {
+//     return -1;
+//   }
 
-  if(strcmp((*(struct scoreboard_file *)p1).filename, (*(struct scoreboard_file *)p2).filename) == 0 &&
-      (*(struct scoreboard_file *)p1).cUse == 1)
-  {
-    return 0;
-  }
+//   if(strcmp((*(struct scoreboard_file *)p1).filename, (*(struct scoreboard_file *)p2).filename) == 0 &&
+//       (*(struct scoreboard_file *)p1).cUse == 1)
+//   {
+//     return 0;
+//   }
 
-  return 1;
-}
+//   return 1;
+// }
 
-void DownloadManager::SendStorageInfoOld()
-{
-  struct scoreboard_file tTmpDsInfo[MAX_CLIENT];
-  memset(tTmpDsInfo, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
+// void ChatManager::SendStorageInfoOld()
+// {
+//   struct scoreboard_file tTmpDsInfo[MAX_CLIENT];
+//   memset(tTmpDsInfo, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
 
-  //pthread_mutex_lock(&m_lockShm);
-  //memcpy((char *)&tTmpDsInfo, (char *)&m_tDsInfo, MAX_CLIENT * sizeof(struct scoreboard_file));
-  memcpy((char *)&tTmpDsInfo, (char *)&(m_pShm[0]), MAX_CLIENT * sizeof(struct scoreboard_file));
-  //pthread_mutex_unlock(&m_lockShm);
+//   //pthread_mutex_lock(&m_lockShm);
+//   //memcpy((char *)&tTmpDsInfo, (char *)&m_tDsInfo, MAX_CLIENT * sizeof(struct scoreboard_file));
+//   memcpy((char *)&tTmpDsInfo, (char *)&(m_pShm[0]), MAX_CLIENT * sizeof(struct scoreboard_file));
+//   //pthread_mutex_unlock(&m_lockShm);
 
-  // sorting.
-  qsort(tTmpDsInfo, MAX_CLIENT, sizeof(struct scoreboard_file), cmpfileinfo);
+//   // sorting.
+//   qsort(tTmpDsInfo, MAX_CLIENT, sizeof(struct scoreboard_file), cmpfileinfo);
 
-  memset(m_pchStatistics, 0x00, MAX_STATISTICS);
-  char *pStr = &(m_pchStatistics[0]);
+//   memset(m_pchStatistics, 0x00, MAX_STATISTICS);
+//   char *pStr = &(m_pchStatistics[0]);
 
-  pStr += 56 + 4 + 4 + 4+ 8;  // => "ftpwhover=0.4&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&" length
-  //pStr += 41 + 4 + 4 + 4+ 8;  // => "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&" length
+//   pStr += 56 + 4 + 4 + 4+ 8;  // => "ftpwhover=0.4&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&" length
+//   //pStr += 41 + 4 + 4 + 4+ 8;  // => "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&" length
 
-  uint32_t iTotalFCount   = 0;
-  uint64_t iTotalKcps   = 0;
-  uint32_t iTotalUserCnt  = 0;
+//   uint32_t iTotalFCount   = 0;
+//   uint64_t iTotalKcps   = 0;
+//   uint32_t iTotalUserCnt  = 0;
 
-  strcpy(pStr, "ftpwho=");
-  int iPos = 0;
-  while(1)
-  {
+//   strcpy(pStr, "ftpwho=");
+//   int iPos = 0;
+//   while(1)
+//   {
 
-    struct scoreboard_file *pNext = NULL;
-    if(tTmpDsInfo[iPos].cUse != ON ||
-        iPos+1 >= MAX_CLIENT)
-    {
-      break;
-    }
-    //CNPLog::GetInstance().Log("pos=(%d) file=(%s)", iPos, tTmpDsInfo[iPos].filename);
+//     struct scoreboard_file *pNext = NULL;
+//     if(tTmpDsInfo[iPos].cUse != ON ||
+//         iPos+1 >= MAX_CLIENT)
+//     {
+//       break;
+//     }
+//     //CNPLog::GetInstance().Log("pos=(%d) file=(%s)", iPos, tTmpDsInfo[iPos].filename);
 
-    uint32_t iFCount = 0, iUserCnt = 1, iKcps = 0, iSameCnt = 0;
-    GetStatistics(
-        &(tTmpDsInfo[iPos]),
-        &pNext,
-        iPos,
-        &iFCount,
-        &iUserCnt,
-        &iKcps,
-        &iSameCnt);
+//     uint32_t iFCount = 0, iUserCnt = 1, iKcps = 0, iSameCnt = 0;
+//     GetStatistics(
+//         &(tTmpDsInfo[iPos]),
+//         &pNext,
+//         iPos,
+//         &iFCount,
+//         &iUserCnt,
+//         &iKcps,
+//         &iSameCnt);
 
-    sprintf(pStr, "%s%s,%d,%d,%llu|",
-        pStr,
-        tTmpDsInfo[iPos].filename,
-        iUserCnt,       // user ���� ���±�..
-        iKcps,
-        tTmpDsInfo[iPos].iFSize);
+//     sprintf(pStr, "%s%s,%d,%d,%llu|",
+//         pStr,
+//         tTmpDsInfo[iPos].filename,
+//         iUserCnt,       // user ���� ���±�..
+//         iKcps,
+//         tTmpDsInfo[iPos].iFSize);
 
-    //CNPLog::GetInstance().Log("pStr================(%s)",pStr);
-    iTotalFCount  += iFCount;
-    iTotalKcps    += iKcps;
-    iTotalUserCnt   += iUserCnt;
+//     //CNPLog::GetInstance().Log("pStr================(%s)",pStr);
+//     iTotalFCount  += iFCount;
+//     iTotalKcps    += iKcps;
+//     iTotalUserCnt   += iUserCnt;
 
-    iPos += iSameCnt;
-    if(iPos >= MAX_CLIENT)
-    {
-      break;
-    }
-  }
+//     iPos += iSameCnt;
+//     if(iPos >= MAX_CLIENT)
+//     {
+//       break;
+//     }
+//   }
 
-  if(iTotalUserCnt > 0)
-  {
-    iTotalUserCnt--;
-  }
-#ifdef _HOMESTORAGE
-  sprintf(m_pchStatistics, "ftpwhover=0.4&flag=1&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&%s",
-      iTotalUserCnt, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
-#else
-  sprintf(m_pchStatistics, "ftpwhover=0.4&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&%s",
-      iTotalUserCnt, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
-  //iPos, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
-  char pchTmp[128];
-  struct in_addr laddr;
-  laddr.s_addr = m_iIPAddr;
-  memset(pchTmp, 0x00, sizeof(pchTmp));
-  sprintf(pchTmp, "&ip=%s", inet_ntoa(laddr));
-  strcat(m_pchStatistics, pchTmp);
-#endif
+//   if(iTotalUserCnt > 0)
+//   {
+//     iTotalUserCnt--;
+//   }
+// #ifdef _HOMESTORAGE
+//   sprintf(m_pchStatistics, "ftpwhover=0.4&flag=1&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&%s",
+//       iTotalUserCnt, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
+// #else
+//   sprintf(m_pchStatistics, "ftpwhover=0.4&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&%s",
+//       iTotalUserCnt, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
+//   //iPos, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
+//   char pchTmp[128];
+//   struct in_addr laddr;
+//   laddr.s_addr = m_iIPAddr;
+//   memset(pchTmp, 0x00, sizeof(pchTmp));
+//   sprintf(pchTmp, "&ip=%s", inet_ntoa(laddr));
+//   strcat(m_pchStatistics, pchTmp);
+// #endif
 
-  /*
-     CNPLog::GetInstance().Log("SendToWeb=(%s) URL=(%s)", m_pchStatistics, GetMRTGURL());
-     CNPLog::GetInstance().Log("SendToWeb=(%d) URL=(%s) iTotalUserCnt=(%d)", strlen(m_pchStatistics), GetMRTGURL(), iTotalUserCnt);
-     CNPLog::GetInstance().Log("(%s)", m_pchStatistics);
-     */
-  if(PostData(m_pchStatistics, GetMRTGURL()) >= 0)
-  {
-    CNPLog::GetInstance().Log("PostData Success!");
-  }
-}
+//   /*
+//      CNPLog::GetInstance().Log("SendToWeb=(%s) URL=(%s)", m_pchStatistics, GetMRTGURL());
+//      CNPLog::GetInstance().Log("SendToWeb=(%d) URL=(%s) iTotalUserCnt=(%d)", strlen(m_pchStatistics), GetMRTGURL(), iTotalUserCnt);
+//      CNPLog::GetInstance().Log("(%s)", m_pchStatistics);
+//      */
+//   if(PostData(m_pchStatistics, GetMRTGURL()) >= 0)
+//   {
+//     CNPLog::GetInstance().Log("PostData Success!");
+//   }
+// }
 
-void DownloadManager::SendStorageInfo()
-{
-	// do nothing because broadcasting server don't need to send statistics.
-  //SendStorageInfoOld();
-  return;
+// void ChatManager::SendStorageInfo()
+// {
+// 	// do nothing because broadcasting server don't need to send statistics.
+//   //SendStorageInfoOld();
+//   return;
 
-  /*
-     CNPLog::GetInstance().Log("SendStorageInfo Called!");
-     for (int i = 0; i < MAX_CLIENT; i++)
-     {
-     if(m_pShm[i].cUse == ON)
-     {
-     CNPLog::GetInstance().Log("m_pShm[%d].cUse=(%d) (%p)", i, m_pShm[i].cUse, &(m_pShm[i]));
-     CNPLog::GetInstance().Log("m_pShm[%d].comcode=(%d)", i, m_pShm[i].comcode);
-     CNPLog::GetInstance().Log("m_pShm[%d].billno=(%d)", i, m_pShm[i].billno);
-     CNPLog::GetInstance().Log("m_pShm[%d].kcps=(%d)", i, m_pShm[i].kcps);
-     CNPLog::GetInstance().Log("m_pShm[%d].filename=(%s)", i, m_pShm[i].filename);
-     CNPLog::GetInstance().Log("m_pShm[%d].id=(%s)", i, m_pShm[i].id);
-     CNPLog::GetInstance().Log("m_pShm[%d].dnsize=(%llu)", i, m_pShm[i].iDNSize);
-     }
-     }
-     return;
-     */
+//   /*
+//      CNPLog::GetInstance().Log("SendStorageInfo Called!");
+//      for (int i = 0; i < MAX_CLIENT; i++)
+//      {
+//      if(m_pShm[i].cUse == ON)
+//      {
+//      CNPLog::GetInstance().Log("m_pShm[%d].cUse=(%d) (%p)", i, m_pShm[i].cUse, &(m_pShm[i]));
+//      CNPLog::GetInstance().Log("m_pShm[%d].comcode=(%d)", i, m_pShm[i].comcode);
+//      CNPLog::GetInstance().Log("m_pShm[%d].billno=(%d)", i, m_pShm[i].billno);
+//      CNPLog::GetInstance().Log("m_pShm[%d].kcps=(%d)", i, m_pShm[i].kcps);
+//      CNPLog::GetInstance().Log("m_pShm[%d].filename=(%s)", i, m_pShm[i].filename);
+//      CNPLog::GetInstance().Log("m_pShm[%d].id=(%s)", i, m_pShm[i].id);
+//      CNPLog::GetInstance().Log("m_pShm[%d].dnsize=(%llu)", i, m_pShm[i].iDNSize);
+//      }
+//      }
+//      return;
+//      */
 
-  struct scoreboard_file tTmpDsInfo[MAX_CLIENT];
-  memset(tTmpDsInfo, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
+//   struct scoreboard_file tTmpDsInfo[MAX_CLIENT];
+//   memset(tTmpDsInfo, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
 
-  //pthread_mutex_lock(&m_lockShm);
-  //memcpy((char *)&tTmpDsInfo, (char *)&m_tDsInfo, MAX_CLIENT * sizeof(struct scoreboard_file));
-  memcpy((char *)&tTmpDsInfo, (char *)&(m_pShm[0]), MAX_CLIENT * sizeof(struct scoreboard_file));
-  //pthread_mutex_unlock(&m_lockShm);
+//   //pthread_mutex_lock(&m_lockShm);
+//   //memcpy((char *)&tTmpDsInfo, (char *)&m_tDsInfo, MAX_CLIENT * sizeof(struct scoreboard_file));
+//   memcpy((char *)&tTmpDsInfo, (char *)&(m_pShm[0]), MAX_CLIENT * sizeof(struct scoreboard_file));
+//   //pthread_mutex_unlock(&m_lockShm);
 
-  // sorting.
-  qsort(tTmpDsInfo, MAX_CLIENT, sizeof(struct scoreboard_file), cmpfileinfo);
+//   // sorting.
+//   qsort(tTmpDsInfo, MAX_CLIENT, sizeof(struct scoreboard_file), cmpfileinfo);
 
-  /*
-     char databuf[20000];
-     memset(databuf, 0x00, sizeof(databuf));
-     char *pStr = &(databuf[0]);
-     */
-  //  char    m_pchStatistics[MAX_STATISTICS];
-  memset(m_pchStatistics, 0x00, MAX_STATISTICS);
-  char *pStr = &(m_pchStatistics[0]);
+//   /*
+//      char databuf[20000];
+//      memset(databuf, 0x00, sizeof(databuf));
+//      char *pStr = &(databuf[0]);
+//      */
+//   //  char    m_pchStatistics[MAX_STATISTICS];
+//   memset(m_pchStatistics, 0x00, MAX_STATISTICS);
+//   char *pStr = &(m_pchStatistics[0]);
 
-  pStr += 41 + 4 + 4 + 4+ 8;  // => "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&" length
+//   pStr += 41 + 4 + 4 + 4+ 8;  // => "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&" length
 
-  uint32_t iTotalFCount   = 0;
-  uint64_t iTotalKcps   = 0;
-  uint32_t iTotalUserCnt  = 0;
+//   uint32_t iTotalFCount   = 0;
+//   uint64_t iTotalKcps   = 0;
+//   uint32_t iTotalUserCnt  = 0;
 
-  strcpy(pStr, "ftpwho=");
-  int iPos = 0;
-  while(1)
-  {
+//   strcpy(pStr, "ftpwho=");
+//   int iPos = 0;
+//   while(1)
+//   {
 
-    struct scoreboard_file *pNext = NULL;
-    if(tTmpDsInfo[iPos].cUse != ON ||
-        iPos+1 >= MAX_CLIENT)
-    {
-      break;
-    }
-    //CNPLog::GetInstance().Log("pos=(%d) file=(%s)", iPos, tTmpDsInfo[iPos].filename);
+//     struct scoreboard_file *pNext = NULL;
+//     if(tTmpDsInfo[iPos].cUse != ON ||
+//         iPos+1 >= MAX_CLIENT)
+//     {
+//       break;
+//     }
+//     //CNPLog::GetInstance().Log("pos=(%d) file=(%s)", iPos, tTmpDsInfo[iPos].filename);
 
-    uint32_t iFCount = 0, iUserCnt = 1, iKcps = 0, iSameCnt = 0;
-    GetStatistics(
-        &(tTmpDsInfo[iPos]),
-        &pNext,
-        iPos,
-        &iFCount,
-        &iUserCnt,
-        &iKcps,
-        &iSameCnt);
+//     uint32_t iFCount = 0, iUserCnt = 1, iKcps = 0, iSameCnt = 0;
+//     GetStatistics(
+//         &(tTmpDsInfo[iPos]),
+//         &pNext,
+//         iPos,
+//         &iFCount,
+//         &iUserCnt,
+//         &iKcps,
+//         &iSameCnt);
 
-    sprintf(pStr, "%s%s,%d,%d,%llu,%d|",
-        pStr,
-        tTmpDsInfo[iPos].filename,
-        //iFCount,        // user ���� ���±�..
-        iUserCnt,       // user ���� ���±�..
-        iKcps,
-        tTmpDsInfo[iPos].iFSize,
-        iUserCnt);
+//     sprintf(pStr, "%s%s,%d,%d,%llu,%d|",
+//         pStr,
+//         tTmpDsInfo[iPos].filename,
+//         //iFCount,        // user ���� ���±�..
+//         iUserCnt,       // user ���� ���±�..
+//         iKcps,
+//         tTmpDsInfo[iPos].iFSize,
+//         iUserCnt);
 
-    //CNPLog::GetInstance().Log("pStr================(%s)",pStr);
+//     //CNPLog::GetInstance().Log("pStr================(%s)",pStr);
 
-    iTotalFCount  += iFCount;
-    iTotalKcps    += iKcps;
-    iTotalUserCnt   += iUserCnt;
+//     iTotalFCount  += iFCount;
+//     iTotalKcps    += iKcps;
+//     iTotalUserCnt   += iUserCnt;
 
-    iPos += iSameCnt;
-    if(iPos >= MAX_CLIENT)
-    {
-      break;
-    }
-  }
+//     iPos += iSameCnt;
+//     if(iPos >= MAX_CLIENT)
+//     {
+//       break;
+//     }
+//   }
 
-  sprintf(m_pchStatistics, "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&%s",
-      iTotalUserCnt, iTotalFCount, iPos, iTotalKcps, pStr);
+//   sprintf(m_pchStatistics, "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&%s",
+//       iTotalUserCnt, iTotalFCount, iPos, iTotalKcps, pStr);
 
-  CNPLog::GetInstance().Log("SendToWeb=(%d) URL=(%s)", strlen(m_pchStatistics), GetMRTGURL());
-}
+//   CNPLog::GetInstance().Log("SendToWeb=(%d) URL=(%s)", strlen(m_pchStatistics), GetMRTGURL());
+// }
 
-void DownloadManager::PutWorkQueue(const void* const _pVoid)
+void ChatManager::PutWorkQueue(const void* const _pVoid)
 {
   m_pWorkQueue->EnQueue(_pVoid);
 }
 
-const void* const DownloadManager::GetWorkQueue()
+const void* const ChatManager::GetWorkQueue()
 {
   return m_pWorkQueue->DeQueue();
 }
 
-void DownloadManager::PutClosedList(Tcmd_USER_CLOSE_DS_DSM* const _pClosedInfo)
+void ChatManager::PutClosedList(Tcmd_USER_CLOSE_DS_DSM* const _pClosedInfo)
 {
   pthread_mutex_lock(&m_lockClosed);
-  //CNPLog::GetInstance().Log("DownloadManager::PutClosedList =>(%p)", _pClosedInfo);
+  CNPLog::GetInstance().Log("ChatManager::PutClosedList =>(%p)", _pClosedInfo);
   m_lstClosed.push_back(_pClosedInfo);
   pthread_mutex_unlock(&m_lockClosed);
 }
 
-const uint64_t DownloadManager::GetClientDownloadSize(uint32_t _iComCode, uint32_t _iBillno)
+const uint64_t ChatManager::GetClientDownloadSize(uint32_t _iComCode, uint32_t _iBillno)
 {
   uint64_t iRet = 0;
 
@@ -632,11 +566,11 @@ const uint64_t DownloadManager::GetClientDownloadSize(uint32_t _iComCode, uint32
   return iRet;
 }
 
-void DownloadManager::HealthCheckClosedList()
+void ChatManager::HealthCheckClosedList()
 {
 
   pthread_mutex_lock(&m_lockClosed);
-  //CNPLog::GetInstance().Log("DownloadManager::HealthCheckClosedList list_size=(%d), max=(%d)", m_lstClosed.size(), m_lstClosed.max_size());
+  //CNPLog::GetInstance().Log("ChatManager::HealthCheckClosedList list_size=(%d), max=(%d)", m_lstClosed.size(), m_lstClosed.max_size());
 
   std::list<Tcmd_USER_CLOSE_DS_DSM*>::iterator iter = m_lstClosed.begin();
   while( iter != m_lstClosed.end() )
@@ -647,7 +581,7 @@ void DownloadManager::HealthCheckClosedList()
     //if((CNPUtil::GetMicroTime() - pClosedInfo->dClosedTime) > TIME_ALIVE)
     if((dNow - pClosedInfo->dClosedTime) > TIME_ALIVE)
     {
-      CNPLog::GetInstance().Log("DownloadManager::HealthCheckClosedList(%p) Kill \
+      CNPLog::GetInstance().Log("ChatManager::HealthCheckClosedList(%p) Kill \
           comcode=(%d),billno=(%d),downSize=(%llu), (%.2f)",
           pClosedInfo, pClosedInfo->nComCode, pClosedInfo->nBillNo, pClosedInfo->nDownSize, dNow);
 
@@ -658,39 +592,11 @@ void DownloadManager::HealthCheckClosedList()
     iter++;
   }
 
-  /*
-     std::list<Tcmd_USER_CLOSE_DS_DSM*>::iterator pos, itrClientPrev;
-     pos = m_lstClosed.begin();
-     while( pos != m_lstClosed.end() )
-     {
-     itrClientPrev = pos++;
-     if(itrClientPrev == NULL)
-     {
-     break;
-     }
-     Tcmd_USER_CLOSE_DS_DSM *pClosedInfo = static_cast<Tcmd_USER_CLOSE_DS_DSM *>(*itrClientPrev);
-
-     double dNow = CNPUtil::GetMicroTime();
-
-  //if((CNPUtil::GetMicroTime() - pClosedInfo->dClosedTime) > TIME_ALIVE)
-  if((dNow - pClosedInfo->dClosedTime) > TIME_ALIVE)
-  {
-  CNPLog::GetInstance().Log("DownloadManager::HealthCheckClosedList(%p) Kill \
-  comcode=(%d),billno=(%d),downSize=(%llu), (%.2f)",
-  pClosedInfo, pClosedInfo->nComCode, pClosedInfo->nBillNo, pClosedInfo->nDownSize, dNow);
-
-
-  m_lstClosed.erase( itrClientPrev );
-  //delete *itrClientPrev;
-  delete pClosedInfo;
-  }
-  }
-  */
   pthread_mutex_unlock(&m_lockClosed);
 }
 
 
-void DownloadManager::HealthCheckUsers()
+void ChatManager::HealthCheckUsers()
 {
   pthread_mutex_lock(&m_lockClient);
 
@@ -703,7 +609,7 @@ void DownloadManager::HealthCheckUsers()
       if(CNPUtil::GetMicroTime()-pClient->GetAccessTime() > TIME_ALIVE ||
           pClient->IsClosed())
       {
-        CNPLog::GetInstance().Log("DownloadManager::HealthCheckUsers Kill Client [%p] fd=(%d)=(%d)",
+        CNPLog::GetInstance().Log("ChatManager::HealthCheckUsers Kill Client [%p] fd=(%d)=(%d)",
             pClient, pClient->GetSocket()->GetFd(), CNPUtil::GetUnixTime()-pClient->GetAccessTime());
         iter = m_lstClient.erase( iter );
 
@@ -736,7 +642,7 @@ void DownloadManager::HealthCheckUsers()
   if(CNPUtil::GetMicroTime()-pClient->GetAccessTime() > TIME_ALIVE ||
   pClient->IsClosed())
   {
-  CNPLog::GetInstance().Log("DownloadManager::HealthCheckUsers Kill Client [%p] fd=(%d)=(%d)",
+  CNPLog::GetInstance().Log("ChatManager::HealthCheckUsers Kill Client [%p] fd=(%d)=(%d)",
   pClient, pClient->GetSocket()->GetFd(), CNPUtil::GetUnixTime()-pClient->GetAccessTime());
 
   m_pIOMP->DelClient(pClient);
@@ -753,13 +659,13 @@ void DownloadManager::HealthCheckUsers()
 }
 
 /*
-   const serverInfoMap& DownloadManager::GetServerPortMap()
+   const serverInfoMap& ChatManager::GetServerPortMap()
    {
    return m_pServerInfo->GetPortMap();
    }
    */
 
-void DownloadManager::UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents)
+void ChatManager::UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents)
 {
 #ifndef _FREEBSD
   m_pIOMP->ModifyFd(_pClient, _uiEvents);
@@ -767,22 +673,21 @@ void DownloadManager::UpdateEPoll(Client* const _pClient, const unsigned int _ui
 }
 
 #ifdef _FREEBSD
-void DownloadManager::AddEPoll(Client* const _pClient, const short _filter, const unsigned short _usFlags)
+void ChatManager::AddEPoll(Client* const _pClient, const short _filter, const unsigned short _usFlags)
 {
   m_pIOMP->AddClient(_pClient, _filter, _usFlags);
 }
 #else
-void DownloadManager::AddEPoll(Client* const _pClient, const unsigned int _uiEvents)
+void ChatManager::AddEPoll(Client* const _pClient, const unsigned int _uiEvents)
 {
   m_pIOMP->AddClient(_pClient, _uiEvents);
 }
 #endif
 
-void DownloadManager::CloseClient(Client* const _pClient)
-  //void DownloadManager::CloseClient(Client* _pClient)
+void ChatManager::CloseClient(Client* const _pClient)
+  //void ChatManager::CloseClient(Client* _pClient)
 {
-  CNPLog::GetInstance().Log("DownloadManager::CloseClient ==> (%p)(%d)",
-      _pClient, _pClient->GetSocket()->GetFd());
+  CNPLog::GetInstance().Log("ChatManager::CloseClient ==> (%p)(%d)", _pClient, _pClient->GetSocket()->GetFd());
 #ifdef _FREEBSD
   m_pIOMP->DelClient(_pClient, EVFILT_READ);
 #else
@@ -810,7 +715,7 @@ void DownloadManager::CloseClient(Client* const _pClient)
   //  CloseQueue::GetInstance().EnQueue(_pClient);
 }
 
-void DownloadManager::SettingDS(const int _iPos, int* const _piSeq, int* const _piMaxUser, int* const _piShmKey, int* const
+void ChatManager::SettingDS(const int _iPos, int* const _piSeq, int* const _piMaxUser, int* const _piShmKey, int* const
     _piShmDSStatus, int _iPid)
 {
   m_pDSInfo[_iPos].iSeq     = _iPos;
@@ -836,7 +741,7 @@ void DownloadManager::SettingDS(const int _iPos, int* const _piSeq, int* const _
       ,m_pShmDSStatus[_iPos].status );
 }
 
-const int DownloadManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* const _piShmKey, int* const _piShmDSStatus, int _iPid)
+const int ChatManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* const _piShmKey, int* const _piShmDSStatus, int _iPid)
 {
   int i;
 
@@ -879,7 +784,7 @@ const int DownloadManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* 
   return 0;
 }
 
-void DownloadManager::DoFork(Process *_pProcess)
+void ChatManager::DoFork(Process *_pProcess)
 {
   /**
    *   IOMP Class Create
@@ -891,7 +796,7 @@ void DownloadManager::DoFork(Process *_pProcess)
 #endif
 
   /**
-   * Create Server Socket for DownloadManager
+   * Create Server Socket for ChatManager
    */
   Client *pServer = NULL;
   serverInfoMap &tmpMap = (serverInfoMap &)m_pServerInfo->GetPortMap();
@@ -927,7 +832,7 @@ void DownloadManager::DoFork(Process *_pProcess)
   }
 
   /**
-   * Create Server Socket for DownloadServer
+   * Create Server Socket for ChatServer
    */
   Client *pDNServer = NULL;
   ServerSocket *pServerSocket = new ServerSocket(SERVER_PORT);
@@ -947,26 +852,26 @@ void DownloadManager::DoFork(Process *_pProcess)
   pServerSocket->SetLinger();
   pDNServer = new ClientServer(pServerSocket);
 
-  // Create SharedMemory
-  // 1. create
-  SharedMemory sm((key_t)m_pServerInfo->GetShmKey(), MAX_CLIENT * sizeof(struct scoreboard_file));
-  if(!sm.IsStarted())
-  {
-    printf("Creating SharedMemory failed! \n");
+  // // Create SharedMemory
+  // // 1. create
+  // SharedMemory sm((key_t)m_pServerInfo->GetShmKey(), MAX_CLIENT * sizeof(struct scoreboard_file));
+  // if(!sm.IsStarted())
+  // {
+  //   printf("Creating SharedMemory failed! \n");
 
-    // 2. destroy
-    SharedMemory sm1((key_t)m_pServerInfo->GetShmKey());
-    sm1.Destroy();
-    return ;
-  }
-  m_pShm = (struct scoreboard_file *)sm.GetDataPoint();
-  if(m_pShm == NULL)
-  {
-    printf("Shm is NULL \n");
-    return;
-  }
-  //printf("Shared Memory start=(%p) \n", m_pShm);
-  memset(m_pShm, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
+  //   // 2. destroy
+  //   SharedMemory sm1((key_t)m_pServerInfo->GetShmKey());
+  //   sm1.Destroy();
+  //   return ;
+  // }
+  // m_pShm = (struct scoreboard_file *)sm.GetDataPoint();
+  // if(m_pShm == NULL)
+  // {
+  //   printf("Shm is NULL \n");
+  //   return;
+  // }
+  // //printf("Shared Memory start=(%p) \n", m_pShm);
+  // memset(m_pShm, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
 
   /**
    * create shm to check DS status
@@ -991,7 +896,7 @@ void DownloadManager::DoFork(Process *_pProcess)
   memset(m_pShmDSStatus, 0, 100 * sizeof(struct TDSStatus));
   // **
 
-  ((DownloadServer *)_pProcess)->SetServerSocket(pDNServer);
+  ((ChatServer *)_pProcess)->SetServerSocket(pDNServer);
 
   CNPLog::GetInstance().BackupLogFile2((char *)m_pServerInfo->GetLogFileName());
   //SpawnProcessWithPipe(_pProcess, m_pServerInfo->GetDNCnt());
@@ -1001,7 +906,7 @@ void DownloadManager::DoFork(Process *_pProcess)
   Run();
 }
 
-void DownloadManager::Run()
+void ChatManager::Run()
 {
   this->SetStarted(true);
 
@@ -1038,21 +943,21 @@ void DownloadManager::Run()
   struct ether_addr haddr;
   memcpy((void *)&haddr, (void *)&m_iMacAddr, 6);
 
-  CNPLog::GetInstance().Log("DownloadManager::Run : pSm=(%p), size=(%d), stSize=(%d), ip=(%s)(%s)",
-      m_pShm,  MAX_CLIENT * sizeof(struct scoreboard_file), sizeof(struct scoreboard_file), inet_ntoa(laddr),
-      (char *)ether_ntoa ((struct ether_addr *)&haddr));
+  // CNPLog::GetInstance().Log("ChatManager::Run : pSm=(%p), size=(%d), stSize=(%d), ip=(%s)(%s)",
+  //     m_pShm,  MAX_CLIENT * sizeof(struct scoreboard_file), sizeof(struct scoreboard_file), inet_ntoa(laddr),
+  //     (char *)ether_ntoa ((struct ether_addr *)&haddr));
 
   // Worker create.
   for(int i = 0; i < m_pServerInfo->GetThreadCount(THREAD_WORKER); i++)
   {
     Thread *t = new ThreadWorker(this);
     ThreadManager::GetInstance()->Spawn(t);
-    CNPLog::GetInstance().Log("In DownloadManager WORKER Create (%p,%lu) ", t, t->GetThreadID());
+    CNPLog::GetInstance().Log("In ChatManager WORKER Create (%p,%lu) ", t, t->GetThreadID());
   }
 
   ThreadTic *tTic = new ThreadTic(this);
   ThreadManager::GetInstance()->Spawn(tTic);
-  CNPLog::GetInstance().Log("In DownloadManager ThreadTic Create (%p) ", tTic);
+  CNPLog::GetInstance().Log("In ChatManager ThreadTic Create (%p) ", tTic);
 
   while(1)
   {
@@ -1099,7 +1004,7 @@ void DownloadManager::Run()
           struct in_addr laddr;
           laddr.s_addr = static_cast<TcpSocket *>(pClientSocket)->GetClientIp();
 
-          CNPLog::GetInstance().Log("DownloadManager Accept ClientIp=(%s), conncnt=(%d), maxuser=(%d)",
+          CNPLog::GetInstance().Log("ChatManager Accept ClientIp=(%s), conncnt=(%d), maxuser=(%d)",
               inet_ntoa(laddr), m_iConnCount, GetMaxUser());
           if(m_iConnCount >= GetMaxUser())
           {
@@ -1119,7 +1024,7 @@ void DownloadManager::Run()
                pClientSocket->SetSndBufSize(1024000);
                CNPLog::GetInstance().Log("2.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
                */
-            pNewClient = new ClientDN(pClientSocket);
+            pNewClient = new ClientChatServer(pClientSocket);
 #ifdef _FREEBSD
             if(m_pIOMP->AddClient(pNewClient, EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR) < 0)
 #else
@@ -1132,7 +1037,7 @@ void DownloadManager::Run()
               }
 
             pNewClient->SetState(STATE_WAIT);
-            //pNewClient->SetDownloadManager(this);
+            //pNewClient->SetChatManager(this);
             pNewClient->SetMainProcess(this);
             pthread_mutex_lock(&m_lockClient);
             /*

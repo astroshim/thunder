@@ -113,7 +113,8 @@ typedef enum
 {
   THREAD_WORKER = 0,    /* WORKER  */
   THREAD_SENDER,        /* SENDER */
-  THREAD_RECEIVER         /* receiver */
+  THREAD_RECEIVER,         /* receiver */
+  THREAD_BROADCASTER         /* broadcast thread */
 }ENUM_THREAD_TYPE;
 
 // file send mode
@@ -125,21 +126,21 @@ typedef enum
 
 
 // DS <-> SHM <-> DSM
-struct scoreboard_file {
-  char cUse;
-  int isupload;
-  unsigned int comcode;
-  unsigned int billno;
+// struct scoreboard_file {
+//   char cUse;
+//   int isupload;
+//   unsigned int comcode;
+//   unsigned int billno;
 
-  unsigned int count;
-  unsigned int kcps;
-  uint64_t    iFSize;
-  uint64_t    iDNSize;
-  char id[16];
-  char filename[128];
-  double      tAccessTime;      // Access time
-  //time_t      tAccessTime;      // Access time
-};
+//   unsigned int count;
+//   unsigned int kcps;
+//   uint64_t    iFSize;
+//   uint64_t    iDNSize;
+//   char id[16];
+//   char filename[128];
+//   double      tAccessTime;      // Access time
+//   //time_t      tAccessTime;      // Access time
+// };
 
 // shm to check DS Status
 // use DSMgr

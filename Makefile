@@ -1,16 +1,10 @@
-#.SUFFIXES = .c .o
-#CC     = gcc
-
-# if machine is 64 bits
-#LDFLAGS= -Wl,--hash-style=sysv
-
 .SUFFIXES = .cpp .o
-CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -D_FREEBSD -D_DEBUG -I /usr/local/opt/openssl/include
+# CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -D_FREEBSD -D_DEBUG -I /usr/local/opt/openssl/include
+CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_FREEBSD -D_DEBUG -I /usr/local/opt/openssl/include
 
 CFLAGS = -g -Wall
-#CFLAGS = -O2 -g
 
-BASE		= $(HOME)/DownloadServer
+BASE		= $(HOME)/ChatServer
 BIN			= $(BASE)
 
 LTHREAD = -lpthread
@@ -25,9 +19,9 @@ LIBS += $(LTHREAD) $(LCURL) $(CRYPTO)
 OBJ_MAIN = MainProcess.o 		\
 		./src/CircularBuff.o      \
 		./src/Client.o            \
-		./src/ClientUserDN.o        \
+		./src/ChatUser.o        \
+		./src/ClientChatServer.o       \
 		./src/ClientServer.o       \
-		./src/ClientDN.o       		\
 		./src/ClientSocket.o      \
 		./src/IOMP_Select.o       \
 		./src/IOMP_KQUEUE.o        \
@@ -49,13 +43,13 @@ OBJ_MAIN = MainProcess.o 		\
 		./src/ThreadWorker.o     \
 		./src/ThreadReceiver.o    \
 		./src/ThreadSender.o      \
+		./src/BroadcastMessage.o      \
+		./src/ThreadBroadcaster.o      \
 		./src/ThreadTic.o       \
-		./src/ThreadQoS.o       \
 		./src/CircularQueue.o     \
 		./src/ReleaseSlot.o     \
-		./src/ThreadQoSSelect.o     \
-		./src/DownloadManager.o	  \
-		./src/DownloadServer.o
+		./src/ChatManager.o	  \
+		./src/ChatServer.o		
 
 SRCS        = $(OBJ_MAIN:.o=.cpp)
 
@@ -63,7 +57,7 @@ DIRS = ./src
 ######################################################################
 ####### Compile definition
 ######################################################################
-TARGET = 	DNServer
+TARGET = 	ChatServer
 
 #all : $(TARGET)
 all : comp $(TARGET)
@@ -84,14 +78,15 @@ dep :
 #	/usr/bin/gccmakedep $(SRCS)
 
 .cpp.o:
-	$(CC) $(CFLAGS) -c $<
+	# $(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 install :
-	cp $(TARGET) ./DownloadServer
-	cp runserver.sh ./DownloadServer
-	cp termserver.sh ./DownloadServer
+	cp $(TARGET) ./ChatServer
+	cp runserver.sh ./ChatServer
+	cp termserver.sh ./ChatServer
 	mkdir logs
-	cp dstat ./DownloadServer
+	cp dstat ./ChatServer
 
 clean :
 	rm -rf $(OBJ_MAIN) $(TARGET) core

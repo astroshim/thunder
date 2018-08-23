@@ -33,7 +33,7 @@ void ThreadCloser::Run()
   {
     int iPacketLen;
         Client *pClient = (Client *)CloseQueue::GetInstance().DeQueue();
-    CNPLog::GetInstance().Log("In ThreadCloser [%p]thread Client Geted! (%p) fd=(%d)",  
+    CNPLog::GetInstance().Log("In ThreadCloser [%p]thread Client god! (%p) fd=(%d)",  
               this, pClient, ((Socket *)(pClient->GetSocket()))->GetFd());
   }
 

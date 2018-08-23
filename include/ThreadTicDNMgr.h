@@ -10,7 +10,7 @@ class ThreadTicDNMgr: public Thread
     DownloadManager   *m_pDownloadManager;
 
     int PostData(char *buf);
-    void SendStorageInfo(void);
+    // void SendStorageInfo(void);
 
   public:
     ThreadTicDNMgr(DownloadManager* const _pDownloadManager);

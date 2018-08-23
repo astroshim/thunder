@@ -3,16 +3,16 @@
 
 #include "./Thread.h"
 
-class DownloadServer;
+class ChatServer;
 
 class ThreadSender: public Thread
 {
   private :
-    DownloadServer *m_pDownloadServer;
+    ChatServer *m_pChatServer;
 
   public:
     ThreadSender();
-    ThreadSender(DownloadServer* const _pDownloadServer);
+    ThreadSender(ChatServer* const _pChatServer);
     ~ThreadSender();
 
     void Run();

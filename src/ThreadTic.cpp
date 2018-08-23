@@ -47,16 +47,16 @@ void ThreadTic::Run()
   while(1)
   {
 
-#ifndef _FREEBSD
-    if(iHealthCnt%12 == 0)  // 60 �ʸ��� HealthCheck & post to Web �Ѵ�.
-    {
-      m_pMainProcess->HealthCheckUsers();
-      if(!(m_pMainProcess->GetMRTGURL() == NULL || strncmp(m_pMainProcess->GetMRTGURL(), "no", 2) == 0))
-      {
-        m_pMainProcess->SendStorageInfo();
-      }
-    }
-#endif
+// #ifndef _FREEBSD
+//     if(iHealthCnt%12 == 0)  // 
+//     {
+//       m_pMainProcess->HealthCheckUsers();
+//       if(!(m_pMainProcess->GetMRTGURL() == NULL || strncmp(m_pMainProcess->GetMRTGURL(), "no", 2) == 0))
+//       {
+//         m_pMainProcess->SendStorageInfo();
+//       }
+//     }
+// #endif
 
     if(iHealthCnt >= 720)
     {

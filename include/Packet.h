@@ -52,6 +52,9 @@ const unsigned short cmd_HEARTBEAT_DSM_DC               = 1611;
 const unsigned short cmd_IBAS_DS_DOWNFINISH_REQ     = 1612;
 const unsigned short cmd_IBAS_DS_DOWNFINISH_RES     = 1613;
 
+const unsigned short cmd_CHAT_DS_DSM                = 1620;
+const unsigned short cmd_CHAT_DSM_DS                = 1621;
+
 /*----------------------------------------------------------------------------
  *  Download Client(DC) <------> Download Server(DS) CMD 1700~1799
  *  --------------------------------------------------------------------------*/

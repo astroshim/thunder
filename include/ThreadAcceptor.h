@@ -3,15 +3,15 @@
 
 #include "./Thread.h"
 
-class DownloadServer;
+class ChatServer;
 class ThreadAcceptor: public Thread
 {
   private :
-    DownloadServer *m_pMainProcess;
+    ChatServer *m_pMainProcess;
 
   public:
     ThreadAcceptor();
-    ThreadAcceptor(DownloadServer* const _pMainProcess);
+    ThreadAcceptor(ChatServer* const _pMainProcess);
     ~ThreadAcceptor();
 
     void Run();

@@ -92,6 +92,11 @@ ServerInfoDN::ServerInfoDN(Properties &_cProperties)
     m_mapThreadCount.insert(threadValType(THREAD_RECEIVER, atoi(_cProperties.GetProperty("THREAD_RECEIVER").c_str())));
   }
 
+  if(_cProperties.GetProperty("THREAD_BROADCASTER") != "")
+  {
+    m_mapThreadCount.insert(threadValType(THREAD_BROADCASTER, atoi(_cProperties.GetProperty("THREAD_BROADCASTER").c_str())));
+  }
+
   if(_cProperties.GetProperty("MRTG_URL") != "")
   {
     strncpy(m_pchMRTGURL, _cProperties.GetProperty("MRTG_URL").c_str(), MAX_URL);

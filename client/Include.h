@@ -118,7 +118,8 @@ typedef enum
 {
     THREAD_WORKER = 0,    /* WORKER  */
     THREAD_SENDER,        /* SENDER */
-    THREAD_RECEIVER         /* receiver */
+    THREAD_RECEIVER,         /* receiver */
+    THREAD_BROADCASTER         /* broadcast thread */
 }ENUM_THREAD_TYPE;
 
 // DS <-> SHM <-> DSM

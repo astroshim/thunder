@@ -10,19 +10,21 @@
 #include "../include/Properties.h"
 #include "../include/CircularQueue.h"
 
-#include "../include/DownloadServer.h"
+#include "../include/ChatServer.h"
 #include "../include/ServerSocket.h"
 #include "../include/Thread.h"
 #include "../include/ThreadAcceptor.h"
 #include "../include/ThreadReceiver.h"
+#include "../include/ThreadBroadcaster.h"
+#include "../include/BroadcastMessage.h"
 #include "../include/ThreadSender.h"
 #include "../include/ThreadTic.h"
 //#include "../include/ThreadQoS.h"
 
-#include "../include/ThreadQoSSelect.h"
-#ifndef _FREEBSD
-#include "../include/ThreadQoSEPoll.h"
-#endif
+// #include "../include/ThreadQoSSelect.h"
+// #ifndef _FREEBSD
+// #include "../include/ThreadQoSEPoll.h"
+// #endif
 /*
 #ifdef _FREEBSD
 #include "../include/ThreadQoSSelect.h"
@@ -35,30 +37,30 @@
 #include "../include/NPUtil.h"
 #include "../include/NPLog.h"
 #include "../include/NPDebug.h"
-#include "../include/ClientUserDN.h"
+#include "../include/ChatUser.h"
 //#include "../include/ClientServer.h"
 #include "../include/MessageQ.h"
 
 #include "../include/SharedMemory.h"
 #include "../include/ReleaseSlot.h"
 
-#include <iostream>
-#include <sstream>
-#include <vector>
+// #include <iostream>
+// #include <sstream>
+// #include <vector>
 
-
-DownloadServer::DownloadServer()
+ChatServer::ChatServer()
   :m_pServerInfo(NULL)
   ,m_iConnCount(0)
   ,m_pDNServerSocket(NULL)
   ,m_pSendPipe(NULL)
-  ,m_pShm(NULL)
+  // ,m_pShm(NULL)
   ,m_pShmKcps(NULL)
   ,m_pShmDSStatus(NULL)
   ,m_pShmD(NULL)
   ,m_pIOMP(NULL)
   ,m_pReceiveQueue(NULL)
   ,m_pSendQueue(NULL)
+  ,m_pBroadcastQueue(NULL)
   ,m_iSeq(-1)
   ,m_iMaxUser(0)
   ,m_iShmKey(0)
@@ -69,18 +71,19 @@ DownloadServer::DownloadServer()
   pthread_mutex_init(&m_lockClient, NULL);
 }
 
-DownloadServer::DownloadServer(Properties& _cProperties)
+ChatServer::ChatServer(Properties& _cProperties)
   //:m_pServerInfo(NULL)
   :m_iConnCount(0)
   ,m_pDNServerSocket(NULL)
   ,m_pSendPipe(NULL)
-  ,m_pShm(NULL)
+  // ,m_pShm(NULL)
   ,m_pShmKcps(NULL)
   ,m_pShmDSStatus(NULL)
   ,m_pShmD(NULL)
   ,m_pIOMP(NULL)
   ,m_pReceiveQueue(new CircularQueue())
   ,m_pSendQueue(new CircularQueue())
+  ,m_pBroadcastQueue(new CircularQueue())
   ,m_iSeq(-1)
   ,m_iMaxUser(0)
   ,m_iShmKey(0)
@@ -91,28 +94,31 @@ DownloadServer::DownloadServer(Properties& _cProperties)
   pthread_mutex_init(&m_lockClient, NULL);
   m_pServerInfo = new ServerInfoDN(_cProperties);
 
-  //CNPLog::GetInstance().Log("================ Create DownloadServer m_pServerInfo=(%p)==", m_pServerInfo);
+  //CNPLog::GetInstance().Log("================ Create ChatServer m_pServerInfo=(%p)==", m_pServerInfo);
 #ifdef _CLIENT_ARRAY
   for(int i = 0; i < MAX_CLIENT; i++)
   {
-    m_arrClient[i] = new ClientUserDN(new ClientSocket(-1));
+    m_arrClient[i] = new ChatUser(new ClientSocket(-1));
     m_arrClient[i]->SetState(STATE_CLOSED);
     m_arrClient[i]->SetMainProcess(this);
+
+    CNPLog::GetInstance().Log("Client Array[%d] == [%p]", i, m_arrClient[i]);
   }
 #endif
 }
 
-DownloadServer::~DownloadServer()
+ChatServer::~ChatServer()
 {
-  //  CNPLog::GetInstance().Log("================ ~DownloadServer() ");
+  //  CNPLog::GetInstance().Log("================ ~ChatServer() ");
   this->SetStarted(false);
   delete m_pIOMP;
   delete m_pServerInfo;
   delete m_pReceiveQueue;
   delete m_pSendQueue;
+  delete m_pBroadcastQueue;
   delete m_pDNServerSocket;
   delete m_pSendPipe;
-  delete m_pShm;
+  // delete m_pShm;
   delete m_pShmKcps;
   delete m_pShmDSStatus;
   delete m_pShmD;
@@ -121,7 +127,7 @@ DownloadServer::~DownloadServer()
 
 }
 
-const int DownloadServer::GetCurrentUserCount()
+const int ChatServer::GetCurrentUserCount()
 {
   /*
      int iCnt;
@@ -136,104 +142,124 @@ const int DownloadServer::GetCurrentUserCount()
   return m_iConnCount;
 }
 
-const int DownloadServer::GetMaxUser()
+const int ChatServer::GetMaxUser()
 {
   return m_iMaxUser;
   //return m_pServerInfo->GetMaxUser();
 }
 
-const int DownloadServer::GetShmKey()
+const int ChatServer::GetShmKey()
 {
   return m_iShmKey;
 }
 
-const int DownloadServer::GetSeq()
+const int ChatServer::GetSeq()
 {
   return m_iSeq;
 }
 
-void DownloadServer::SetSeq(const int _iSeq)
+void ChatServer::SetSeq(const int _iSeq)
 {
   m_iSeq = _iSeq;
 }
 
-void DownloadServer::SetMaxUser(const int _iMaxUser)
+void ChatServer::SetMaxUser(const int _iMaxUser)
 {
   m_iMaxUser = _iMaxUser;
 }
 
-void DownloadServer::SetShmKey(const int _iShmKey)
+void ChatServer::SetShmKey(const int _iShmKey)
 {
   m_iShmKey = _iShmKey;
 }
 
-const char* const DownloadServer::GetIPAddr()
+const char* const ChatServer::GetIPAddr()
 {
   return m_pServerInfo->GetIPAddr();
 }
 
-void DownloadServer::PutReceiveQueue(const void* const _pVoid)
+void ChatServer::PutReceiveQueue(const void* const _pVoid)
 {
   m_pReceiveQueue->EnQueue(_pVoid);
 }
 
-const void* const DownloadServer::GetReceiveQueue()
+const void* const ChatServer::GetReceiveQueue()
 {
   return m_pReceiveQueue->DeQueue();
 }
 
-void DownloadServer::PutSendQueue(const void* const _pVoid)
+void ChatServer::PutSendQueue(const void* const _pVoid)
 {
   m_pSendQueue->EnQueue(_pVoid);
 }
 
-const void* const DownloadServer::GetSendQueue()
+const void* const ChatServer::GetSendQueue()
 {
   return m_pSendQueue->DeQueue();
 }
 
-const char* const DownloadServer::GetMRTGURL()
+// void ChatServer::BroadcastMessage(char *message, Client *const _pClient)
+// {
+//   // static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
+// }
+
+// void ChatServer::PutBroadcastQueue(const void* const _pVoid)
+void ChatServer::PutBroadcastQueue(char *message, Client *const _pClient)
+{
+  // Client *pNewClient;
+  // pNewClient = new ChatUser(_pClientSocket);
+  // pNewClient->SetMainProcess(this);
+
+  // 새로운 class 생성하여 message 와 client 를 세팅해서 queue에 집어 넣자.
+  BroadcastMessage *broadcastMessage = new BroadcastMessage(_pClient->GetSocket()->GetFd(), message);
+  m_pBroadcastQueue->EnQueue(broadcastMessage);
+}
+
+const void* const ChatServer::GetBroadcastQueue()
+{
+  return m_pBroadcastQueue->DeQueue();
+}
+
+const char* const ChatServer::GetMRTGURL()
 {
   return m_pServerInfo->GetMRTGURL();
 }
 
-void DownloadServer::SendStorageInfo()
-{
-  // Send to web about statistics
-}
+// void ChatServer::SendStorageInfo()
+// {
+//   // Send to web about statistics
+// }
 
-const int DownloadServer::GetServerPort()
-{
-  return m_pServerInfo->GetPort(SERVER_PORT);
-}
-
-const int DownloadServer::GetDNServerPort()
+const int ChatServer::GetServerPort()
 {
   return m_pServerInfo->GetPort(SERVER_PORT);
 }
 
-const char* const DownloadServer::GetVolName()
+const int ChatServer::GetDNServerPort()
+{
+  return m_pServerInfo->GetPort(SERVER_PORT);
+}
+
+const char* const ChatServer::GetVolName()
 {
   return m_pServerInfo->GetVolName();
 }
 
-const char* const DownloadServer::GetDirName()
+const char* const ChatServer::GetDirName()
 {
   return m_pServerInfo->GetDirName();
 }
 
-const char* const DownloadServer::GetLogFileName()
+const char* const ChatServer::GetLogFileName()
 {
   return m_pServerInfo->GetLogFileName();
 }
 
-const unsigned int DownloadServer::GetBandwidth(const char _chID)
+const unsigned int ChatServer::GetBandwidth(const char _chID)
 {
   //CNPLog::GetInstance().Log("GetBandwidth ID---> (%c)", _chID);
   return m_pServerInfo->GetBandwidth(_chID);
 }
-
-using namespace std;
 
 // for string delimiter
 vector<string> split(string s, string delimiter) {
@@ -249,27 +275,27 @@ vector<string> split(string s, string delimiter) {
     return res;
 }
 
-
-const int DownloadServer::ConnectToMgr()
+const int ChatServer::ConnectToMgr()
 {
-  int iMgrPort = m_pServerInfo->GetPort(SERVER_PORT_MGR);
+  int port = m_pServerInfo->GetPort(SERVER_PORT_MGR);
 
   vector<string> v = split(m_pServerInfo->GetManagerIpAddresses(), ",");
-  for (const string& part : v) {
-    CNPLog::GetInstance().Log("--> (%s)", part.c_str());
+  for (const string& server : v) {
+    CNPLog::GetInstance().Log("Connect to (%s:%d)", server.c_str(), port);
+    NegotiationWithManager(server, port);
   }
+
   return 0;
+}
 
+const int ChatServer::NegotiationWithManager(string server, int port)
+{
+  CNPLog::GetInstance().Log("Trying Connect to Mgr.. (%s)(%d)", server.c_str(), port);
 
-  CNPLog::GetInstance().Log("Trying Connect to Mgr.. (%s)(%s)(%d)", m_pServerInfo->GetManagerIpAddresses(), m_pServerInfo->GetIPAddr(), iMgrPort);
-
-  //m_pSendPipe = new ClientSocket();
-  //if(m_pSendPipe->NonBlockConnect(m_pServerInfo->GetIPAddr(), iMgrPort) < 0)
   ClientSocket *pCSocket = new ClientSocket();
-  if(pCSocket->Connect(m_pServerInfo->GetIPAddr(), iMgrPort) < 0)
+  if(pCSocket->Connect(server.c_str(), port) < 0)
   {
-    CNPLog::GetInstance().Log("Error Connect to Mgr (%s)(%d)",
-        m_pServerInfo->GetIPAddr(), iMgrPort);
+    CNPLog::GetInstance().Log("Error Connect to Mgr (%s)(%d)", server.c_str(), port);
     pCSocket->Close();
     delete pCSocket;
     pCSocket = NULL;
@@ -290,8 +316,7 @@ const int DownloadServer::ConnectToMgr()
     //if(static_cast<Socket *>(pCSocket)->Write((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DS_DSM)) < 0)
     //if(((Socket *)(pCSocket))->Write((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DS_DSM)) < 0)
   {
-    CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Send Fail (%s)(%d)",
-        m_pServerInfo->GetIPAddr(), iMgrPort);
+    CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Send Fail (%s)(%d)", server.c_str(), port);
 
     pCSocket->Close();
     delete pCSocket;
@@ -304,8 +329,7 @@ const int DownloadServer::ConnectToMgr()
   //if(pCSocket->Read((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DSM_DS)) < 0)
   if(pCSocket->Recv((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DSM_DS)) < 0)
   {
-    CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Recv Fail (%s)(%d)",
-        m_pServerInfo->GetIPAddr(), iMgrPort);
+    CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Recv Fail (%s)(%d)", server.c_str(), port);
 
     pCSocket->Close();
     delete pCSocket;
@@ -327,7 +351,7 @@ const int DownloadServer::ConnectToMgr()
   return 0;
 }
 
-void DownloadServer::HealthCheckUsers()
+void ChatServer::HealthCheckUsers()
 {
   if(*m_pShmD == D_D)
   {
@@ -343,7 +367,7 @@ void DownloadServer::HealthCheckUsers()
       Client *pClient = m_arrClient[i];
       if(CNPUtil::GetMicroTime() - pClient->GetAccessTime() > TIME_ALIVE)
       {
-        CNPLog::GetInstance().Log("DownloadServer::HealthCheckUsers Kill Client [%p] (%d) (%d)\n",
+        CNPLog::GetInstance().Log("ChatServer::HealthCheckUsers Kill Client [%p] (%d) (%d)\n",
             pClient,
             m_arrClient[i]->GetState(),
             m_arrClient[i]->GetUserSeq());
@@ -360,9 +384,13 @@ void DownloadServer::HealthCheckUsers()
 
     if(CNPUtil::GetMicroTime()-pClient->GetAccessTime() > TIME_ALIVE)
     {
+      #ifdef _FREEBSD
+      m_pIOMP->DelClient(pClient, EVFILT_READ);
+      #else
       m_pIOMP->DelClient(pClient);
+      #endif
 
-      CNPLog::GetInstance().Log("DownloadServer::HealthCheckUsers Kill Client [%p] fd=(%d)=(%f)\n",
+      CNPLog::GetInstance().Log("ChatServer::HealthCheckUsers Kill Client [%p] fd=(%d)=(%f)\n",
           pClient,
           //((Socket *) (pClient->GetSocket()))->GetFd(),
           pClient->GetSocket()->GetFd(),
@@ -372,7 +400,7 @@ void DownloadServer::HealthCheckUsers()
       iter = m_lstClient.erase( iter );
 
       m_pSlot->PutSlot(pClient->GetUserSeq());
-      memset(&(m_pShm[pClient->GetUserSeq()]), 0, sizeof(struct scoreboard_file));
+      // memset(&(m_pShm[pClient->GetUserSeq()]), 0, sizeof(struct scoreboard_file));
 
       delete pClient;
       m_iConnCount--;
@@ -384,22 +412,22 @@ void DownloadServer::HealthCheckUsers()
 #endif
 }
 
-Client* const DownloadServer::GetServerSocket()
+Client* const ChatServer::GetServerSocket()
 {
   return m_pDNServerSocket;
 }
 
-void DownloadServer::SetServerSocket(Client *_pClient)
+void ChatServer::SetServerSocket(Client *_pClient)
 {
   m_pDNServerSocket = _pClient;
 }
 
-ClientSocket* const DownloadServer::GetSendPipeClient()
+ClientSocket* const ChatServer::GetSendPipeClient()
 {
   return m_pSendPipe;
 }
 
-void DownloadServer::UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents)
+void ChatServer::UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents)
 {
 #ifndef _FREEBSD
   m_pIOMP->ModifyFd(_pClient, _uiEvents);
@@ -407,26 +435,26 @@ void DownloadServer::UpdateEPoll(Client* const _pClient, const unsigned int _uiE
 }
 
 #ifdef _FREEBSD
-void DownloadServer::AddEPoll(Client* const _pClient, const short _filter, const unsigned short _usFlags)
+void ChatServer::AddEPoll(Client* const _pClient, const short _filter, const unsigned short _usFlags)
 {
   m_pIOMP->AddClient(_pClient, _filter, _usFlags);
 }
 #else
-void DownloadServer::AddEPoll(Client* const _pClient, const unsigned int _uiEvents)
+void ChatServer::AddEPoll(Client* const _pClient, const unsigned int _uiEvents)
 {
   m_pIOMP->AddClient(_pClient, _uiEvents);
 }
 #endif
 
-#ifdef _ONESHOT
-const int DownloadServer::AddQoS(Client* const _pClient, const unsigned int _uiEvents)
-{
-  return m_pTQoS->AddQoS(_pClient, _uiEvents);
-}
-#endif
+// #ifdef _ONESHOT
+// const int ChatServer::AddQoS(Client* const _pClient, const unsigned int _uiEvents)
+// {
+//   return m_pTQoS->AddQoS(_pClient, _uiEvents);
+// }
+// #endif
 
 #ifdef _CLIENT_ARRAY
-void DownloadServer::AcceptClient(const int _iClientFD)
+void ChatServer::AcceptClient(const int _iClientFD)
 {
   m_iConnCount++;
 
@@ -445,7 +473,7 @@ void DownloadServer::AcceptClient(const int _iClientFD)
   //CNPLog::GetInstance().Log("____________SetClientAddr = (%s)", inet_ntoa(caddr.sin_addr));
   */
 
-  // client socket�� ����
+  // client socket
   m_arrClient[iSlot]->SetSocketFd(_iClientFD);
   //  m_arrClient[iSlot]->SetMainProcess(this);
   m_arrClient[iSlot]->SetUserSeq(iSlot);
@@ -460,22 +488,23 @@ void DownloadServer::AcceptClient(const int _iClientFD)
 #ifndef _ONESHOT
   if(m_pIOMP->AddClient(m_arrClient[iSlot], EPOLLIN) < 0)
 #else
-#ifdef _FREEBSD
+  #ifdef _FREEBSD
     if(m_pIOMP->AddClient(m_arrClient[iSlot], EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR) < 0)
-#else
+  #else
       if(m_pIOMP->AddClient(m_arrClient[iSlot], EPOLLIN|EPOLLET|EPOLLONESHOT) < 0)
-#endif
+  #endif
 #endif
       {
         CloseClient(iSlot);
         return;
       }
-  //CNPLog::GetInstance().Log("Accept Client userseq=(%d), (%p)", iSlot, &(m_pShm[iSlot]));
+  CNPLog::GetInstance().Log("Accept Client slot=(%d)", iSlot);
+  // CNPLog::GetInstance().Log("Accept Client userseq=(%d), (%p)", iSlot, &(m_pShm[iSlot]));
 }
 
 #else
 
-void DownloadServer::AcceptClient(Socket* const _pClientSocket)
+void ChatServer::AcceptClient(Socket* const _pClientSocket)
 {
   m_iConnCount++;
   pthread_mutex_lock(&m_lockClient);
@@ -489,7 +518,7 @@ void DownloadServer::AcceptClient(Socket* const _pClientSocket)
   }
 
   Client *pNewClient;
-  pNewClient = new ClientUserDN(_pClientSocket);
+  pNewClient = new ChatUser(_pClientSocket);
   pNewClient->SetMainProcess(this);
 
   CNPLog::GetInstance().Log("1.NewClient Client=(%p), ClientSocket=(%p)", pNewClient, _pClientSocket);
@@ -522,12 +551,12 @@ void DownloadServer::AcceptClient(Socket* const _pClientSocket)
 #endif
 
 #ifdef _CLIENT_ARRAY
-void DownloadServer::CloseClient(const int _iSlot)
+void ChatServer::CloseClient(const int _iSlot)
 {
   pthread_mutex_lock(&m_lockClient);
   if( _iSlot == -1 )
   {
-    CNPLog::GetInstance().Log("=====> DownloadServer::CloseClient This Slot is already CLOSED!!! [%d]", _iSlot);
+    CNPLog::GetInstance().Log("=====> ChatServer::CloseClient This Slot is already CLOSED!!! [%d]", _iSlot);
     return;
   }
 
@@ -536,7 +565,7 @@ void DownloadServer::CloseClient(const int _iSlot)
 #else
   m_pIOMP->DelClient(m_arrClient[_iSlot]);
 #endif
-  ClientUserDN *pClientUser = dynamic_cast<ClientUserDN *>(m_arrClient[_iSlot]);
+  ChatUser *pClientUser = dynamic_cast<ChatUser *>(m_arrClient[_iSlot]);
 
   if(pClientUser != NULL)
   {
@@ -545,144 +574,159 @@ void DownloadServer::CloseClient(const int _iSlot)
 
   char pchTimeStr[10];
   memset(pchTimeStr, 0x00, sizeof(pchTimeStr));
-  CNPUtil::GetMicroTimeStr(pClientUser->GetFileSendStartTime(), pchTimeStr);
+  // CNPUtil::GetMicroTimeStr(pClientUser->GetFileSendStartTime(), pchTimeStr);
 
-  // added 09.11.13
-  CNPLog::GetInstance().Log("DisConnected %s %s %d %llu %.2f %s",
-      (static_cast<TcpSocket *>(pClientUser->GetSocket()))->GetClientIpAddr()
-      ,pClientUser->GetID()
-      ,pClientUser->GetComCode()
-      ,pClientUser->GetTotalSendSize()
-      ,CNPUtil::GetMicroTime()- pClientUser->GetFileSendStartTime()
-      ,pClientUser->GetFileName());
+  // // added 09.11.13
+  // CNPLog::GetInstance().Log("DisConnected %s %s %d %llu %.2f %s",
+  //     (static_cast<TcpSocket *>(pClientUser->GetSocket()))->GetClientIpAddr()
+  //     ,pClientUser->GetID()
+  //     ,pClientUser->GetComCode()
+  //     ,pClientUser->GetTotalSendSize()
+  //     ,CNPUtil::GetMicroTime()- pClientUser->GetFileSendStartTime()
+  //     ,pClientUser->GetFileName());
 
   m_arrClient[_iSlot]->SetState(STATE_CLOSED);
   m_arrClient[_iSlot]->GetSocket()->Close();
 
   m_arrClient[_iSlot]->FreePacket();
-  m_arrClient[_iSlot]->InitValiable();
+  // m_arrClient[_iSlot]->InitValiable();
 
   m_pSlot->PutSlot(_iSlot);
-  memset(&(m_pShm[_iSlot]), 0, sizeof(struct scoreboard_file));
+  // memset(&(m_pShm[_iSlot]), 0, sizeof(struct scoreboard_file));
   m_arrClient[_iSlot]->SetUserSeq(-1);
   pthread_mutex_unlock(&m_lockClient);
   m_iConnCount--;
-  //CNPLog::GetInstance().Log("DownloadServer::CloseClient2(%p) userseq=(%d)", pClientUser, _iSlot);
+  //CNPLog::GetInstance().Log("ChatServer::CloseClient2(%p) userseq=(%d)", pClientUser, _iSlot);
 }
-#else
 
-void DownloadServer::CloseClient(Client* const _pClient)
+// void ChatServer::BroadcastMessage(char *message, Client *const _pClient)
+// {
+//   // static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
+// }
+
+
+#else
+void ChatServer::CloseClient(Client* const _pClient)
 {
+  #ifdef _FREEBSD
+  m_pIOMP->DelClient(_pClient, EVFILT_READ);
+  #else
   m_pIOMP->DelClient(_pClient);
+  #endif
 
   char pchTimeStr[10];
   memset(pchTimeStr, 0x00, sizeof(pchTimeStr));
-  CNPUtil::GetMicroTimeStr(static_cast<ClientUserDN *>(_pClient)->GetFileSendStartTime(), pchTimeStr);
 
-  CNPLog::GetInstance().Log("DownloadServer::CloseClient(%p) userseq=(%d), SDownTime=(%s), DownTime=(%f), DownSize=(%llu)",
-      _pClient, _pClient->GetUserSeq(),
-      pchTimeStr,
-      CNPUtil::GetMicroTime()- static_cast<ClientUserDN *>(_pClient)->GetFileSendStartTime(),
-      static_cast<ClientUserDN *>(_pClient)->GetTotalSendSize());
+  // CNPUtil::GetMicroTimeStr(static_cast<ChatUser *>(_pClient)->GetFileSendStartTime(), pchTimeStr);
+
+  // CNPLog::GetInstance().Log("ChatServer::CloseClient(%p) userseq=(%d), SDownTime=(%s), DownTime=(%f), DownSize=(%llu)",
+  //     _pClient, _pClient->GetUserSeq(),
+  //     pchTimeStr,
+  //     CNPUtil::GetMicroTime()- static_cast<ChatUser *>(_pClient)->GetFileSendStartTime(),
+  //     static_cast<ChatUser *>(_pClient)->GetTotalSendSize());
 
   if(_pClient->GetType() == CLIENT_USER)
   {
-    static_cast<ClientUserDN *>(_pClient)->SendCloseToMgr();
+    static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
   }
-  /*
-     ClientUserDN *pClientUser = dynamic_cast<ClientUserDN *>(_pClient);
-     if(pClientUser != NULL)
-     {
-     pClientUser->SendCloseToMgr();
-  //((ClientUserDN *)_pClient)->SendCloseToMgr();
-  }
-  */
 
   pthread_mutex_lock(&m_lockClient);
   int iSlot = _pClient->GetUserSeq();
   m_lstClient.remove(_pClient);
   m_pSlot->PutSlot(iSlot);
-  memset(&(m_pShm[iSlot]), 0, sizeof(struct scoreboard_file));
+  // memset(&(m_pShm[iSlot]), 0, sizeof(struct scoreboard_file));
   delete _pClient;
   pthread_mutex_unlock(&m_lockClient);
   m_iConnCount--;
 }
+
+void ChatServer::MessageBroadcast(BroadcastMessage *_message)
+{
+  // static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
+  pthread_mutex_lock(&m_lockClient);
+  std::list<Client*>::iterator iter = m_lstClient.begin();
+  while( iter != m_lstClient.end() )
+  {
+    Client *pClient = static_cast<Client *>(*iter);
+    CNPLog::GetInstance().Log("ChatServer::MessageBroadCast client socket:(%d), message socket=(%d), message=(%s)",  
+                                    pClient->GetSocket()->GetFd(),
+                                    _message->GetSocketFD(),
+                                    _message->GetMessage());
+
+    iter++;
+  }
+  pthread_mutex_unlock(&m_lockClient);
+}
+
 #endif
 
-void DownloadServer::WriteUserInfo(Client* const _pClient)
-{
-  int iSlot = _pClient->GetUserSeq();
-  ClientUserDN *pClient = static_cast<ClientUserDN *>(_pClient);
-  /*
-     ClientUserDN *pClient = dynamic_cast<ClientUserDN *>(_pClient);
-     if(pClient == NULL)
-     {
-     CNPLog::GetInstance().Log("WriteUserInfo slot=(%d) ERROR(%p)", iSlot, _pClient);
-     return;
-     }
-     */
-  //CNPLog::GetInstance().Log("WriteUserInfo slot=(%d) (%p)", iSlot, _pClient);
 
-  m_pShm[iSlot].cUse    = ON;
-  m_pShm[iSlot].comcode   = pClient->GetComCode();
-  m_pShm[iSlot].billno  = pClient->GetBillNo();
+// void ChatServer::WriteUserInfo(Client* const _pClient)
+// {
+//   int iSlot = _pClient->GetUserSeq();
+//   ChatUser *pClient = static_cast<ChatUser *>(_pClient);
+//   /*
+//      ChatUser *pClient = dynamic_cast<ChatUser *>(_pClient);
+//      if(pClient == NULL)
+//      {
+//      CNPLog::GetInstance().Log("WriteUserInfo slot=(%d) ERROR(%p)", iSlot, _pClient);
+//      return;
+//      }
+//      */
+//   //CNPLog::GetInstance().Log("WriteUserInfo slot=(%d) (%p)", iSlot, _pClient);
 
-  m_pShm[iSlot].kcps    = pClient->GetBandWidth();
-  if(m_pShm[iSlot].iFSize <= 0)
-  {
-    m_pShm[iSlot].iFSize  = pClient->GetFileSize();
-  }
-  m_pShm[iSlot].iDNSize   = pClient->GetTotalSendSize();
+//   m_pShm[iSlot].cUse    = ON;
+//   m_pShm[iSlot].comcode   = pClient->GetComCode();
+//   m_pShm[iSlot].billno  = pClient->GetBillNo();
 
-  strcpy(m_pShm[iSlot].id, pClient->GetID());
-  strcpy(m_pShm[iSlot].filename, pClient->GetFileName());
-  m_pShm[iSlot].tAccessTime = CNPUtil::GetMicroTime();
+//   m_pShm[iSlot].kcps    = pClient->GetBandWidth();
+//   if(m_pShm[iSlot].iFSize <= 0)
+//   {
+//     m_pShm[iSlot].iFSize  = pClient->GetFileSize();
+//   }
+//   m_pShm[iSlot].iDNSize   = pClient->GetTotalSendSize();
 
-}
+//   strcpy(m_pShm[iSlot].id, pClient->GetID());
+//   strcpy(m_pShm[iSlot].filename, pClient->GetFileName());
+//   m_pShm[iSlot].tAccessTime = CNPUtil::GetMicroTime();
 
-/*
-   void DownloadServer::AddThroughput(const int _iSendSize)
-   {
-   (*m_pShmKcps) += _iSendSize;
-   }
-   */
-
-void DownloadServer::AddThroughput(const int _iIdx, const int _iSendSize)
-{
-  // idx 0�� �� ���۷��̴�.
-  m_pShmKcps[0].kcps += _iSendSize;
-  m_pShmKcps[_iIdx].kcps += _iSendSize;
-}
+// }
 
 
-const int DownloadServer::GetComCodeIdx(const int _iComCode)
-{
-  int i = 0;
-  for(i = 1; i < MAX_COMPANY; i++)
-  {
-    if(m_pShmKcps[i].comcode == _iComCode)
-    {
-      //CNPLog::GetInstance().Log("1.DownloadServer::SetComCodeIdx=(%d) idx=(%d)",  _iComCode, i);
-      break;
-    }
+// void ChatServer::AddThroughput(const int _iIdx, const int _iSendSize)
+// {
+//   m_pShmKcps[0].kcps += _iSendSize;
+//   m_pShmKcps[_iIdx].kcps += _iSendSize;
+// }
 
-    if(m_pShmKcps[i].comcode == 0)
-    {
-      //CNPLog::GetInstance().Log("2.DownloadServer::SetComCodeIdx=(%d) idx=(%d)",  _iComCode, i);
-      m_pShmKcps[i].comcode = _iComCode;
-      break;
-    }
-  }
+// const int ChatServer::GetComCodeIdx(const int _iComCode)
+// {
+//   int i = 0;
+//   for(i = 1; i < MAX_COMPANY; i++)
+//   {
+//     if(m_pShmKcps[i].comcode == _iComCode)
+//     {
+//       //CNPLog::GetInstance().Log("1.ChatServer::SetComCodeIdx=(%d) idx=(%d)",  _iComCode, i);
+//       break;
+//     }
 
-  return i;
-}
+//     if(m_pShmKcps[i].comcode == 0)
+//     {
+//       //CNPLog::GetInstance().Log("2.ChatServer::SetComCodeIdx=(%d) idx=(%d)",  _iComCode, i);
+//       m_pShmKcps[i].comcode = _iComCode;
+//       break;
+//     }
+//   }
 
-void DownloadServer::SetD()
+//   return i;
+// }
+
+void ChatServer::SetD()
 {
   (*m_pShmD) = D_D;
 }
 
-void DownloadServer::Run()
+void ChatServer::Run()
 {
   this->SetStarted(true);
   SetPPid(getppid());
@@ -697,16 +741,17 @@ void DownloadServer::Run()
   m_pIOMP = new IOMP_EPoll(1000);
 #endif
 
-  // create log file. : pid ���� �α׸� �����.
+  // create log file. 
   char pchLogFileName[1024];
   memset(pchLogFileName, 0x00, sizeof(pchLogFileName));
-  sprintf(pchLogFileName, "%s_%d", m_pServerInfo->GetLogFileName(), getpid());
+  sprintf(pchLogFileName, "%s", m_pServerInfo->GetLogFileName());
+  // sprintf(pchLogFileName, "%s_%d", m_pServerInfo->GetLogFileName(), getpid());
   //if(CNPLog::GetInstance().SetFileName(pchLogFileName));
   CNPLog::GetInstance().SetFileName(pchLogFileName);
 
   /*
      if(CNPLog::GetInstance().SetFileName(m_pServerInfo->GetLogFileName()));
-     CNPLog::GetInstance().Log("DownloadServer::Run forked GetNetworkByteOrder=(%d), pid=(%d)",
+     CNPLog::GetInstance().Log("ChatServer::Run forked GetNetworkByteOrder=(%d), pid=(%d)",
      CNPUtil::GetNetworkByteOrder(), GetPid());
      */
   sleep(3);
@@ -723,10 +768,10 @@ void DownloadServer::Run()
   // create release slot
   m_pSlot = new ReleaseSlot(GetMaxUser());
 
-  // attach SharedMemory
-  SharedMemory sm((key_t)GetShmKey(), sizeof(struct scoreboard_file));
-  m_pShm = (struct scoreboard_file *)sm.GetDataPoint();
-  m_pShm = &(m_pShm[GetMaxUser() * GetSeq()]);
+  // // attach SharedMemory
+  // SharedMemory sm((key_t)GetShmKey(), sizeof(struct scoreboard_file));
+  // m_pShm = (struct scoreboard_file *)sm.GetDataPoint();
+  // m_pShm = &(m_pShm[GetMaxUser() * GetSeq()]);
 
 
   // attach shm where ds status
@@ -734,8 +779,8 @@ void DownloadServer::Run()
   m_pShmDSStatus = (struct TDSStatus *)smDSStatus.GetDataPoint();
   m_pShmDSStatus = &(m_pShmDSStatus[GetSeq()]);
 
-  CNPLog::GetInstance().Log("DownloadServer::Run pShm=(%p), StatusShmKey=(%d), skip=(%d), %d",
-      m_pShm, m_iShmDSStatus, (sizeof(struct scoreboard_file) * (GetMaxUser() * GetSeq())), sizeof(struct scoreboard_file));
+  // CNPLog::GetInstance().Log("ChatServer::Run pShm=(%p), StatusShmKey=(%d), skip=(%d), %d",
+  //     m_pShm, m_iShmDSStatus, (sizeof(struct scoreboard_file) * (GetMaxUser() * GetSeq())), sizeof(struct scoreboard_file));
 
   SharedMemory smD((key_t)188891, sizeof(int));
   if(!smD.IsStarted())
@@ -776,30 +821,28 @@ void DownloadServer::Run()
   {
     Thread *t = new ThreadSender(this);
     ThreadManager::GetInstance()->Spawn(t);
-    CNPLog::GetInstance().Log("In DownloadServer Sender Create (%p,%lu) ", t, t->GetThreadID());
+    CNPLog::GetInstance().Log("In ChatServer Sender Create (%p,%lu) ", t, t->GetThreadID());
   }
 
   for(int i = 0; i < m_pServerInfo->GetThreadCount(THREAD_RECEIVER); i++)
   {
     Thread *t = new ThreadReceiver(this);
     ThreadManager::GetInstance()->Spawn(t);
-    CNPLog::GetInstance().Log("In DownloadServer Receiver Create (%p,%lu) ", t, t->GetThreadID());
+    CNPLog::GetInstance().Log("In ChatServer Receiver Create (%p,%lu) ", t, t->GetThreadID());
+  }
+
+  for(int i = 0; i < m_pServerInfo->GetThreadCount(THREAD_BROADCASTER); i++)
+  {
+    Thread *t = new ThreadBroadcaster(this);
+    ThreadManager::GetInstance()->Spawn(t);
+    CNPLog::GetInstance().Log("In ChatServer Broadcaster Create (%p,%lu) ", t, t->GetThreadID());
   }
 
   ThreadTic *tTic = new ThreadTic(this);
   ThreadManager::GetInstance()->Spawn(tTic);
 
-#ifdef _ONESHOT
-  #ifdef _FREEBSD
-  m_pTQoS = new ThreadQoSSelect(this);
-  #else // linux
-  m_pTQoS = new ThreadQoSEPoll(this);
-  #endif
-  ThreadManager::GetInstance()->Spawn(m_pTQoS);
-#endif
-
   m_pShmDSStatus->status = ON;
-  CNPLog::GetInstance().Log("In DownloadServer Status =======> pid=(%d), seq=(%d), status=(%d)",
+  CNPLog::GetInstance().Log("In ChatServer Status =======> pid=(%d), seq=(%d), status=(%d)",
       m_pShmDSStatus->pid
       ,m_pShmDSStatus->seq
       ,m_pShmDSStatus->status);
@@ -927,10 +970,10 @@ void DownloadServer::Run()
         else
           if(tEvents[i].events & EPOLLOUT)
           {
-            if( ((ClientUserDN*)pClient)->GetSendPacketCount() > 0 &&
-                ((ClientUserDN*)pClient)->GetSendTime() < CNPUtil::GetMicroTime())
+            if( ((ChatUser*)pClient)->GetSendPacketCount() > 0 &&
+                ((ChatUser*)pClient)->GetSendTime() < CNPUtil::GetMicroTime())
             {
-              //CNPLog::GetInstance().Log("2. In Download Server =>>(%f), (%f)", ((ClientUserDN*)pClient)->GetSendTime(), CNPUtil::GetMicroTime());
+              //CNPLog::GetInstance().Log("2. In Download Server =>>(%f), (%f)", ((ChatUser*)pClient)->GetSendTime(), CNPUtil::GetMicroTime());
               m_pIOMP->DelClient(pClient);
               pClient->SetAccessTime();
               PutSendQueue(pClient);
