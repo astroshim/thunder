@@ -3,6 +3,7 @@
 
 #include "./Client.h"
 
+class BroadcastMessage;
 class ChatUser: public Client
 {
   private:
@@ -38,11 +39,11 @@ class ChatUser: public Client
     const int   ExecuteCommand(Thread *_pThread);
 
     // DS<->DSM command
-    void SendCloseToMgr();
+    // void SendCloseToMgr();
     void SetSendMode(const ENUM_SEND_MODE _eMode);
     const ENUM_SEND_MODE GetSendMode();
 
-    void BroadcastMessage(char *message);
+    void MessageBroadcast(BroadcastMessage *message);
 
     // DS command
     void WorkHello(const T_PACKET &_tPacket);

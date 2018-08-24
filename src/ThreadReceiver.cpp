@@ -44,9 +44,7 @@ void ThreadReceiver::Run()
     {
       if (iRet == USER_CLOSE)
       {
-        //CNPLog::GetInstance().Log("Close In ThreadReceiver.(%p)", pClient);
-#ifdef _DEBUG
-#endif
+        CNPLog::GetInstance().Log("Close In ThreadReceiver.(%p)", pClient);
 
 #ifdef _CLIENT_ARRAY
         m_pChatServer->CloseClient(pClient->GetUserSeq());

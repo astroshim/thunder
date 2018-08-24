@@ -82,7 +82,7 @@ class Socket
     const int   SetSndBufSize(const int _iBufSize);
     const int   SetRcvBufSize(const int _iBufSize);
 
-    const int     SetTcpCORK(int _iOptVal);
+    const int   SetTcpCORK(int _iOptVal);
     const int   SetNonBlock();
     const int   SetBlock();
     const int   SetKeepAlive();

@@ -9,22 +9,24 @@ const int MessageSize = 1024;
 /**
  * NonCopyable Class
  */
-// class Client;
 class BroadcastMessage : private NonCopyable
 {
   public:
     BroadcastMessage();
-    BroadcastMessage(int _socket, char *_message);
-    // BroadcastMessage(Client *_client, char *_message);
     virtual ~BroadcastMessage();
 
     const char* GetMessage();
-    const int GetSocketFD();
+    const int GetSocketFd();
+    const int GetMessageSize();
+
+    void SetMessageSize(int _message_size);
+    void SetSocketFd(int _socket);
+    void SetMessage(char *_message);
 
   private:
     int  socket;
-    // Client  *client;
-    char    *message;
+    char *message;
+    int  message_size;
 };
 
 #endif

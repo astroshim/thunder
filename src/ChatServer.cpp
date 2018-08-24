@@ -52,7 +52,7 @@ ChatServer::ChatServer()
   :m_pServerInfo(NULL)
   ,m_iConnCount(0)
   ,m_pDNServerSocket(NULL)
-  ,m_pSendPipe(NULL)
+  // ,m_lstChatManagerSocket(NULL)
   // ,m_pShm(NULL)
   ,m_pShmKcps(NULL)
   ,m_pShmDSStatus(NULL)
@@ -75,7 +75,7 @@ ChatServer::ChatServer(Properties& _cProperties)
   //:m_pServerInfo(NULL)
   :m_iConnCount(0)
   ,m_pDNServerSocket(NULL)
-  ,m_pSendPipe(NULL)
+  // ,m_pSendPipe(NULL)
   // ,m_pShm(NULL)
   ,m_pShmKcps(NULL)
   ,m_pShmDSStatus(NULL)
@@ -117,7 +117,7 @@ ChatServer::~ChatServer()
   delete m_pSendQueue;
   delete m_pBroadcastQueue;
   delete m_pDNServerSocket;
-  delete m_pSendPipe;
+  // delete m_pSendPipe;
   // delete m_pShm;
   delete m_pShmKcps;
   delete m_pShmDSStatus;
@@ -204,15 +204,15 @@ const void* const ChatServer::GetSendQueue()
 // }
 
 // void ChatServer::PutBroadcastQueue(const void* const _pVoid)
-void ChatServer::PutBroadcastQueue(char *message, Client *const _pClient)
+void ChatServer::PutBroadcastQueue(BroadcastMessage *message, Client *const _pClient)
 {
   // Client *pNewClient;
   // pNewClient = new ChatUser(_pClientSocket);
   // pNewClient->SetMainProcess(this);
 
   // 새로운 class 생성하여 message 와 client 를 세팅해서 queue에 집어 넣자.
-  BroadcastMessage *broadcastMessage = new BroadcastMessage(_pClient->GetSocket()->GetFd(), message);
-  m_pBroadcastQueue->EnQueue(broadcastMessage);
+  // BroadcastMessage *broadcastMessage = new BroadcastMessage(_pClient->GetSocket()->GetFd(), message);
+  m_pBroadcastQueue->EnQueue(message);
 }
 
 const void* const ChatServer::GetBroadcastQueue()
@@ -282,13 +282,14 @@ const int ChatServer::ConnectToMgr()
   vector<string> v = split(m_pServerInfo->GetManagerIpAddresses(), ",");
   for (const string& server : v) {
     CNPLog::GetInstance().Log("Connect to (%s:%d)", server.c_str(), port);
-    NegotiationWithManager(server, port);
+    // NegotiationWithManager(server, port);
+    m_lstChatManagerSocket.push_back(NegotiationWithManager(server, port));
   }
 
   return 0;
 }
 
-const int ChatServer::NegotiationWithManager(string server, int port)
+ClientSocket* const ChatServer::NegotiationWithManager(string server, int port)
 {
   CNPLog::GetInstance().Log("Trying Connect to Mgr.. (%s)(%d)", server.c_str(), port);
 
@@ -299,8 +300,7 @@ const int ChatServer::NegotiationWithManager(string server, int port)
     pCSocket->Close();
     delete pCSocket;
     pCSocket = NULL;
-
-    return -1;
+    return NULL;
   }
 
   // hello to mgr
@@ -321,7 +321,7 @@ const int ChatServer::NegotiationWithManager(string server, int port)
     pCSocket->Close();
     delete pCSocket;
     pCSocket = NULL;
-    return -1;
+    return NULL;
   }
 
   memset((char *)&tHelloPacket, 0x00, sizeof(T_PACKET));
@@ -334,10 +334,8 @@ const int ChatServer::NegotiationWithManager(string server, int port)
     pCSocket->Close();
     delete pCSocket;
     pCSocket = NULL;
-    return -1;
+    return NULL;
   }
-
-  m_pSendPipe = pCSocket;
 
   Tcmd_HELLO_DSM_DS *pRcvBody = (Tcmd_HELLO_DSM_DS *)tHelloPacket.data;
   CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Recv seq=(%d), shmKey=(%d), maxUser=(%d)",
@@ -345,10 +343,11 @@ const int ChatServer::NegotiationWithManager(string server, int port)
 
   //m_pServerInfo->SetMaxUser(pRcvBody->iMaxUser);
   SetSeq(pRcvBody->iSeq);
+
   SetShmKey(pRcvBody->iShmKey);
   m_iShmDSStatus = pRcvBody->iShmDSStatus;
   SetMaxUser(pRcvBody->iMaxUser);
-  return 0;
+  return pCSocket;
 }
 
 void ChatServer::HealthCheckUsers()
@@ -422,10 +421,10 @@ void ChatServer::SetServerSocket(Client *_pClient)
   m_pDNServerSocket = _pClient;
 }
 
-ClientSocket* const ChatServer::GetSendPipeClient()
-{
-  return m_pSendPipe;
-}
+// ClientSocket* const ChatServer::GetSendPipeClient()
+// {
+//   return m_pSendPipe;
+// }
 
 void ChatServer::UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents)
 {
@@ -569,7 +568,7 @@ void ChatServer::CloseClient(const int _iSlot)
 
   if(pClientUser != NULL)
   {
-    pClientUser->SendCloseToMgr();
+    // pClientUser->SendCloseToMgr();
   }
 
   char pchTimeStr[10];
@@ -614,8 +613,10 @@ void ChatServer::CloseClient(Client* const _pClient)
   m_pIOMP->DelClient(_pClient);
   #endif
 
-  char pchTimeStr[10];
-  memset(pchTimeStr, 0x00, sizeof(pchTimeStr));
+  CNPLog::GetInstance().Log("ChatServer::CloseClient(%p) 1", _pClient);
+
+  // char pchTimeStr[10];
+  // memset(pchTimeStr, 0x00, sizeof(pchTimeStr));
 
   // CNPUtil::GetMicroTimeStr(static_cast<ChatUser *>(_pClient)->GetFileSendStartTime(), pchTimeStr);
 
@@ -627,7 +628,7 @@ void ChatServer::CloseClient(Client* const _pClient)
 
   if(_pClient->GetType() == CLIENT_USER)
   {
-    static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
+    // static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
   }
 
   pthread_mutex_lock(&m_lockClient);
@@ -640,22 +641,47 @@ void ChatServer::CloseClient(Client* const _pClient)
   m_iConnCount--;
 }
 
+void ChatServer::MessageBroadcastToManagers(BroadcastMessage *_message)
+{
+  T_PACKET tSendPacket;
+  memset((char *)&tSendPacket, 0x00, sizeof(T_PACKET));
+
+  memcpy(tSendPacket.data, _message->GetMessage(), _message->GetMessageSize());
+  tSendPacket.header.command  = cmd_CHAT_DS_DSM;
+  tSendPacket.header.length   = _message->GetMessageSize();
+
+  std::list<ClientSocket*>::iterator iter = m_lstChatManagerSocket.begin();
+  while( iter != m_lstChatManagerSocket.end() )
+  {
+    ClientSocket *socket = static_cast<ClientSocket *>(*iter);
+
+    CNPLog::GetInstance().Log("ChatServer::MessageBroadcastToManagers message socket=(%d), message=(%s)",  
+            socket->GetFd(), _message->GetMessage());
+
+    socket->Write((char *)&tSendPacket, PDUHEADERSIZE+_message->GetMessageSize());
+    // socket->Write(_message->GetMessage(), 1024);
+    iter++;
+  }
+}
+
 void ChatServer::MessageBroadcast(BroadcastMessage *_message)
 {
-  // static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
-  pthread_mutex_lock(&m_lockClient);
+  MessageBroadcastToManagers(_message);
+
+  // pthread_mutex_lock(&m_lockClient);
   std::list<Client*>::iterator iter = m_lstClient.begin();
   while( iter != m_lstClient.end() )
   {
     Client *pClient = static_cast<Client *>(*iter);
+
+    pClient->GetSocket()->Write(_message->GetMessage(), 1024);
     CNPLog::GetInstance().Log("ChatServer::MessageBroadCast client socket:(%d), message socket=(%d), message=(%s)",  
                                     pClient->GetSocket()->GetFd(),
-                                    _message->GetSocketFD(),
+                                    _message->GetSocketFd(),
                                     _message->GetMessage());
-
     iter++;
   }
-  pthread_mutex_unlock(&m_lockClient);
+  // pthread_mutex_unlock(&m_lockClient);
 }
 
 #endif
@@ -754,13 +780,12 @@ void ChatServer::Run()
      CNPLog::GetInstance().Log("ChatServer::Run forked GetNetworkByteOrder=(%d), pid=(%d)",
      CNPUtil::GetNetworkByteOrder(), GetPid());
      */
-  sleep(3);
+  sleep(2);
   // using socket
   if(ConnectToMgr() < 0)
   {
     return;
   }
-
   CNPLog::GetInstance().Log("SERVER_PORT_DNMGR = (%d)", m_pServerInfo->GetPort(SERVER_PORT_MGR));
   CNPLog::GetInstance().Log("SERVER_PORT = (%d)", m_pServerInfo->GetPort(SERVER_PORT));
 
@@ -781,6 +806,7 @@ void ChatServer::Run()
 
   // CNPLog::GetInstance().Log("ChatServer::Run pShm=(%p), StatusShmKey=(%d), skip=(%d), %d",
   //     m_pShm, m_iShmDSStatus, (sizeof(struct scoreboard_file) * (GetMaxUser() * GetSeq())), sizeof(struct scoreboard_file));
+
 
   SharedMemory smD((key_t)188891, sizeof(int));
   if(!smD.IsStarted())
@@ -831,15 +857,15 @@ void ChatServer::Run()
     CNPLog::GetInstance().Log("In ChatServer Receiver Create (%p,%lu) ", t, t->GetThreadID());
   }
 
-  for(int i = 0; i < m_pServerInfo->GetThreadCount(THREAD_BROADCASTER); i++)
-  {
-    Thread *t = new ThreadBroadcaster(this);
-    ThreadManager::GetInstance()->Spawn(t);
-    CNPLog::GetInstance().Log("In ChatServer Broadcaster Create (%p,%lu) ", t, t->GetThreadID());
-  }
+  // for(int i = 0; i < m_pServerInfo->GetThreadCount(THREAD_BROADCASTER); i++)
+  // {
+  //   Thread *t = new ThreadBroadcaster(this);
+  //   ThreadManager::GetInstance()->Spawn(t);
+  //   CNPLog::GetInstance().Log("In ChatServer Broadcaster Create (%p,%lu) ", t, t->GetThreadID());
+  // }
 
-  ThreadTic *tTic = new ThreadTic(this);
-  ThreadManager::GetInstance()->Spawn(tTic);
+  // ThreadTic *tTic = new ThreadTic(this);
+  // ThreadManager::GetInstance()->Spawn(tTic);
 
   m_pShmDSStatus->status = ON;
   CNPLog::GetInstance().Log("In ChatServer Status =======> pid=(%d), seq=(%d), status=(%d)",

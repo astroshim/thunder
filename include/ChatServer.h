@@ -50,7 +50,9 @@ class ChatServer : public Process
     int m_iConnCount;
 
     Client *m_pDNServerSocket; //
-    ClientSocket *m_pSendPipe;
+
+    // ClientSocket *m_pSendPipe;
+
     // scoreboard_file *m_pShm;
     TStatistics *m_pShmKcps;
     TDSStatus *m_pShmDSStatus; // for DS Status
@@ -73,6 +75,8 @@ class ChatServer : public Process
 #endif
     pthread_mutex_t m_lockClient;
 
+    list<ClientSocket *> m_lstChatManagerSocket;
+
     int m_iSeq;
     int m_iMaxUser;
     int m_iShmKey;      // key from dsm
@@ -93,7 +97,7 @@ class ChatServer : public Process
     const char *const GetLogFileName();
 
     const int ConnectToMgr();
-    const int NegotiationWithManager(string server, int port);
+    ClientSocket *const NegotiationWithManager(string server, int port);
 
     const int GetMaxUser();
     const int GetShmKey();
@@ -133,7 +137,7 @@ class ChatServer : public Process
     void PutSendQueue(const void *const _pVoid);
     const void *const GetSendQueue();
 
-    void PutBroadcastQueue(char *message, Client *const _pClient);
+    void PutBroadcastQueue(BroadcastMessage *message, Client *const _pClient);
     // void PutBroadcastQueue(const void *const _pVoid);
     const void *const GetBroadcastQueue();
 
@@ -144,7 +148,7 @@ class ChatServer : public Process
     const char *const GetVolName();
     const char *const GetDirName();
 
-    ClientSocket *const GetSendPipeClient();
+    // ClientSocket *const GetSendPipeClient();
     const uint64_t GetDownloadSize(const uint32_t _nBillNo);
 
     const unsigned int GetBandwidth(const char _chID);
@@ -157,6 +161,7 @@ class ChatServer : public Process
 
     // void BroadcastMessage(char *message, Client *const _pClient);
     void MessageBroadcast(BroadcastMessage *_message);
+    void MessageBroadcastToManagers(BroadcastMessage *_message);
 };
 
 #endif

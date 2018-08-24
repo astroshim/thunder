@@ -3,27 +3,21 @@
 
 BroadcastMessage::BroadcastMessage()
     : message(NULL),
-      socket(0)
+      socket(0),
+      message_size(0)
       // client(NULL)
 {
-  // CNPLog::GetInstance().Log("BroadcastMessage Construct");
-}
-
-// BroadcastMessage::BroadcastMessage(Client *const _client, char *_message)
-BroadcastMessage::BroadcastMessage(int _socket, char *_message)
-    // : client(_client),
-    : socket(_socket)
-{
   message = (char *)new char[MessageSize];
-  memcpy(message, _message, MessageSize);
-  // CNPLog::GetInstance().Log("BroadcastMessage Construct");
 }
 
 BroadcastMessage::~BroadcastMessage()
 {
   delete message;
-  // free(message);
-  // CNPLog::GetInstance().Log("BroadcastMessage Destruct");
+}
+
+void BroadcastMessage::SetMessage(char *_message)
+{
+  memcpy(message, _message, MessageSize);
 }
 
 const char* BroadcastMessage::GetMessage()
@@ -31,7 +25,22 @@ const char* BroadcastMessage::GetMessage()
   return message;
 }
 
-const int BroadcastMessage::GetSocketFD()
+const int BroadcastMessage::GetSocketFd()
 {
   return socket;
+}
+
+const int BroadcastMessage::GetMessageSize()
+{
+  return message_size;
+}
+
+void BroadcastMessage::SetSocketFd(int fd)
+{
+  socket = fd;
+}
+
+void BroadcastMessage::SetMessageSize(int _message_size)
+{
+  message_size = _message_size;
 }

@@ -127,7 +127,7 @@ typedef struct
   double   dHelloTime;
 }Tcmd_HELLO_DSM_DS;
 
-// hello DS -> DSM
+// close DS -> DSM
 typedef struct
 {
   uint32_t nComCode;
@@ -135,6 +135,7 @@ typedef struct
   uint64_t nDownSize;
   double   dClosedTime;
 }Tcmd_USER_CLOSE_DS_DSM;
+
 
 /*************************************************************
   * BBS <---> DSM

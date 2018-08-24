@@ -955,9 +955,9 @@ void ChatManager::Run()
     CNPLog::GetInstance().Log("In ChatManager WORKER Create (%p,%lu) ", t, t->GetThreadID());
   }
 
-  ThreadTic *tTic = new ThreadTic(this);
-  ThreadManager::GetInstance()->Spawn(tTic);
-  CNPLog::GetInstance().Log("In ChatManager ThreadTic Create (%p) ", tTic);
+  // ThreadTic *tTic = new ThreadTic(this);
+  // ThreadManager::GetInstance()->Spawn(tTic);
+  // CNPLog::GetInstance().Log("In ChatManager ThreadTic Create (%p) ", tTic);
 
   while(1)
   {

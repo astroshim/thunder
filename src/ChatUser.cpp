@@ -2,6 +2,7 @@
 #include "../include/NPUtil.h"
 #include "../include/ChatServer.h"
 #include "../include/ThreadReceiver.h"
+#include "../include/BroadcastMessage.h"
 
 ChatUser::ChatUser()
 {
@@ -77,25 +78,25 @@ void ChatUser::SendPacket(const T_PACKET* _pPacket)
 #endif
 }
 
-void ChatUser::SendCloseToMgr()
-{
-  // send to Mgr close info
-  T_PACKET tSendPacket;
-  Tcmd_USER_CLOSE_DS_DSM *sndbody = (Tcmd_USER_CLOSE_DS_DSM *)tSendPacket.data;
-  tSendPacket.header.command  = cmd_USER_CLOSE_DS_DSM;
-  tSendPacket.header.length   = sizeof(Tcmd_USER_CLOSE_DS_DSM);
+// void ChatUser::SendCloseToMgr()
+// {
+//   // send to Mgr close info
+//   T_PACKET tSendPacket;
+//   Tcmd_USER_CLOSE_DS_DSM *sndbody = (Tcmd_USER_CLOSE_DS_DSM *)tSendPacket.data;
+//   tSendPacket.header.command  = cmd_USER_CLOSE_DS_DSM;
+//   tSendPacket.header.length   = sizeof(Tcmd_USER_CLOSE_DS_DSM);
 
-  ChatServer *chatServer = NULL;
-  if((chatServer = dynamic_cast<ChatServer*>(m_pMainProcess)))
-  {
-    chatServer->GetSendPipeClient()->Write((char *)&tSendPacket,
-        PDUHEADERSIZE + tSendPacket.header.length);
-  }
-  else
-  {
-    CNPLog::GetInstance().Log("Work SendCloseToMgr(%p) chatServer is NULL!! ", this);
-  }
-}
+//   ChatServer *chatServer = NULL;
+//   if((chatServer = dynamic_cast<ChatServer*>(m_pMainProcess)))
+//   {
+//     chatServer->GetSendPipeClient()->Write((char *)&tSendPacket,
+//         PDUHEADERSIZE + tSendPacket.header.length);
+//   }
+//   else
+//   {
+//     CNPLog::GetInstance().Log("Work SendCloseToMgr(%p) chatServer is NULL!! ", this);
+//   }
+// }
 
 void ChatUser::WorkHello(const T_PACKET &_tPacket)
 {
@@ -158,13 +159,13 @@ void ChatUser::WorkGoodBye(const T_PACKET &_tPacket)
   }
 }
 
-void ChatUser::BroadcastMessage(char *message)
+void ChatUser::MessageBroadcast(BroadcastMessage *message)
 {
   ChatServer *chatServer = NULL;
   if((chatServer = dynamic_cast<ChatServer*>(m_pMainProcess)))
   {
-    // chatServer->BroadcastMessage(message, this);
     chatServer->PutBroadcastQueue(message, this);
+    // chatServer->BroadcastMessage(message, this);
     // chatServer->GetSendPipeClient()->Write((char *)&tSendPacket, PDUHEADERSIZE + tSendPacket.header.length);
   }
   else
@@ -187,20 +188,40 @@ const int ChatUser::ExecuteCommand(Thread *_pThread)
   CNPLog::GetInstance().Log("ChatUser::ExecuteCommand pServer=(%p)", pServer);
 #endif
 
-  int buffedSize = m_cCBuff.GetUsedSize();
-  char message[buffedSize+1];
-  message[buffedSize] = 0x00;
-  // const unsigned char* message = m_cCBuff.GetHeaderPoint();
+  BroadcastMessage *broadcastMessage = new BroadcastMessage();
+  // m_pBroadcastQueue->EnQueue(broadcastMessage);
 
-  if(Client::GetPacket((char *)&message, buffedSize) < 0)
+  broadcastMessage->SetMessageSize(m_cCBuff.GetUsedSize());
+  if(Client::GetPacket((char *)broadcastMessage->GetMessage(), broadcastMessage->GetMessageSize()) < 0)
   {
     CNPLog::GetInstance().Log("In ChatUser::ExecuteCommand() GetPacketError! ");
     return -1;
   }
-  CNPLog::GetInstance().Log("In ChatUser:: message (%s), buffedSize: %d", message, buffedSize);
 
-  BroadcastMessage(message);
-  return 0;
+  broadcastMessage->SetSocketFd(GetSocket()->GetFd());
+  // broadcastMessage.SetMessage(message);
+
+  CNPLog::GetInstance().Log("In ChatUser:: message (%d)(%s), buffedSize: %d", broadcastMessage->GetSocketFd(), broadcastMessage->GetMessage(), broadcastMessage->GetMessageSize());
+  MessageBroadcast(broadcastMessage);
+
+
+  // int buffedSize = m_cCBuff.GetUsedSize();
+  // char message[buffedSize+1];
+  // message[buffedSize] = 0x00;
+  // // const unsigned char* message = m_cCBuff.GetHeaderPoint();
+
+  // if(Client::GetPacket((char *)&message, buffedSize) < 0)
+  // {
+  //   CNPLog::GetInstance().Log("In ChatUser::ExecuteCommand() GetPacketError! ");
+  //   return -1;
+  // }
+  // CNPLog::GetInstance().Log("In ChatUser:: message (%s), buffedSize: %d", message, buffedSize);
+
+  // BroadcastMessage(message);
+  // return 0;
+
+
+
 
 //   /*
 //      int iCommand   = CNPUtil::Get2Byte((unsigned char *)m_cCBuff.GetHeaderPoint(), 0);
@@ -274,6 +295,6 @@ const int ChatUser::ExecuteCommand(Thread *_pThread)
 //       CNPLog::GetInstance().Log("UNKNOWN PDU TYPE(%p), (%d)", this, tPacket.header.command);
 //   }
 
-  return 0;
+  // return 0;
 }
 

@@ -43,7 +43,7 @@ void ThreadBroadcaster::Run()
   while (1)
   {
     BroadcastMessage *message = (BroadcastMessage *)m_pChatServer->GetBroadcastQueue();
-    CNPLog::GetInstance().Log("broadcast socket: %d, message : (%s)", message->GetSocketFD(), message->GetMessage());
+    CNPLog::GetInstance().Log("broadcast socket: %d, message : (%s)", message->GetSocketFd(), message->GetMessage());
 
     m_pChatServer->MessageBroadcast(message);
     delete message;
