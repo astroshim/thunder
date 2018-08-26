@@ -84,13 +84,13 @@ class ChatManager : public Process
     //  Client      *m_pRecvPipe;
     //  ReleaseSlot   *m_pSlot;
 
-    Tcmd_HELLO_DSM_DS *m_pDSInfo; // DS info
+    Tcmd_HELLO_DSM_DS *m_ChatServerInfo; 
     // scoreboard_file   *m_pShm;
     TDSStatus *m_pShmDSStatus; // for ds status
     //pthread_mutex_t   m_lockShm;
 
     // DownloadServer
-    list<Client *> m_lstClient;
+    list<Client *> m_lstChatServer;
     pthread_mutex_t m_lockClient;
     //mapConnection   m_mapConnectList;
 
@@ -138,6 +138,8 @@ const bool  SetFDSet(IOMP_EPoll* const _pcIomp);
     void HealthCheckUsers();
     // void SendStorageInfo();
     // void SendStorageInfoOld();
+
+    const int MessageBroadcast(const T_PACKET &_tPacket);
 
 #ifdef _FREEBSD
     void AddEPoll(Client *const _pClient, const short _filter, const unsigned short _usFlags);

@@ -82,11 +82,7 @@ CNPLog::GetInstance().Log("ThreadQoSEPoll epoll_Error");
                 errno = 0;
         m_pIOMP->DelClient(pClient);
 
-#ifdef _CLIENT_ARRAY
-              m_pMainProcess->CloseClient(pClient->GetUserSeq());
-#else
               m_pMainProcess->CloseClient(pClient);
-#endif
             }
       else
             if(tEvents[i].events & EPOLLOUT)

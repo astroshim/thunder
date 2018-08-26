@@ -23,9 +23,6 @@ class ChatUser: public Client
     ChatUser(Socket* const _cSocket);
     virtual ~ChatUser();
 
-#ifdef _CLIENT_ARRAY
-    void InitValiable();
-#endif
     void FreePacket();
 
     list<T_PACKET*>* const GetPacketList();

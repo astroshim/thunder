@@ -1,5 +1,5 @@
 .SUFFIXES = .cpp .o
-# CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_CLIENT_ARRAY -D_FREEBSD -D_DEBUG -I /usr/local/opt/openssl/include
+# CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_FREEBSD -D_DEBUG -I /usr/local/opt/openssl/include
 CC     = g++ -D_REENTRANT -D_FILE_OFFSET_BITS=64 -D_ONESHOT -D_FREEBSD -D_DEBUG -I /usr/local/opt/openssl/include
 
 CFLAGS = -g -Wall

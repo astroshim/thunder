@@ -15,12 +15,28 @@ ClientChatServer::~ClientChatServer()
 {
 }
 
+void ClientChatServer::SetSeq(int _seq) { 
+    m_iSeq = _seq;
+}
+
+void ClientChatServer::SetPid(int _pid) { 
+    m_iPid = _pid;
+}
+
+const int ClientChatServer::GetSeq() {
+    return m_iSeq;
+}
+
+const int ClientChatServer::GetPid() {
+    return m_iPid;
+}
+
 void ClientChatServer::WorkDSHello(const T_PACKET &_tPacket)
 {
     int iSeq = 0, iMaxUser = 0, iShmKey = 0, iShmDSStatus = 0;
     Tcmd_HELLO_DS_DSM *pClientBody = (Tcmd_HELLO_DS_DSM *)_tPacket.data;
 
-    SetType(CLIENT_DN);
+    SetType(CLIENT_CHAT_SERVER);
     ChatManager *pManager = NULL;
     if ((pManager = dynamic_cast<ChatManager *>(m_pMainProcess)))
     {
@@ -34,15 +50,6 @@ void ClientChatServer::WorkDSHello(const T_PACKET &_tPacket)
     {
         CNPLog::GetInstance().Log("Work WorkDSHello(%p) pManager is NULL!! ", this);
     }
-    /*
-    //if(((ChatManager *)m_pMainProcess)->SetDS(&iSeq, &iMaxUser, &iShmKey, pClientBody->iPid) < 0)
-    if(static_cast<ChatManager *>(m_pMainProcess)->SetDS(&iSeq, &iMaxUser, &iShmKey, pClientBody->iPid) < 0)
-  {
-      CNPLog::GetInstance().Log("WorkDSHello DS OverFlow");
-    exit(1);
-    return;
-  }
-*/
 
     SetUserSeq(iSeq);
 
@@ -59,7 +66,8 @@ void ClientChatServer::WorkDSHello(const T_PACKET &_tPacket)
 
     CNPLog::GetInstance().Log("WorkDSHello seq=(%d), pid=(%d),maxUser=(%d), shmKey=(%d), shmDSStatusKey=(%d)",
                               iSeq, pClientBody->iPid, iMaxUser, iShmKey, iShmDSStatus);
-    //((Socket *)(GetSocket()))->Write((char *)&tPacket, PDUHEADERSIZE+tPacket.header.length);
+    m_iPid = pClientBody->iPid;
+
     GetSocket()->Write((char *)&tPacket, PDUHEADERSIZE + tPacket.header.length);
 }
 
@@ -159,8 +167,24 @@ void ClientChatServer::WorkDSMPing(const T_PACKET &_tPacket)
     delete pSendPacket;
 }
 
+void ClientChatServer::MessageBroadcast(const T_PACKET &_tPacket)
+{
+    Tcmd_CHAT_DS_DSM *pChatPacket = (Tcmd_CHAT_DS_DSM *)_tPacket.data;
+    ChatManager *pManager = NULL;
+    if ((pManager = dynamic_cast<ChatManager *>(m_pMainProcess)))
+    {
+        pManager->MessageBroadcast(_tPacket);
+    }
+    else
+    {
+        CNPLog::GetInstance().Log("Work WorkGetDSInfo(%p) pManager is NULL!! ", this);
+    }
+}
+
 const int ClientChatServer::ExecuteCommand(Thread *_pThread)
 {
+    CNPLog::GetInstance().Log("manager 에서 메세지 받음");
+
     T_PACKET tPacket;
     PACKET_HEADER *pPacketHeader = (PACKET_HEADER *)m_cCBuff.GetHeaderPoint();
 
@@ -177,6 +201,11 @@ const int ClientChatServer::ExecuteCommand(Thread *_pThread)
 
     switch (tPacket.header.command)
     {
+    // DS -> DSM
+    case cmd_CHAT_DS_DSM:
+        MessageBroadcast(tPacket);
+        break;
+
     // DS -> DSM
     case cmd_HELLO_DS_DSM:
         WorkDSHello(tPacket);

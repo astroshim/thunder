@@ -44,15 +44,14 @@ void CNPLog::syslog_date_ch()
 {
 
   /*
-* ��¥ ������ �α׸� �����
-*/
+  */
   if (m_iDay != CNPUtil::GetCurDay() ||
       FileSize(m_pchFileName) > MAX_LOG_FILE_SIZE)
   {
     /*
       close(m_iLogFd);
     m_iLogFd = -1;
-*/
+    */
     m_iDay = CNPUtil::GetCurDay();
   }
   else

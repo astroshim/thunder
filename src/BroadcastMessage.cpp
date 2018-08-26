@@ -4,7 +4,8 @@
 BroadcastMessage::BroadcastMessage()
     : message(NULL),
       socket(0),
-      message_size(0)
+      messageSize(0),
+      messageType(CLIENT_CHAT_MESSAGE)
       // client(NULL)
 {
   message = (char *)new char[MessageSize];
@@ -30,9 +31,14 @@ const int BroadcastMessage::GetSocketFd()
   return socket;
 }
 
+const ENUM_MESSAGE_TYPE BroadcastMessage::GetMessageType()
+{
+  return messageType;
+}
+
 const int BroadcastMessage::GetMessageSize()
 {
-  return message_size;
+  return messageSize;
 }
 
 void BroadcastMessage::SetSocketFd(int fd)
@@ -40,7 +46,12 @@ void BroadcastMessage::SetSocketFd(int fd)
   socket = fd;
 }
 
-void BroadcastMessage::SetMessageSize(int _message_size)
+void BroadcastMessage::SetMessageSize(int _messageSize)
 {
-  message_size = _message_size;
+  messageSize = _messageSize;
+}
+
+void BroadcastMessage::SetMessageType(ENUM_MESSAGE_TYPE _messageType)
+{
+  messageType = _messageType;
 }

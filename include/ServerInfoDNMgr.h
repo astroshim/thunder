@@ -5,9 +5,6 @@
 #include "./Properties.h"
 #include "./Packet.h"
 
-//const unsigned int IP_LEN = 20;
-//const unsigned int LOG_FILE_LEN = 256;
-
 const unsigned int MAX_URL = 256;
 
 typedef map<ENUM_SERVERSOCKET_TYPE, int> serverInfoMap;
@@ -53,7 +50,7 @@ class ServerInfoDNMgr
     //  const char* const GetUnixSockPath();
 
     const serverInfoMap&    GetPortMap();
-    const int GetPort(const ENUM_SERVERSOCKET_TYPE _type);  // ��û�� port type�� ���� �ش� port�� return �Ѵ�.
+    const int GetPort(const ENUM_SERVERSOCKET_TYPE _type);  
     const int GetThreadCount(const ENUM_THREAD_TYPE _type);
 
     const int GetDNPort();

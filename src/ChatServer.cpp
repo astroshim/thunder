@@ -19,34 +19,15 @@
 #include "../include/BroadcastMessage.h"
 #include "../include/ThreadSender.h"
 #include "../include/ThreadTic.h"
-//#include "../include/ThreadQoS.h"
-
-// #include "../include/ThreadQoSSelect.h"
-// #ifndef _FREEBSD
-// #include "../include/ThreadQoSEPoll.h"
-// #endif
-/*
-#ifdef _FREEBSD
-#include "../include/ThreadQoSSelect.h"
-#else
-#include "../include/ThreadQoSEPoll.h"
-#endif
-*/
 #include "../include/ThreadManager.h"
 #include "../include/ServerInfoDN.h"
 #include "../include/NPUtil.h"
 #include "../include/NPLog.h"
 #include "../include/NPDebug.h"
 #include "../include/ChatUser.h"
-//#include "../include/ClientServer.h"
 #include "../include/MessageQ.h"
-
 #include "../include/SharedMemory.h"
 #include "../include/ReleaseSlot.h"
-
-// #include <iostream>
-// #include <sstream>
-// #include <vector>
 
 ChatServer::ChatServer()
   :m_pServerInfo(NULL)
@@ -93,18 +74,6 @@ ChatServer::ChatServer(Properties& _cProperties)
   this->SetStarted(false);
   pthread_mutex_init(&m_lockClient, NULL);
   m_pServerInfo = new ServerInfoDN(_cProperties);
-
-  //CNPLog::GetInstance().Log("================ Create ChatServer m_pServerInfo=(%p)==", m_pServerInfo);
-#ifdef _CLIENT_ARRAY
-  for(int i = 0; i < MAX_CLIENT; i++)
-  {
-    m_arrClient[i] = new ChatUser(new ClientSocket(-1));
-    m_arrClient[i]->SetState(STATE_CLOSED);
-    m_arrClient[i]->SetMainProcess(this);
-
-    CNPLog::GetInstance().Log("Client Array[%d] == [%p]", i, m_arrClient[i]);
-  }
-#endif
 }
 
 ChatServer::~ChatServer()
@@ -198,12 +167,6 @@ const void* const ChatServer::GetSendQueue()
   return m_pSendQueue->DeQueue();
 }
 
-// void ChatServer::BroadcastMessage(char *message, Client *const _pClient)
-// {
-//   // static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
-// }
-
-// void ChatServer::PutBroadcastQueue(const void* const _pVoid)
 void ChatServer::PutBroadcastQueue(BroadcastMessage *message, Client *const _pClient)
 {
   // Client *pNewClient;
@@ -257,7 +220,6 @@ const char* const ChatServer::GetLogFileName()
 
 const unsigned int ChatServer::GetBandwidth(const char _chID)
 {
-  //CNPLog::GetInstance().Log("GetBandwidth ID---> (%c)", _chID);
   return m_pServerInfo->GetBandwidth(_chID);
 }
 
@@ -357,24 +319,6 @@ void ChatServer::HealthCheckUsers()
     SetStarted(false);
   }
 
-#ifdef _CLIENT_ARRAY
-  for(int i = 0; i < MAX_CLIENT; i++)
-  {
-    if(m_arrClient[i]->GetState() != STATE_CLOSED &&
-        m_arrClient[i]->GetUserSeq() != -1)
-    {
-      Client *pClient = m_arrClient[i];
-      if(CNPUtil::GetMicroTime() - pClient->GetAccessTime() > TIME_ALIVE)
-      {
-        CNPLog::GetInstance().Log("ChatServer::HealthCheckUsers Kill Client [%p] (%d) (%d)\n",
-            pClient,
-            m_arrClient[i]->GetState(),
-            m_arrClient[i]->GetUserSeq());
-        CloseClient(pClient->GetUserSeq());
-      }
-    }
-  }
-#else
   pthread_mutex_lock(&m_lockClient);
   std::list<Client*>::iterator iter = m_lstClient.begin();
   while( iter != m_lstClient.end() )
@@ -408,7 +352,6 @@ void ChatServer::HealthCheckUsers()
     iter++;
   }
   pthread_mutex_unlock(&m_lockClient);
-#endif
 }
 
 Client* const ChatServer::GetServerSocket()
@@ -445,65 +388,7 @@ void ChatServer::AddEPoll(Client* const _pClient, const unsigned int _uiEvents)
 }
 #endif
 
-// #ifdef _ONESHOT
-// const int ChatServer::AddQoS(Client* const _pClient, const unsigned int _uiEvents)
-// {
-//   return m_pTQoS->AddQoS(_pClient, _uiEvents);
-// }
-// #endif
-
-#ifdef _CLIENT_ARRAY
-void ChatServer::AcceptClient(const int _iClientFD)
-{
-  m_iConnCount++;
-
-  pthread_mutex_lock(&m_lockClient);
-  int iSlot = m_pSlot->GetFreeSlot();
-  if(iSlot < 0)
-  {
-    pthread_mutex_unlock(&m_lockClient);
-    return;
-  }
-
-  /*
-  //struct sockaddr_in caddr;
-  //int iLen = sizeof(struct sockaddr);
-  //getsockname(_iClientFD, (struct sockaddr *)&caddr, (socklen_t *)&iLen);
-  //CNPLog::GetInstance().Log("____________SetClientAddr = (%s)", inet_ntoa(caddr.sin_addr));
-  */
-
-  // client socket
-  m_arrClient[iSlot]->SetSocketFd(_iClientFD);
-  //  m_arrClient[iSlot]->SetMainProcess(this);
-  m_arrClient[iSlot]->SetUserSeq(iSlot);
-
-  m_arrClient[iSlot]->InitCircularBuffer();
-  m_arrClient[iSlot]->SetState(STATE_WAIT);
-  m_arrClient[iSlot]->GetSocket()->SetNonBlock();
-
-  static_cast<TcpSocket *>(m_arrClient[iSlot]->GetSocket())->SetClientAddr();
-  pthread_mutex_unlock(&m_lockClient);
-
-#ifndef _ONESHOT
-  if(m_pIOMP->AddClient(m_arrClient[iSlot], EPOLLIN) < 0)
-#else
-  #ifdef _FREEBSD
-    if(m_pIOMP->AddClient(m_arrClient[iSlot], EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR) < 0)
-  #else
-      if(m_pIOMP->AddClient(m_arrClient[iSlot], EPOLLIN|EPOLLET|EPOLLONESHOT) < 0)
-  #endif
-#endif
-      {
-        CloseClient(iSlot);
-        return;
-      }
-  CNPLog::GetInstance().Log("Accept Client slot=(%d)", iSlot);
-  // CNPLog::GetInstance().Log("Accept Client userseq=(%d), (%p)", iSlot, &(m_pShm[iSlot]));
-}
-
-#else
-
-void ChatServer::AcceptClient(Socket* const _pClientSocket)
+void ChatServer::AcceptClient(Socket* const _pClientSocket, ENUM_CLIENT_TYPE type)
 {
   m_iConnCount++;
   pthread_mutex_lock(&m_lockClient);
@@ -518,6 +403,7 @@ void ChatServer::AcceptClient(Socket* const _pClientSocket)
 
   Client *pNewClient;
   pNewClient = new ChatUser(_pClientSocket);
+  pNewClient->SetType(type);
   pNewClient->SetMainProcess(this);
 
   CNPLog::GetInstance().Log("1.NewClient Client=(%p), ClientSocket=(%p)", pNewClient, _pClientSocket);
@@ -547,64 +433,7 @@ void ChatServer::AcceptClient(Socket* const _pClientSocket)
         return;
       }
 }
-#endif
 
-#ifdef _CLIENT_ARRAY
-void ChatServer::CloseClient(const int _iSlot)
-{
-  pthread_mutex_lock(&m_lockClient);
-  if( _iSlot == -1 )
-  {
-    CNPLog::GetInstance().Log("=====> ChatServer::CloseClient This Slot is already CLOSED!!! [%d]", _iSlot);
-    return;
-  }
-
-#ifdef _FREEBSD
-  m_pIOMP->DelClient(m_arrClient[_iSlot], EVFILT_READ);
-#else
-  m_pIOMP->DelClient(m_arrClient[_iSlot]);
-#endif
-  ChatUser *pClientUser = dynamic_cast<ChatUser *>(m_arrClient[_iSlot]);
-
-  if(pClientUser != NULL)
-  {
-    // pClientUser->SendCloseToMgr();
-  }
-
-  char pchTimeStr[10];
-  memset(pchTimeStr, 0x00, sizeof(pchTimeStr));
-  // CNPUtil::GetMicroTimeStr(pClientUser->GetFileSendStartTime(), pchTimeStr);
-
-  // // added 09.11.13
-  // CNPLog::GetInstance().Log("DisConnected %s %s %d %llu %.2f %s",
-  //     (static_cast<TcpSocket *>(pClientUser->GetSocket()))->GetClientIpAddr()
-  //     ,pClientUser->GetID()
-  //     ,pClientUser->GetComCode()
-  //     ,pClientUser->GetTotalSendSize()
-  //     ,CNPUtil::GetMicroTime()- pClientUser->GetFileSendStartTime()
-  //     ,pClientUser->GetFileName());
-
-  m_arrClient[_iSlot]->SetState(STATE_CLOSED);
-  m_arrClient[_iSlot]->GetSocket()->Close();
-
-  m_arrClient[_iSlot]->FreePacket();
-  // m_arrClient[_iSlot]->InitValiable();
-
-  m_pSlot->PutSlot(_iSlot);
-  // memset(&(m_pShm[_iSlot]), 0, sizeof(struct scoreboard_file));
-  m_arrClient[_iSlot]->SetUserSeq(-1);
-  pthread_mutex_unlock(&m_lockClient);
-  m_iConnCount--;
-  //CNPLog::GetInstance().Log("ChatServer::CloseClient2(%p) userseq=(%d)", pClientUser, _iSlot);
-}
-
-// void ChatServer::BroadcastMessage(char *message, Client *const _pClient)
-// {
-//   // static_cast<ChatUser *>(_pClient)->SendCloseToMgr();
-// }
-
-
-#else
 void ChatServer::CloseClient(Client* const _pClient)
 {
   #ifdef _FREEBSD
@@ -614,17 +443,6 @@ void ChatServer::CloseClient(Client* const _pClient)
   #endif
 
   CNPLog::GetInstance().Log("ChatServer::CloseClient(%p) 1", _pClient);
-
-  // char pchTimeStr[10];
-  // memset(pchTimeStr, 0x00, sizeof(pchTimeStr));
-
-  // CNPUtil::GetMicroTimeStr(static_cast<ChatUser *>(_pClient)->GetFileSendStartTime(), pchTimeStr);
-
-  // CNPLog::GetInstance().Log("ChatServer::CloseClient(%p) userseq=(%d), SDownTime=(%s), DownTime=(%f), DownSize=(%llu)",
-  //     _pClient, _pClient->GetUserSeq(),
-  //     pchTimeStr,
-  //     CNPUtil::GetMicroTime()- static_cast<ChatUser *>(_pClient)->GetFileSendStartTime(),
-  //     static_cast<ChatUser *>(_pClient)->GetTotalSendSize());
 
   if(_pClient->GetType() == CLIENT_USER)
   {
@@ -647,26 +465,52 @@ void ChatServer::MessageBroadcastToManagers(BroadcastMessage *_message)
   memset((char *)&tSendPacket, 0x00, sizeof(T_PACKET));
 
   memcpy(tSendPacket.data, _message->GetMessage(), _message->GetMessageSize());
+  Tcmd_CHAT_DS_DSM *sndbody = (Tcmd_CHAT_DS_DSM *)tSendPacket.data;
+
   tSendPacket.header.command  = cmd_CHAT_DS_DSM;
-  tSendPacket.header.length   = _message->GetMessageSize();
+  tSendPacket.header.length   = _message->GetMessageSize() + sizeof(unsigned int);
+
+  sndbody->iPid = GetPid();
+  memcpy(sndbody->message, _message->GetMessage(), _message->GetMessageSize());
 
   std::list<ClientSocket*>::iterator iter = m_lstChatManagerSocket.begin();
   while( iter != m_lstChatManagerSocket.end() )
   {
     ClientSocket *socket = static_cast<ClientSocket *>(*iter);
 
+    #ifdef _FREEBSD
     CNPLog::GetInstance().Log("ChatServer::MessageBroadcastToManagers message socket=(%d), message=(%s)",  
             socket->GetFd(), _message->GetMessage());
+    #endif
 
-    socket->Write((char *)&tSendPacket, PDUHEADERSIZE+_message->GetMessageSize());
-    // socket->Write(_message->GetMessage(), 1024);
+    CNPLog::GetInstance().Log("ChatServer:: 메세지를 manager로 relay !");
+
+    socket->Write((char *)&tSendPacket, PDUHEADERSIZE+tSendPacket.header.length);
+    // socket->Write((char *)&tSendPacket, PDUHEADERSIZE+_message->GetMessageSize());
     iter++;
   }
 }
 
+int ChatServer::RegisterManager()
+{
+  std::list<ClientSocket*>::iterator iter = m_lstChatManagerSocket.begin();
+  while( iter != m_lstChatManagerSocket.end() )
+  {
+    ClientSocket *socket = static_cast<ClientSocket *>(*iter);
+    AcceptClient(socket, CLIENT_CHAT_MANAGER);
+    iter++;
+  }
+  return 0;
+}
+
 void ChatServer::MessageBroadcast(BroadcastMessage *_message)
 {
-  MessageBroadcastToManagers(_message);
+  CNPLog::GetInstance().Log("ChatServer:: message type => %d", _message->GetMessageType());
+
+  if (_message->GetMessageType() != RELAYED_MESSAGE) 
+  {
+    MessageBroadcastToManagers(_message);
+  }
 
   // pthread_mutex_lock(&m_lockClient);
   std::list<Client*>::iterator iter = m_lstClient.begin();
@@ -674,78 +518,19 @@ void ChatServer::MessageBroadcast(BroadcastMessage *_message)
   {
     Client *pClient = static_cast<Client *>(*iter);
 
-    pClient->GetSocket()->Write(_message->GetMessage(), 1024);
-    CNPLog::GetInstance().Log("ChatServer::MessageBroadCast client socket:(%d), message socket=(%d), message=(%s)",  
-                                    pClient->GetSocket()->GetFd(),
-                                    _message->GetSocketFd(),
-                                    _message->GetMessage());
+    if( pClient->GetType() == CLIENT_USER && pClient->GetSocket()->GetFd() != _message->GetSocketFd()) {
+      CNPLog::GetInstance().Log("ChatServer::MessageBroadCast client socket:(%d), message socket=(%d), message=(%s)",  
+                                      pClient->GetSocket()->GetFd(),
+                                      _message->GetSocketFd(),
+                                      _message->GetMessage());
+
+      pClient->GetSocket()->Write(_message->GetMessage(), 1024);
+    }
+
     iter++;
   }
   // pthread_mutex_unlock(&m_lockClient);
 }
-
-#endif
-
-
-// void ChatServer::WriteUserInfo(Client* const _pClient)
-// {
-//   int iSlot = _pClient->GetUserSeq();
-//   ChatUser *pClient = static_cast<ChatUser *>(_pClient);
-//   /*
-//      ChatUser *pClient = dynamic_cast<ChatUser *>(_pClient);
-//      if(pClient == NULL)
-//      {
-//      CNPLog::GetInstance().Log("WriteUserInfo slot=(%d) ERROR(%p)", iSlot, _pClient);
-//      return;
-//      }
-//      */
-//   //CNPLog::GetInstance().Log("WriteUserInfo slot=(%d) (%p)", iSlot, _pClient);
-
-//   m_pShm[iSlot].cUse    = ON;
-//   m_pShm[iSlot].comcode   = pClient->GetComCode();
-//   m_pShm[iSlot].billno  = pClient->GetBillNo();
-
-//   m_pShm[iSlot].kcps    = pClient->GetBandWidth();
-//   if(m_pShm[iSlot].iFSize <= 0)
-//   {
-//     m_pShm[iSlot].iFSize  = pClient->GetFileSize();
-//   }
-//   m_pShm[iSlot].iDNSize   = pClient->GetTotalSendSize();
-
-//   strcpy(m_pShm[iSlot].id, pClient->GetID());
-//   strcpy(m_pShm[iSlot].filename, pClient->GetFileName());
-//   m_pShm[iSlot].tAccessTime = CNPUtil::GetMicroTime();
-
-// }
-
-
-// void ChatServer::AddThroughput(const int _iIdx, const int _iSendSize)
-// {
-//   m_pShmKcps[0].kcps += _iSendSize;
-//   m_pShmKcps[_iIdx].kcps += _iSendSize;
-// }
-
-// const int ChatServer::GetComCodeIdx(const int _iComCode)
-// {
-//   int i = 0;
-//   for(i = 1; i < MAX_COMPANY; i++)
-//   {
-//     if(m_pShmKcps[i].comcode == _iComCode)
-//     {
-//       //CNPLog::GetInstance().Log("1.ChatServer::SetComCodeIdx=(%d) idx=(%d)",  _iComCode, i);
-//       break;
-//     }
-
-//     if(m_pShmKcps[i].comcode == 0)
-//     {
-//       //CNPLog::GetInstance().Log("2.ChatServer::SetComCodeIdx=(%d) idx=(%d)",  _iComCode, i);
-//       m_pShmKcps[i].comcode = _iComCode;
-//       break;
-//     }
-//   }
-
-//   return i;
-// }
 
 void ChatServer::SetD()
 {
@@ -770,17 +555,13 @@ void ChatServer::Run()
   // create log file. 
   char pchLogFileName[1024];
   memset(pchLogFileName, 0x00, sizeof(pchLogFileName));
-  sprintf(pchLogFileName, "%s", m_pServerInfo->GetLogFileName());
-  // sprintf(pchLogFileName, "%s_%d", m_pServerInfo->GetLogFileName(), getpid());
+  // sprintf(pchLogFileName, "%s", m_pServerInfo->GetLogFileName());
+  sprintf(pchLogFileName, "%s_%d", m_pServerInfo->GetLogFileName(), getpid());
   //if(CNPLog::GetInstance().SetFileName(pchLogFileName));
   CNPLog::GetInstance().SetFileName(pchLogFileName);
 
-  /*
-     if(CNPLog::GetInstance().SetFileName(m_pServerInfo->GetLogFileName()));
-     CNPLog::GetInstance().Log("ChatServer::Run forked GetNetworkByteOrder=(%d), pid=(%d)",
-     CNPUtil::GetNetworkByteOrder(), GetPid());
-     */
   sleep(2);
+
   // using socket
   if(ConnectToMgr() < 0)
   {
@@ -788,7 +569,6 @@ void ChatServer::Run()
   }
   CNPLog::GetInstance().Log("SERVER_PORT_DNMGR = (%d)", m_pServerInfo->GetPort(SERVER_PORT_MGR));
   CNPLog::GetInstance().Log("SERVER_PORT = (%d)", m_pServerInfo->GetPort(SERVER_PORT));
-
 
   // create release slot
   m_pSlot = new ReleaseSlot(GetMaxUser());
@@ -803,10 +583,6 @@ void ChatServer::Run()
   SharedMemory smDSStatus((key_t)m_iShmDSStatus, sizeof(struct TDSStatus));
   m_pShmDSStatus = (struct TDSStatus *)smDSStatus.GetDataPoint();
   m_pShmDSStatus = &(m_pShmDSStatus[GetSeq()]);
-
-  // CNPLog::GetInstance().Log("ChatServer::Run pShm=(%p), StatusShmKey=(%d), skip=(%d), %d",
-  //     m_pShm, m_iShmDSStatus, (sizeof(struct scoreboard_file) * (GetMaxUser() * GetSeq())), sizeof(struct scoreboard_file));
-
 
   SharedMemory smD((key_t)188891, sizeof(int));
   if(!smD.IsStarted())
@@ -824,7 +600,7 @@ void ChatServer::Run()
   SharedMemory smKcps((key_t)m_pServerInfo->GetShmKey(), sizeof(TStatistics)*MAX_COMPANY);
   if(!smKcps.IsStarted())
   {
-    printf("smKcps SharedMemory ���� ����! \n");
+    printf("smKcps SharedMemory \n");
 
     // 2. destroy
     SharedMemory smKcps((key_t)m_pServerInfo->GetShmKey());
@@ -857,21 +633,23 @@ void ChatServer::Run()
     CNPLog::GetInstance().Log("In ChatServer Receiver Create (%p,%lu) ", t, t->GetThreadID());
   }
 
-  // for(int i = 0; i < m_pServerInfo->GetThreadCount(THREAD_BROADCASTER); i++)
-  // {
-  //   Thread *t = new ThreadBroadcaster(this);
-  //   ThreadManager::GetInstance()->Spawn(t);
-  //   CNPLog::GetInstance().Log("In ChatServer Broadcaster Create (%p,%lu) ", t, t->GetThreadID());
-  // }
+  for(int i = 0; i < m_pServerInfo->GetThreadCount(THREAD_BROADCASTER); i++)
+  {
+    Thread *t = new ThreadBroadcaster(this);
+    ThreadManager::GetInstance()->Spawn(t);
+    CNPLog::GetInstance().Log("In ChatServer Broadcaster Create (%p,%lu) ", t, t->GetThreadID());
+  }
 
   // ThreadTic *tTic = new ThreadTic(this);
   // ThreadManager::GetInstance()->Spawn(tTic);
 
   m_pShmDSStatus->status = ON;
-  CNPLog::GetInstance().Log("In ChatServer Status =======> pid=(%d), seq=(%d), status=(%d)",
+  CNPLog::GetInstance().Log("In ChatServer Status pid=(%d), seq=(%d), status=(%d)",
       m_pShmDSStatus->pid
       ,m_pShmDSStatus->seq
       ,m_pShmDSStatus->status);
+
+  RegisterManager();
 
   while(1)
   {
@@ -929,9 +707,7 @@ void ChatServer::Run()
           //if(((ServerSocket *)pClient->GetSocket())->GetType() == SERVER_PORT)
           if(static_cast<ServerSocket *>(pClient->GetSocket())->GetType() == SERVER_PORT)
           {
-#ifndef _CLIENT_ARRAY
-            AcceptClient(pClientSocket);
-#endif
+            AcceptClient(pClientSocket, CLIENT_USER);
           }
           else
           {
@@ -948,11 +724,7 @@ void ChatServer::Run()
         CNPLog::GetInstance().Log("In EPOLLERR or EPOLLHUP disconnect (%p) (%d) errno=(%d)(%s)",
             pClient, pClient->GetSocket()->GetFd(), errno, strerror(errno));
         errno = 0;
-  #ifdef _CLIENT_ARRAY
-        CloseClient(pClient->GetUserSeq());
-  #else
         CloseClient(pClient);
-  #endif
       }
       else
         //if(tEvents[i].events & EVFILT_READ)
@@ -973,11 +745,7 @@ void ChatServer::Run()
            pClient, pClient->GetSocket()->GetFd(), errno, strerror(errno));
            */
         errno = 0;
-  #ifdef _CLIENT_ARRAY
-        CloseClient(pClient->GetUserSeq());
-  #else
         CloseClient(pClient);
-  #endif
       }
       else
         if(tEvents[i].events & EPOLLIN)

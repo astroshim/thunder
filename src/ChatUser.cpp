@@ -176,12 +176,70 @@ void ChatUser::MessageBroadcast(BroadcastMessage *message)
 
 const int ChatUser::ExecuteCommand(Thread *_pThread)
 {
-  T_PACKET tPacket;
-
   /**
    * todo: 여기서 \n 을 검사해서 보내면 된다.
    *       부하가 문제 된다면, 일단 skip 하자
    */
+
+  if (GetType() == CLIENT_CHAT_MANAGER)
+  {
+    CNPLog::GetInstance().Log("Broadcast 요청 (manager를 통해 전달해온 메세지) == client 에 broadcasting 만 하면 되는 메세지.");
+
+    T_PACKET tPacket;
+    PACKET_HEADER *pPacketHeader = (PACKET_HEADER *)m_cCBuff.GetHeaderPoint();
+
+    memset((char *)&tPacket, 0x00, sizeof(tPacket));
+    if (Client::GetPacket((char *)&tPacket, pPacketHeader->length + PDUHEADERSIZE) < 0)
+    {
+        CNPLog::GetInstance().Log("In ClientChatServer::ExecuteCommand() GetPacketError!");
+        return -1;
+    }
+
+    switch(tPacket.header.command)
+    {
+      // DC -> DS
+      case cmd_CHAT_DS_DSM:
+        Tcmd_CHAT_DS_DSM *pChatPacket = (Tcmd_CHAT_DS_DSM *)_tPacket.data;
+
+        BroadcastMessage *broadcastMessage = new BroadcastMessage();
+        broadcastMessage->SetMessage(pChatPacket->message);
+        broadcastMessage->SetMessageSize(pPacketHeader->length-2);
+        broadcastMessage->SetSocketFd(GetSocket()->GetFd());
+        broadcastMessage->SetMessageType(RELAYED_MESSAGE);
+
+        CNPLog::GetInstance().Log("In ChatUser:: message (%d)(%s), buffedSize: %d", 
+                                                              broadcastMessage->GetSocketFd(), 
+                                                              broadcastMessage->GetMessage(), 
+                                                              broadcastMessage->GetMessageSize());
+        MessageBroadcast(broadcastMessage);
+
+        break;
+
+      default :
+        CNPLog::GetInstance().Log("UNKNOWN PDU TYPE(%p), (%d)", this, tPacket.header.command);
+    }
+
+/*
+    BroadcastMessage *broadcastMessage = new BroadcastMessage();
+    broadcastMessage->SetMessageSize(m_cCBuff.GetUsedSize());
+    if(Client::GetPacket((char *)broadcastMessage->GetMessage(), broadcastMessage->GetMessageSize()) < 0)
+    {
+      CNPLog::GetInstance().Log("In ChatUser::ExecuteCommand() GetPacketError! ");
+      return -1;
+    }
+    broadcastMessage->SetSocketFd(GetSocket()->GetFd());
+    broadcastMessage->SetMessageType(RELAYED_MESSAGE);
+
+    CNPLog::GetInstance().Log("In ChatUser:: message (%d)(%s), buffedSize: %d", 
+                                                          broadcastMessage->GetSocketFd(), 
+                                                          broadcastMessage->GetMessage(), 
+                                                          broadcastMessage->GetMessageSize());
+    MessageBroadcast(broadcastMessage);
+    */
+
+    return 0;
+  }
+
 
 #ifdef _DEBUG
   ChatServer *pServer = dynamic_cast<ChatServer*>(m_pMainProcess);
@@ -200,6 +258,12 @@ const int ChatUser::ExecuteCommand(Thread *_pThread)
 
   broadcastMessage->SetSocketFd(GetSocket()->GetFd());
   // broadcastMessage.SetMessage(message);
+
+  // if (GetType() == CLIENT_CHAT_MANAGER)
+  // {
+  //   CNPLog::GetInstance().Log("Broadcast 요청 (manager를 통해 전달해온 메세지) == client 에 broadcasting 만 하면 되는 메세지.");
+  //   broadcastMessage->SetMessageType(RELAYED_MESSAGE);
+  // }
 
   CNPLog::GetInstance().Log("In ChatUser:: message (%d)(%s), buffedSize: %d", broadcastMessage->GetSocketFd(), broadcastMessage->GetMessage(), broadcastMessage->GetMessageSize());
   MessageBroadcast(broadcastMessage);

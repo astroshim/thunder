@@ -3,12 +3,10 @@
 #include "../include/NPDebug.h"
 
 Process::Process()
-  :m_PPid(0)
-  ,m_Pid(0)
-  ,m_IsStarted(false)
-   ,m_iSignalNo(0)
-   //      ,m_iSeq(-1)
-   ,m_pChild(NULL)
+    : m_PPid(0), m_Pid(0), m_IsStarted(false), m_iSignalNo(0)
+      //      ,m_iSeq(-1)
+      ,
+      m_pChild(NULL)
 {
   m_iPipe[0] = -1;
   m_iPipe[1] = -1;
@@ -41,9 +39,9 @@ void Process::SetSignalNo(const int _iSignalNo)
   m_iSignalNo = _iSignalNo;
 }
 
-const int  Process::GetSignalNo()
+const int Process::GetSignalNo()
 {
-  return  m_iSignalNo;
+  return m_iSignalNo;
 }
 
 const pid_t Process::GetPPid()
@@ -106,7 +104,7 @@ const bool Process::IsAliveProcess(const int _iPid)
     if (errno == ESRCH)
     {
       CNPLog::GetInstance().Log("Process is Dead=(%d)(%s), pid=(%d)",
-          errno, strerror(errno), _iPid);
+                                errno, strerror(errno), _iPid);
 
       return false;
     }
@@ -120,14 +118,14 @@ const bool Process::WatchChildProcessWithPipe()
   int status;
   pid_t wait_pid;
 
-  wait_pid = waitpid(-1, &status, WUNTRACED|WNOHANG);
-  if(wait_pid <= 0)
+  wait_pid = waitpid(-1, &status, WUNTRACED | WNOHANG);
+  if (wait_pid <= 0)
   {
     //sleep(5);
     return true;
   }
 
-  if(wait_pid > 0) /* process killed */
+  if (wait_pid > 0) /* process killed */
   {
     if (WIFEXITED(status))
     {
@@ -135,9 +133,8 @@ const bool Process::WatchChildProcessWithPipe()
     }
     else if (WIFSIGNALED(status))
     {
-      if(WIFEXITED(status) == SIGXFSZ) // file size excess.
+      if (WIFEXITED(status) == SIGXFSZ) // file size excess.
       {
-
       }
 
       CNPLog::GetInstance().Log("2.Catch the signal. pid=(%d) status=(%d,%d)", wait_pid, status, WIFSIGNALED(status));
@@ -146,7 +143,7 @@ const bool Process::WatchChildProcessWithPipe()
     /**
      *   restart process
      */
-    if(!SpawnChildProcessWithPipe())
+    if (!SpawnChildProcessWithPipe())
     {
       return false;
     }
@@ -160,13 +157,13 @@ const bool Process::WatchChildProcess()
   int status;
   pid_t wait_pid;
 
-  wait_pid = waitpid(-1, &status, WUNTRACED|WNOHANG);
-  if(wait_pid <= 0)
+  wait_pid = waitpid(-1, &status, WUNTRACED | WNOHANG);
+  if (wait_pid <= 0)
   {
     return true;
   }
 
-  if(wait_pid > 0) /* process killed */
+  if (wait_pid > 0) /* process killed */
   {
     if (WIFEXITED(status))
     {
@@ -174,9 +171,8 @@ const bool Process::WatchChildProcess()
     }
     else if (WIFSIGNALED(status))
     {
-      if(WIFEXITED(status) == SIGXFSZ) // file size excess.
+      if (WIFEXITED(status) == SIGXFSZ) // file size excess.
       {
-
       }
       CNPLog::GetInstance().Log("2.Catch the signal. pid=(%d) status=(%d,%d)", wait_pid, status, WIFSIGNALED(status));
     }
@@ -184,7 +180,7 @@ const bool Process::WatchChildProcess()
     /**
      *   restart process
      */
-    if(!SpawnChildProcess())
+    if (!SpawnChildProcess())
     {
       return false;
     }
@@ -204,39 +200,38 @@ CNPLog::GetInstance().Log("Manager is killed by itself");
 exit(1);
 #endif
 */
+  }
 
-}
-
-return true;
+  return true;
 }
 
 /**
 */
 const bool Process::SpawnProcess()
 {
-  int pid=0;
+  int pid = 0;
 
   pid = fork();
-  switch(pid)
+  switch (pid)
   {
-    case 0:
+  case 0:
 #ifndef _FREEBSD
-      setpgrp();
+    setpgrp();
 #endif
-      //this->Run();
-      SetPid(getpid());
-      Run();
-      exit(0);
+    //this->Run();
+    SetPid(getpid());
+    Run();
+    exit(0);
 
-    case -1:
-      Assert(false, "Process Spawn failure! ");
-      return false;
+  case -1:
+    Assert(false, "Process Spawn failure! ");
+    return false;
 
-    default:
-      this->SetStarted(true);
-      this->SetPid(pid);
+  default:
+    this->SetStarted(true);
+    this->SetPid(pid);
 
-      break;
+    break;
   }
 
   return true;
@@ -244,32 +239,32 @@ const bool Process::SpawnProcess()
 
 const bool Process::SpawnChildProcessWithPipe()
 {
-  int pid=0;
+  int pid = 0;
 
   pid = fork();
-  switch(pid)
+  switch (pid)
   {
-    case 0:
+  case 0:
 #ifndef _FREEBSD
-      setpgrp();
+    setpgrp();
 #endif
-      m_pChild->SetSendPipe(GetSendPipe());
-      m_pChild->SetPid(getpid());
-      m_pChild->Run();
-      //this->Run();
-      //Run();
-      exit(0);
+    m_pChild->SetSendPipe(GetSendPipe());
+    m_pChild->SetPid(getpid());
+    m_pChild->Run();
+    //this->Run();
+    //Run();
+    exit(0);
 
-    case -1:
-      Assert(false, "Process Spawn failure! ");
-      return false;
+  case -1:
+    Assert(false, "Process Spawn failure! ");
+    return false;
 
-    default:
-      /*
+  default:
+    /*
          this->SetStarted(true);
          this->SetPid(pid);
          */
-      break;
+    break;
   }
 
   return true;
@@ -277,32 +272,32 @@ const bool Process::SpawnChildProcessWithPipe()
 
 const bool Process::SpawnChildProcess()
 {
-  int pid=0;
+  int pid = 0;
 
   pid = fork();
-  switch(pid)
+  switch (pid)
   {
-    case 0:
+  case 0:
 #ifndef _FREEBSD
-      setpgrp();
+    setpgrp();
 #endif
-      m_pChild->SetPid(getpid());
-      m_pChild->Run();
-      //this->Run();
-      //Run();
-      exit(0);
+    m_pChild->SetPid(getpid());
+    m_pChild->Run();
+    //this->Run();
+    //Run();
+    exit(0);
 
-    case -1:
-      Assert(false, "Process Spawn failure! ");
-      return false;
+  case -1:
+    Assert(false, "Process Spawn failure! ");
+    return false;
 
-    default:
-      /*
+  default:
+    /*
          fprintf(stderr, "Process id => (%d), (%d)", pid, getpid());
          this->SetStarted(true);
          this->SetPid(pid);
          */
-      break;
+    break;
   }
 
   return true;
@@ -312,41 +307,41 @@ const bool Process::SpawnProcess(Process *_pProcess, int _iProcessCnt)
 {
   m_pChild = _pProcess;
 
-  for(int i = 0; i < _iProcessCnt; i++)
+  for (int i = 0; i < _iProcessCnt; i++)
   {
-    int pid=0;
+    int pid = 0;
     pid = fork();
-    switch(pid)
+    switch (pid)
     {
-      case 0:
+    case 0:
 #ifndef _FREEBSD
-        setpgrp();
+      setpgrp();
 #endif
-        //_pProcess->SetSeq(i);
-        _pProcess->SetPid(getpid());
-        _pProcess->Run();
-        //this->Run();
-        //Run();
-        exit(0);
+      //_pProcess->SetSeq(i);
+      _pProcess->SetPid(getpid());
+      _pProcess->Run();
+      //this->Run();
+      //Run();
+      exit(0);
 
-      case -1:
-        Assert(false, "Process Spawn failure! ");
-        return false;
+    case -1:
+      Assert(false, "Process Spawn failure! ");
+      return false;
 
-      default:
-        this->SetStarted(true);
-        this->SetPid(pid);
-        /*
+    default:
+      this->SetStarted(true);
+      this->SetPid(pid);
+      /*
 #ifdef _FREEBSD
 fprintf(stderr, "Process child => (%d), (%d)\n", pid, getpid());
 AddChildPid(pid);
 #endif
 */
 
-        // execute parent process
-        //      Run();
+      // execute parent process
+      //      Run();
 
-        break;
+      break;
     }
   }
 
@@ -358,48 +353,48 @@ const bool Process::SpawnProcessWithPipe(Process *_pProcess, int _iProcessCnt)
   m_pChild = _pProcess;
 
   int iPipe[2];
-  if(pipe(iPipe) < 0)
-    //if(pipe(m_iPipe) < 0)
+  if (pipe(iPipe) < 0)
+  //if(pipe(m_iPipe) < 0)
   {
     return -1;
   }
 
-  for(int i = 0; i < _iProcessCnt; i++)
+  for (int i = 0; i < _iProcessCnt; i++)
   {
-    int pid=0;
+    int pid = 0;
     pid = fork();
-    switch(pid)
+    switch (pid)
     {
-      case 0:
-        /*
+    case 0:
+      /*
            close(m_iPipe[0]);  // close read pipe
            m_iPipe[0] = -1;
            */
-        close(iPipe[0]);  // close read pipe
-        iPipe[0] = -1;
+      close(iPipe[0]); // close read pipe
+      iPipe[0] = -1;
 
-        /*
+      /*
            printf("child ================>> recvpipe =(%d) \n", iPipe[0]);
            printf("child ================>> sendpipe =(%d) \n", iPipe[1]);
            */
 
-        _pProcess->SetSendPipe(iPipe[1]);
+      _pProcess->SetSendPipe(iPipe[1]);
 
-        _pProcess->SetPid(getpid());
+      _pProcess->SetPid(getpid());
 #ifndef _FREEBSD
-        setpgrp();
+      setpgrp();
 #endif
-        _pProcess->Run();
-        //this->Run();
-        //Run();
-        exit(0);
+      _pProcess->Run();
+      //this->Run();
+      //Run();
+      exit(0);
 
-      case -1:
-        Assert(false, "Process Spawn failure! ");
-        return false;
+    case -1:
+      Assert(false, "Process Spawn failure! ");
+      return false;
 
-      default:
-        /*
+    default:
+      /*
            close(m_iPipe[1]);  // close write pipe
            m_iPipe[1] = -1;
 
@@ -409,20 +404,18 @@ const bool Process::SpawnProcessWithPipe(Process *_pProcess, int _iProcessCnt)
            printf("parent ================>> recvpipe =(%d) \n", iPipe[0]);
            printf("parent ================>> sendpipe =(%d) \n", iPipe[1]);
            */
-        SetRecvPipe(iPipe[0]);
-        SetSendPipe(iPipe[1]);
+      SetRecvPipe(iPipe[0]);
+      SetSendPipe(iPipe[1]);
 
-        this->SetStarted(true);
-        this->SetPid(pid);
+      this->SetStarted(true);
+      this->SetPid(pid);
 
-        // execute parent process
-        //      Run();
+      // execute parent process
+      //      Run();
 
-        break;
+      break;
     }
   }
 
   return true;
 }
-
-

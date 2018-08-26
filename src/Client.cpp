@@ -134,33 +134,6 @@ Socket *const Client::GetSocket()
   return m_cSocket;
 }
 
-#ifdef _CLIENT_ARRAY
-/*
-void Client::SetSocket(Socket *_pSocket)
-{
-  m_cSocket = _pSocket;
-}
-*/
-
-void Client::InitCircularBuffer()
-{
-  m_cCBuff.InitBuffer();
-}
-
-void Client::SetSocketFd(const int _iFd)
-{
-  m_cSocket->SetFd(_iFd);
-}
-
-/*
-void Client::CloseSocketFD()
-{
-  m_cSocket->Close();
-}
-*/
-
-#endif
-
 const int Client::GetPacket(char *const _pchBuffer, const int _iLength)
 {
   int iRet = 0;

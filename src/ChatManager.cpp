@@ -37,7 +37,7 @@ ChatManager::ChatManager()
   ,m_iIPAddr(0)
   ,m_pServerInfo(NULL)
   ,m_pWorkQueue(NULL)
-  ,m_pDSInfo(NULL)
+  ,m_ChatServerInfo(NULL)
   // ,m_pShm(NULL)
    ,m_pShmDSStatus(NULL)
 {
@@ -53,7 +53,7 @@ ChatManager::ChatManager(Properties& _cProperties)
   ,m_iMacAddr(0)
   ,m_iIPAddr(0)
   ,m_pWorkQueue(new CircularQueue())
-  ,m_pDSInfo(NULL)
+  ,m_ChatServerInfo(NULL)
   // ,m_pShm(NULL)
    ,m_pShmDSStatus(NULL)
 {
@@ -75,7 +75,7 @@ ChatManager::~ChatManager()
   delete m_pWorkQueue;
   //  delete m_pRecvPipe;
   //  delete m_pSlot;
-  delete m_pDSInfo;
+  delete m_ChatServerInfo;
   // delete m_pShm;
   delete m_pShmDSStatus;
   //  delete m_pMQ;
@@ -90,7 +90,7 @@ const int ChatManager::GetCurrentUserCount()
 
      int iCnt;
      pthread_mutex_lock(&m_lockClient);
-     iCnt = m_lstClient.size();
+     iCnt = m_lstChatServer.size();
      pthread_mutex_unlock(&m_lockClient);
 
      return iCnt;
@@ -132,79 +132,6 @@ const char* const ChatManager::GetLogFileName()
 {
   return m_pServerInfo->GetLogFileName();
 }
-
-/*
-파일분산 url : http://211.37.6.118/hotfile/ftpstat.php
-id /pw = wizsolution/위즈대박
-
-                filename                    user    multi
-9bba0aac873499a598a558a4c0843ea8_808775680  2       6       3613
-809c3586a94da1273171005217c8761d_723888128  1       1       51
-69e34b10a87230acc97a80666718e2ef_734056448  1       3       1428
-                                 total      4       10      5092
-
-ftpcount= 4     : User수
-ftpfiles= 3     : 파일 종류수
-multicount= 10  : session수
-ftpkcps = 5092
-
-ftpwho =9bba0aac873499a598a558a4c0843ea8_808775680,2,3613,465545,6|809c3586a94da1273171005217c8761d_723888128,1,51,465545,1
-.....
-
-filename, count, kcps,size, multi | filename, count, kcps,size, multi | filename, count, kcps,size, multi
-
-
-======================================================================================
-기존꺼는
-ftpcount(파일count)
-ftpfiles
-ftpdownload(파일개수 = ftpfiles와 동일한 값)
-ftpkcps
-cMac
-
-ftpwho = filename, id, count, kcps, size | ....
-======================================================================================
-*/
-// const int ChatManager::GetStatistics(
-//     struct scoreboard_file* const pSt,
-//     struct scoreboard_file** const _pNext,
-//     uint32_t _iPos,
-//     uint32_t* const _piFCount,  // file count
-//     uint32_t* const _piUserCnt, // id count
-//     uint32_t* const _piKcps,  // kcps
-//     uint32_t* const _piSameCnt) // 같은 파일은 건너 뛰기 위해서..
-// {
-//   // 문제의 소지가 있을 수 있다..
-//   struct scoreboard_file *pNext = pSt + 1;
-//   if(_iPos+1 > MAX_CLIENT)
-//   {
-//     return 0;
-//   }
-
-//   //if( strncmp(pSt->filename, pNext->filename, 2) == 0)
-//   if( strcmp(pSt->filename, pNext->filename) == 0)
-//   {
-//     if(strcmp(pSt->id, pNext->id) != 0)
-//     {
-//       *_piUserCnt += 1;
-//     }
-
-//     *_piSameCnt += 1; // 같은 파일은 건너 뛰기 위해서
-//     *_piKcps += pSt->kcps;
-
-//     _iPos += 1;
-//     GetStatistics(pNext, &pNext, _iPos, _piFCount, _piUserCnt, _piKcps, _piSameCnt);
-//   }
-//   else
-//   {
-//     *_piSameCnt += 1; // 같은 파일은 건너 뛰기 위해서
-//     *_piFCount += 1;
-//     *_piKcps += pSt->kcps;
-//   }
-
-//   *_pNext = pNext;
-//   return 0;
-// }
 
 const int ChatManager::PostData(const char* _pData, const char* _pchURL, const char *_pchAuth)
 {
@@ -308,220 +235,6 @@ const int ChatManager::PostData(const char* _pData, const char* _pchURL)
   return 0;
 }
 
-// int cmpfileinfo(const void *p1, const void *p2)
-// {
-//   // arrange with filename
-//   if(strcmp((*(struct scoreboard_file *)p1).filename, (*(struct scoreboard_file *)p2).filename) > 0 &&
-//       (*(struct scoreboard_file *)p1).cUse == 1)
-//   {
-//     return -1;
-//   }
-
-//   if(strcmp((*(struct scoreboard_file *)p1).filename, (*(struct scoreboard_file *)p2).filename) == 0 &&
-//       (*(struct scoreboard_file *)p1).cUse == 1)
-//   {
-//     return 0;
-//   }
-
-//   return 1;
-// }
-
-// void ChatManager::SendStorageInfoOld()
-// {
-//   struct scoreboard_file tTmpDsInfo[MAX_CLIENT];
-//   memset(tTmpDsInfo, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
-
-//   //pthread_mutex_lock(&m_lockShm);
-//   //memcpy((char *)&tTmpDsInfo, (char *)&m_tDsInfo, MAX_CLIENT * sizeof(struct scoreboard_file));
-//   memcpy((char *)&tTmpDsInfo, (char *)&(m_pShm[0]), MAX_CLIENT * sizeof(struct scoreboard_file));
-//   //pthread_mutex_unlock(&m_lockShm);
-
-//   // sorting.
-//   qsort(tTmpDsInfo, MAX_CLIENT, sizeof(struct scoreboard_file), cmpfileinfo);
-
-//   memset(m_pchStatistics, 0x00, MAX_STATISTICS);
-//   char *pStr = &(m_pchStatistics[0]);
-
-//   pStr += 56 + 4 + 4 + 4+ 8;  // => "ftpwhover=0.4&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&" length
-//   //pStr += 41 + 4 + 4 + 4+ 8;  // => "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&" length
-
-//   uint32_t iTotalFCount   = 0;
-//   uint64_t iTotalKcps   = 0;
-//   uint32_t iTotalUserCnt  = 0;
-
-//   strcpy(pStr, "ftpwho=");
-//   int iPos = 0;
-//   while(1)
-//   {
-
-//     struct scoreboard_file *pNext = NULL;
-//     if(tTmpDsInfo[iPos].cUse != ON ||
-//         iPos+1 >= MAX_CLIENT)
-//     {
-//       break;
-//     }
-//     //CNPLog::GetInstance().Log("pos=(%d) file=(%s)", iPos, tTmpDsInfo[iPos].filename);
-
-//     uint32_t iFCount = 0, iUserCnt = 1, iKcps = 0, iSameCnt = 0;
-//     GetStatistics(
-//         &(tTmpDsInfo[iPos]),
-//         &pNext,
-//         iPos,
-//         &iFCount,
-//         &iUserCnt,
-//         &iKcps,
-//         &iSameCnt);
-
-//     sprintf(pStr, "%s%s,%d,%d,%llu|",
-//         pStr,
-//         tTmpDsInfo[iPos].filename,
-//         iUserCnt,       // user ���� ���±�..
-//         iKcps,
-//         tTmpDsInfo[iPos].iFSize);
-
-//     //CNPLog::GetInstance().Log("pStr================(%s)",pStr);
-//     iTotalFCount  += iFCount;
-//     iTotalKcps    += iKcps;
-//     iTotalUserCnt   += iUserCnt;
-
-//     iPos += iSameCnt;
-//     if(iPos >= MAX_CLIENT)
-//     {
-//       break;
-//     }
-//   }
-
-//   if(iTotalUserCnt > 0)
-//   {
-//     iTotalUserCnt--;
-//   }
-// #ifdef _HOMESTORAGE
-//   sprintf(m_pchStatistics, "ftpwhover=0.4&flag=1&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&%s",
-//       iTotalUserCnt, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
-// #else
-//   sprintf(m_pchStatistics, "ftpwhover=0.4&ftpcount=%d&ftpfiles=%d&ftpdownload=%d&ftpkcps=%llu&%s",
-//       iTotalUserCnt, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
-//   //iPos, iTotalFCount, iTotalFCount, iTotalKcps, pStr);
-//   char pchTmp[128];
-//   struct in_addr laddr;
-//   laddr.s_addr = m_iIPAddr;
-//   memset(pchTmp, 0x00, sizeof(pchTmp));
-//   sprintf(pchTmp, "&ip=%s", inet_ntoa(laddr));
-//   strcat(m_pchStatistics, pchTmp);
-// #endif
-
-//   /*
-//      CNPLog::GetInstance().Log("SendToWeb=(%s) URL=(%s)", m_pchStatistics, GetMRTGURL());
-//      CNPLog::GetInstance().Log("SendToWeb=(%d) URL=(%s) iTotalUserCnt=(%d)", strlen(m_pchStatistics), GetMRTGURL(), iTotalUserCnt);
-//      CNPLog::GetInstance().Log("(%s)", m_pchStatistics);
-//      */
-//   if(PostData(m_pchStatistics, GetMRTGURL()) >= 0)
-//   {
-//     CNPLog::GetInstance().Log("PostData Success!");
-//   }
-// }
-
-// void ChatManager::SendStorageInfo()
-// {
-// 	// do nothing because broadcasting server don't need to send statistics.
-//   //SendStorageInfoOld();
-//   return;
-
-//   /*
-//      CNPLog::GetInstance().Log("SendStorageInfo Called!");
-//      for (int i = 0; i < MAX_CLIENT; i++)
-//      {
-//      if(m_pShm[i].cUse == ON)
-//      {
-//      CNPLog::GetInstance().Log("m_pShm[%d].cUse=(%d) (%p)", i, m_pShm[i].cUse, &(m_pShm[i]));
-//      CNPLog::GetInstance().Log("m_pShm[%d].comcode=(%d)", i, m_pShm[i].comcode);
-//      CNPLog::GetInstance().Log("m_pShm[%d].billno=(%d)", i, m_pShm[i].billno);
-//      CNPLog::GetInstance().Log("m_pShm[%d].kcps=(%d)", i, m_pShm[i].kcps);
-//      CNPLog::GetInstance().Log("m_pShm[%d].filename=(%s)", i, m_pShm[i].filename);
-//      CNPLog::GetInstance().Log("m_pShm[%d].id=(%s)", i, m_pShm[i].id);
-//      CNPLog::GetInstance().Log("m_pShm[%d].dnsize=(%llu)", i, m_pShm[i].iDNSize);
-//      }
-//      }
-//      return;
-//      */
-
-//   struct scoreboard_file tTmpDsInfo[MAX_CLIENT];
-//   memset(tTmpDsInfo, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
-
-//   //pthread_mutex_lock(&m_lockShm);
-//   //memcpy((char *)&tTmpDsInfo, (char *)&m_tDsInfo, MAX_CLIENT * sizeof(struct scoreboard_file));
-//   memcpy((char *)&tTmpDsInfo, (char *)&(m_pShm[0]), MAX_CLIENT * sizeof(struct scoreboard_file));
-//   //pthread_mutex_unlock(&m_lockShm);
-
-//   // sorting.
-//   qsort(tTmpDsInfo, MAX_CLIENT, sizeof(struct scoreboard_file), cmpfileinfo);
-
-//   /*
-//      char databuf[20000];
-//      memset(databuf, 0x00, sizeof(databuf));
-//      char *pStr = &(databuf[0]);
-//      */
-//   //  char    m_pchStatistics[MAX_STATISTICS];
-//   memset(m_pchStatistics, 0x00, MAX_STATISTICS);
-//   char *pStr = &(m_pchStatistics[0]);
-
-//   pStr += 41 + 4 + 4 + 4+ 8;  // => "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&" length
-
-//   uint32_t iTotalFCount   = 0;
-//   uint64_t iTotalKcps   = 0;
-//   uint32_t iTotalUserCnt  = 0;
-
-//   strcpy(pStr, "ftpwho=");
-//   int iPos = 0;
-//   while(1)
-//   {
-
-//     struct scoreboard_file *pNext = NULL;
-//     if(tTmpDsInfo[iPos].cUse != ON ||
-//         iPos+1 >= MAX_CLIENT)
-//     {
-//       break;
-//     }
-//     //CNPLog::GetInstance().Log("pos=(%d) file=(%s)", iPos, tTmpDsInfo[iPos].filename);
-
-//     uint32_t iFCount = 0, iUserCnt = 1, iKcps = 0, iSameCnt = 0;
-//     GetStatistics(
-//         &(tTmpDsInfo[iPos]),
-//         &pNext,
-//         iPos,
-//         &iFCount,
-//         &iUserCnt,
-//         &iKcps,
-//         &iSameCnt);
-
-//     sprintf(pStr, "%s%s,%d,%d,%llu,%d|",
-//         pStr,
-//         tTmpDsInfo[iPos].filename,
-//         //iFCount,        // user ���� ���±�..
-//         iUserCnt,       // user ���� ���±�..
-//         iKcps,
-//         tTmpDsInfo[iPos].iFSize,
-//         iUserCnt);
-
-//     //CNPLog::GetInstance().Log("pStr================(%s)",pStr);
-
-//     iTotalFCount  += iFCount;
-//     iTotalKcps    += iKcps;
-//     iTotalUserCnt   += iUserCnt;
-
-//     iPos += iSameCnt;
-//     if(iPos >= MAX_CLIENT)
-//     {
-//       break;
-//     }
-//   }
-
-//   sprintf(m_pchStatistics, "ftpcount=%d&ftpfiles=%d&multicount=%d&ftpkcps=%llu&%s",
-//       iTotalUserCnt, iTotalFCount, iPos, iTotalKcps, pStr);
-
-//   CNPLog::GetInstance().Log("SendToWeb=(%d) URL=(%s)", strlen(m_pchStatistics), GetMRTGURL());
-// }
-
 void ChatManager::PutWorkQueue(const void* const _pVoid)
 {
   m_pWorkQueue->EnQueue(_pVoid);
@@ -600,8 +313,8 @@ void ChatManager::HealthCheckUsers()
 {
   pthread_mutex_lock(&m_lockClient);
 
-  std::list<Client*>::iterator iter = m_lstClient.begin();
-  while( iter != m_lstClient.end() )
+  std::list<Client*>::iterator iter = m_lstChatServer.begin();
+  while( iter != m_lstChatServer.end() )
   {
     Client *pClient = static_cast<Client *>(*iter);
     if(pClient->GetType() == CLIENT_USER)
@@ -611,7 +324,7 @@ void ChatManager::HealthCheckUsers()
       {
         CNPLog::GetInstance().Log("ChatManager::HealthCheckUsers Kill Client [%p] fd=(%d)=(%d)",
             pClient, pClient->GetSocket()->GetFd(), CNPUtil::GetUnixTime()-pClient->GetAccessTime());
-        iter = m_lstClient.erase( iter );
+        iter = m_lstChatServer.erase( iter );
 
 #ifdef _FREEBSD
         m_pIOMP->DelClient(pClient, EVFILT_READ);
@@ -625,45 +338,9 @@ void ChatManager::HealthCheckUsers()
 
     iter++;
   }
-  /*
-     std::list<Client*>::iterator pos, itrClientPrev;
-     pos = m_lstClient.begin();
-     while( pos != m_lstClient.end() )
-     {
-     itrClientPrev = pos++;
-  //Client *pClient = (Client *)*itrClientPrev;
-  Client *pClient = static_cast<Client *>(*itrClientPrev);
-
-  if(pClient->GetType() != CLIENT_USER)
-  {
-  continue;
-  }
-
-  if(CNPUtil::GetMicroTime()-pClient->GetAccessTime() > TIME_ALIVE ||
-  pClient->IsClosed())
-  {
-  CNPLog::GetInstance().Log("ChatManager::HealthCheckUsers Kill Client [%p] fd=(%d)=(%d)",
-  pClient, pClient->GetSocket()->GetFd(), CNPUtil::GetUnixTime()-pClient->GetAccessTime());
-
-  m_pIOMP->DelClient(pClient);
-  m_lstClient.erase( itrClientPrev );
-  //delete (Client *)*itrClientPrev;
-  delete pClient;
-  m_iConnCount--;
-  }
-  }
-  */
   pthread_mutex_unlock(&m_lockClient);
-
   HealthCheckClosedList();
 }
-
-/*
-   const serverInfoMap& ChatManager::GetServerPortMap()
-   {
-   return m_pServerInfo->GetPortMap();
-   }
-   */
 
 void ChatManager::UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents)
 {
@@ -695,7 +372,7 @@ void ChatManager::CloseClient(Client* const _pClient)
 #endif
 
   pthread_mutex_lock(&m_lockClient);
-  m_lstClient.remove(_pClient);
+  m_lstChatServer.remove(_pClient);
   pthread_mutex_unlock(&m_lockClient);
 
   // if you SetState() before erase the Client in the client map,
@@ -703,9 +380,9 @@ void ChatManager::CloseClient(Client* const _pClient)
   // because of SetState() is on a collision with HealthCheck
   _pClient->SetState(STATE_CLOSED);
 
-  if(_pClient->GetType() == CLIENT_DN)
+  if(_pClient->GetType() == CLIENT_CHAT_SERVER)
   {
-    memset(&(m_pDSInfo[_pClient->GetUserSeq()]), 0, sizeof(Tcmd_HELLO_DSM_DS));
+    memset(&(m_ChatServerInfo[_pClient->GetUserSeq()]), 0, sizeof(Tcmd_HELLO_DSM_DS));
   }
 
   delete _pClient;
@@ -718,11 +395,11 @@ void ChatManager::CloseClient(Client* const _pClient)
 void ChatManager::SettingDS(const int _iPos, int* const _piSeq, int* const _piMaxUser, int* const _piShmKey, int* const
     _piShmDSStatus, int _iPid)
 {
-  m_pDSInfo[_iPos].iSeq     = _iPos;
-  m_pDSInfo[_iPos].iPid     = _iPid;
-  m_pDSInfo[_iPos].iMaxUser   = m_pServerInfo->GetDSMaxUser();
-  m_pDSInfo[_iPos].iShmKey  = m_pServerInfo->GetShmKey();
-  m_pDSInfo[_iPos].dHelloTime = CNPUtil::GetMicroTime();
+  m_ChatServerInfo[_iPos].iSeq     = _iPos;
+  m_ChatServerInfo[_iPos].iPid     = _iPid;
+  m_ChatServerInfo[_iPos].iMaxUser   = m_pServerInfo->GetDSMaxUser();
+  m_ChatServerInfo[_iPos].iShmKey  = m_pServerInfo->GetShmKey();
+  m_ChatServerInfo[_iPos].dHelloTime = CNPUtil::GetMicroTime();
 
   *_piSeq     = _iPos;
   *_piMaxUser   = m_pServerInfo->GetDSMaxUser();
@@ -743,24 +420,23 @@ void ChatManager::SettingDS(const int _iPos, int* const _piSeq, int* const _piMa
 
 const int ChatManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* const _piShmKey, int* const _piShmDSStatus, int _iPid)
 {
-  int i;
-
+  int i = 0;
   for(i = 0; i < m_pServerInfo->GetDNCnt(); i++)
   {
-    if( m_pDSInfo[i].iPid <= 0)
+    if( m_ChatServerInfo[i].iPid <= 0)
     {
       SettingDS(i, _piSeq,_piMaxUser,_piShmKey, _piShmDSStatus, _iPid);
       break;
     }
     else
     {
-      if(!IsAliveProcess(m_pDSInfo[i].iPid))
+      if(!IsAliveProcess(m_ChatServerInfo[i].iPid))
       {
-        CNPLog::GetInstance().Log("SetDS slot(%d) (%d)=>(%d)", i, m_pDSInfo[i].iPid, _iPid);
+        CNPLog::GetInstance().Log("SetDS slot(%d) (%d)=>(%d)", i, m_ChatServerInfo[i].iPid, _iPid);
 
 #if 0
         CNPLog::GetInstance().Log("죽은 프로세스 이므로 다시 할당된다.slot(%d) (%d)=>(%d)",
-                    i, m_pDSInfo[i].iPid, _iPid);
+                    i, m_ChatServerInfo[i].iPid, _iPid);
 #endif
 
         SettingDS(i, _piSeq,_piMaxUser,_piShmKey, _piShmDSStatus, _iPid);
@@ -777,10 +453,41 @@ const int ChatManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* cons
 /*
   for(i = 0; i < m_pServerInfo->GetDNCnt(); i++)
   {
-    CNPLog::GetInstance().Log("DS 현황.slot(%d) (%d),(%d)", i, m_pDSInfo[i].iPid, _iPid);
+    CNPLog::GetInstance().Log("DS 현황.slot(%d) (%d),(%d)", i, m_ChatServerInfo[i].iPid, _iPid);
   }
 */
 
+  return 0;
+}
+
+const int ChatManager::MessageBroadcast(const T_PACKET &_tPacket)
+{
+  Tcmd_CHAT_DS_DSM *pChatPacket = (Tcmd_CHAT_DS_DSM *)_tPacket.data;
+  CNPLog::GetInstance().Log("ClientChatServer::MessageBroadcast Broadcast 요청 받음 from pid=(%d), message=(%s)", pChatPacket->iPid, pChatPacket->message);
+
+  // for(int i = 0; i < m_pServerInfo->GetDNCnt(); i++)
+  // {
+  //   if( m_ChatServerInfo[i].iPid == pChatPacket->iPid) 
+  //   {
+  //     continue;
+  //   }
+  //   CNPLog::GetInstance().Log("ChatServer pid=(%d), requested pid=(%d)", m_ChatServerInfo[i].iPid, pChatPacket->iPid); 
+  //   // ClientSocket *socket = static_cast<ClientSocket *>(*iter);
+  //   // socket->Write((char *)&tSendPacket, PDUHEADERSIZE+tSendPacket.header.length);
+  // }
+
+  std::list<Client *>::iterator iter = m_lstChatServer.begin();
+  while( iter != m_lstChatServer.end() )
+  {
+    ClientChatServer *chatServer = static_cast<ClientChatServer *>(*iter);
+    if( chatServer->GetPid() != pChatPacket->iPid) 
+    {
+      CNPLog::GetInstance().Log("message broadcasting from manager to (%d)", chatServer->GetSocket()->GetFd());
+      chatServer->GetSocket()->Write((char *)&_tPacket, PDUHEADERSIZE+_tPacket.header.length);
+    }
+
+    iter++;
+  }
   return 0;
 }
 
@@ -934,8 +641,8 @@ void ChatManager::Run()
   //  m_pSlot = new ReleaseSlot(MAX_CLIENT);
 
   // Download Server info table
-  m_pDSInfo = new Tcmd_HELLO_DSM_DS[m_pServerInfo->GetDNCnt()];
-  memset(m_pDSInfo, 0, m_pServerInfo->GetDNCnt() * sizeof(Tcmd_HELLO_DSM_DS));
+  m_ChatServerInfo = new Tcmd_HELLO_DSM_DS[m_pServerInfo->GetDNCnt()];
+  memset(m_ChatServerInfo, 0, m_pServerInfo->GetDNCnt() * sizeof(Tcmd_HELLO_DSM_DS));
 
   struct in_addr laddr;
   laddr.s_addr = m_iIPAddr;
@@ -1016,14 +723,8 @@ void ChatManager::Run()
           }
 
           Client *pNewClient;
-          //if(((ServerSocket *)pClient->GetSocket())->GetType() == SERVER_PORT)
           if(static_cast<ServerSocket *>(pClient->GetSocket())->GetType() == SERVER_PORT)
           {
-            /*
-               CNPLog::GetInstance().Log("1.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
-               pClientSocket->SetSndBufSize(1024000);
-               CNPLog::GetInstance().Log("2.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
-               */
             pNewClient = new ClientChatServer(pClientSocket);
 #ifdef _FREEBSD
             if(m_pIOMP->AddClient(pNewClient, EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR) < 0)
@@ -1037,21 +738,15 @@ void ChatManager::Run()
               }
 
             pNewClient->SetState(STATE_WAIT);
-            //pNewClient->SetChatManager(this);
             pNewClient->SetMainProcess(this);
             pthread_mutex_lock(&m_lockClient);
-            /*
-               m_mapConnectList.insert( connValType(((Socket *)(pNewClient->GetSocket()))->GetFd(),
-               (Client *)pNewClient));
-               */
-            m_lstClient.push_back((Client *)pNewClient);
+            m_lstChatServer.push_back((Client *)pNewClient);
             pthread_mutex_unlock(&m_lockClient);
 
             CNPLog::GetInstance().Log("NewClient(%p) fd ==>(%d) ",
                 pNewClient,
                 pNewClient->GetSocket()->GetFd());
 
-            //            m_lstClient.push_back(pNewClient);
             m_iConnCount++;
           }
           else

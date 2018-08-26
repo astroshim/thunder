@@ -23,11 +23,6 @@ class ReleaseSlot;
 // class ThreadQoS;
 // #endif
 
-#ifdef _CLIENT_ARRAY
-// 090313 added
-class ChatUser;
-#endif
-
 using namespace std;
 #include <iostream>
 #include <sstream>
@@ -38,9 +33,6 @@ class ChatServer : public Process
   private:
     static const int TIME_ALIVE = 300; // 5��
     static const int MAX_COMPANY = 100;
-#ifdef _CLIENT_ARRAY
-    static const unsigned int MAX_CLIENT = 200;
-#endif
 
     /**
      * ChatServer Server Infomation
@@ -68,11 +60,7 @@ class ChatServer : public Process
     CircularQueue *m_pSendQueue;
     CircularQueue *m_pBroadcastQueue;
 
-#ifdef _CLIENT_ARRAY
-    ChatUser *m_arrClient[MAX_CLIENT];
-#else
     list<Client *> m_lstClient;
-#endif
     pthread_mutex_t m_lockClient;
 
     list<ClientSocket *> m_lstChatManagerSocket;
@@ -118,16 +106,9 @@ class ChatServer : public Process
     void AddEPoll(Client *const _pClient, const unsigned int _uiEvents);
 #endif
     void UpdateEPoll(Client *const _pClient, const unsigned int _uiEvents);
-    void AcceptClient(Socket *const _pClientSocket);
+    void AcceptClient(Socket *const _pClientSocket, ENUM_CLIENT_TYPE type);
     void CloseClient(Client *const _pClient);
-
-#ifdef _CLIENT_ARRAY
-    void AcceptClient(const int _iClientFD);
-    void CloseClient(const int _iSlot);
-#endif
-
-    // void WriteUserInfo(Client *const _pClient);
-    // void AddThroughput(const int _iIdx, const int _iSendSize);
+    int RegisterManager();
 
     Client *const GetClient(const unsigned int _uiSessionKey);
 

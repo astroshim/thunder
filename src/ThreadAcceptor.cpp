@@ -28,7 +28,6 @@ ThreadAcceptor::~ThreadAcceptor()
 void ThreadAcceptor::Run()
 {
   pthread_detach(pthread_self());
-  //int iServerFd = ((Socket *)((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->GetFd();
   int iServerFd = m_pMainProcess->GetServerSocket()->GetSocket()->GetFd();
 
   IOMP *pcIomp = new IOMP_Select(0, 1000);
@@ -36,36 +35,6 @@ void ThreadAcceptor::Run()
 
   while(1)
   {
-    /*
-     * block accept
-     Socket *pClientSocket;
-
-     if(m_pMainProcess->GetCurrentUserCount() >= m_pMainProcess->GetMaxUser())
-     {
-     CNPLog::GetInstance().Log("Acceptor OverFlow (%d), (%d) ",
-     m_pMainProcess->GetCurrentUserCount(),
-     m_pMainProcess->GetMaxUser());
-     sleep(5);
-     continue;
-     }
-
-     if((pClientSocket = ((ServerSocket *)((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->Accept()) != NULL)
-     {
-     pClientSocket->SetNonBlock();
-     CNPLog::GetInstance().Log("Accept ====> ClientIp=(%s),CurrentUser=(%d),Max=(%d)" ,
-     ((TcpSocket *)pClientSocket)->GetClientIp(),
-     m_pMainProcess->GetCurrentUserCount(),
-     m_pMainProcess->GetMaxUser());
-
-     CNPLog::GetInstance().Log("1.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
-     pClientSocket->SetSndBufSize(4*1024*1024);
-     CNPLog::GetInstance().Log("2.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
-     pClientSocket->SetTcpCORK(1);
-
-     m_pMainProcess->AcceptClient(pClientSocket);
-     }
-     */
-
     int eventCnt = 0;
     if((eventCnt = pcIomp->Polling()) <= 0)
     {
@@ -84,34 +53,6 @@ void ThreadAcceptor::Run()
          continue;
          }
          */
-#ifdef _CLIENT_ARRAY
-      int iClientFD;
-      if((iClientFD = static_cast<ServerSocket *>(((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->AcceptFD()) < 0)
-      {
-        close(iClientFD);
-        continue;
-      }
-
-      CNPLog::GetInstance().Log("Acceptor iClientFD=(%d), CurrentUser=(%d), MaxUser=(%d)",
-            iClientFD,
-            m_pMainProcess->GetCurrentUserCount(),
-            m_pMainProcess->GetMaxUser());
-
-      if(m_pMainProcess->GetCurrentUserCount() >= m_pMainProcess->GetMaxUser())
-      {
-        CNPLog::GetInstance().Log("Acceptor Max User OverFlow! CurrentUser=(%d), MaxUser=(%d)",
-            m_pMainProcess->GetCurrentUserCount(),
-            m_pMainProcess->GetMaxUser());
-
-        close(iClientFD);
-        sleep(5);
-        continue;
-      }
-      else
-      {
-        m_pMainProcess->AcceptClient(iClientFD);
-      }
-#else
       Socket *pClientSocket;
       //if((pClientSocket = m_pMainProcess->GetServerSocket())->GetSocket()->Accept() != NULL)
       if((pClientSocket = static_cast<ServerSocket *>(((Client*)m_pMainProcess->GetServerSocket())->GetSocket())->Accept()) != NULL)
@@ -138,7 +79,7 @@ void ThreadAcceptor::Run()
             m_pMainProcess->GetCurrentUserCount(),
             m_pMainProcess->GetMaxUser());
 
-        m_pMainProcess->AcceptClient(pClientSocket);
+        m_pMainProcess->AcceptClient(pClientSocket, CLIENT_USER);
         /*
            CNPLog::GetInstance().Log("1.----> GetSndBuff ==(%d)", pClientSocket->GetSndBufSize());
            pClientSocket->SetSndBufSize(4*1024*1024);
@@ -161,7 +102,6 @@ void ThreadAcceptor::Run()
            }
            */
       }
-#endif
     }
     else
     {

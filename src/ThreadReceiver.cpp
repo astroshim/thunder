@@ -46,11 +46,7 @@ void ThreadReceiver::Run()
       {
         CNPLog::GetInstance().Log("Close In ThreadReceiver.(%p)", pClient);
 
-#ifdef _CLIENT_ARRAY
-        m_pChatServer->CloseClient(pClient->GetUserSeq());
-#else
         m_pChatServer->CloseClient(pClient);
-#endif
         continue;
       }
     }

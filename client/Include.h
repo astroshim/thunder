@@ -90,7 +90,8 @@ typedef enum
     CLIENT_NOTHING = 0,   /*  */
     CLIENT_USER,          /* User */
     CLIENT_SERVER,          /* for Server Socket */
-    CLIENT_DN           /* Download Server */
+    CLIENT_CHAT_MANAGER,
+    CLIENT_CHAT_SERVER           /* Download Server */
 //    CLIENT_MEMBER,        /* Member Server */
 //    CLIENT_SMEMBER        /* SubMember Server */
 }ENUM_CLIENT_TYPE;

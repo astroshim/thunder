@@ -150,25 +150,12 @@ typedef struct
 /*************************************************************
  * DS ---> DSM
  *************************************************************/
-/*
-// C->S로 GET_FSIZE 패킷이 올때 DNMgr로 관리 대상 파일정보를 보낸다.
+// hello DS -> DSM
 typedef struct
 {
-uint32_t nComCode;
-uint32_t nBandWidth;
-uint64_t nFileSize;
-char   pchID[16];
-char     pchFileName[98];
-} Tcmd_INFORM_FILE;
-// 주기적으로 DS가 DNMgr로 받은파일 size를 보낸다.
-typedef struct
-{
-uint32_t nComCode;
-uint32_t nBillNo;
-uint64_t nDownSize;
-} Tcmd_DOWNLOAD_SIZE;
- */
-
+  uint32_t iPid;  // chat server pid
+  char message[1000];
+}Tcmd_CHAT_DS_DSM;
 
 // hello DS -> DSM
 typedef struct
