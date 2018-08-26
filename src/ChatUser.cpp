@@ -195,15 +195,38 @@ const int ChatUser::ExecuteCommand(Thread *_pThread)
         return -1;
     }
 
+    if (tPacket.header.command == cmd_CHAT_DS_DSM)
+    {
+      BroadcastMessage *broadcastMessage = new BroadcastMessage();
+      Tcmd_CHAT_DS_DSM *pChatPacket = (Tcmd_CHAT_DS_DSM *)tPacket.data;
+
+      CNPLog::GetInstance().Log("MESSAGE => (%d)(%s)", (pPacketHeader->length-4), pChatPacket->message);
+
+      broadcastMessage->SetMessage(pChatPacket->message);
+      broadcastMessage->SetMessageSize(pPacketHeader->length-4);
+      broadcastMessage->SetSocketFd(GetSocket()->GetFd());
+      broadcastMessage->SetMessageType(RELAYED_MESSAGE);
+
+      CNPLog::GetInstance().Log("In ChatUser:: message (%d)(%s), buffedSize: %d", 
+                                                            broadcastMessage->GetSocketFd(), 
+                                                            broadcastMessage->GetMessage(), 
+                                                            broadcastMessage->GetMessageSize());
+      MessageBroadcast(broadcastMessage);
+    }
+
+
+    /*
     switch(tPacket.header.command)
     {
       // DC -> DS
-      case cmd_CHAT_DS_DSM:
-        Tcmd_CHAT_DS_DSM *pChatPacket = (Tcmd_CHAT_DS_DSM *)_tPacket.data;
-
+      case cmd_CHAT_DS_DSM :
         BroadcastMessage *broadcastMessage = new BroadcastMessage();
+        Tcmd_CHAT_DS_DSM *pChatPacket = (Tcmd_CHAT_DS_DSM *)tPacket.data;
+
+        CNPLog::GetInstance().Log("MESSAGE => (%d)(%s)", (pPacketHeader->length-4), pChatPacket->message);
+
         broadcastMessage->SetMessage(pChatPacket->message);
-        broadcastMessage->SetMessageSize(pPacketHeader->length-2);
+        broadcastMessage->SetMessageSize(pPacketHeader->length-4);
         broadcastMessage->SetSocketFd(GetSocket()->GetFd());
         broadcastMessage->SetMessageType(RELAYED_MESSAGE);
 
@@ -218,6 +241,9 @@ const int ChatUser::ExecuteCommand(Thread *_pThread)
       default :
         CNPLog::GetInstance().Log("UNKNOWN PDU TYPE(%p), (%d)", this, tPacket.header.command);
     }
+    */
+
+
 
 /*
     BroadcastMessage *broadcastMessage = new BroadcastMessage();

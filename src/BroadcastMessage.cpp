@@ -18,6 +18,7 @@ BroadcastMessage::~BroadcastMessage()
 
 void BroadcastMessage::SetMessage(char *_message)
 {
+  memset(message, 0x00, sizeof(char)*MessageSize);
   memcpy(message, _message, MessageSize);
 }
 
