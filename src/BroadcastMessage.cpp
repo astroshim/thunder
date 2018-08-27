@@ -2,13 +2,13 @@
 #include "../include/Client.h"
 
 BroadcastMessage::BroadcastMessage()
-    : message(NULL),
+    : 
+      messageType(CLIENT_CHAT_MESSAGE),
       socket(0),
-      messageSize(0),
-      messageType(CLIENT_CHAT_MESSAGE)
-      // client(NULL)
+      message(NULL),
+      messageSize(0)
 {
-  message = (char *)new char[MessageSize];
+  message = (char *)new char[MAX_MESSAGE_SIZE];
 }
 
 BroadcastMessage::~BroadcastMessage()
@@ -18,8 +18,14 @@ BroadcastMessage::~BroadcastMessage()
 
 void BroadcastMessage::SetMessage(char *_message)
 {
-  memset(message, 0x00, sizeof(char)*MessageSize);
-  memcpy(message, _message, MessageSize);
+  memset(message, 0x00, sizeof(char)*MAX_MESSAGE_SIZE);
+  memcpy(message, _message, MAX_MESSAGE_SIZE);
+}
+
+void BroadcastMessage::SetMessage(char *_message, int _size)
+{
+  memcpy(message, _message, _size);
+  message[strcspn(message, "\r\n")] = 0;
 }
 
 const char* BroadcastMessage::GetMessage()

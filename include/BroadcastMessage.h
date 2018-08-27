@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "./NonCopyable.h"
 
-const int MessageSize = 1024;
+const int MAX_MESSAGE_SIZE = 1024;
 
 typedef enum
 {
@@ -30,6 +30,7 @@ class BroadcastMessage : private NonCopyable
     void SetMessageSize(int _messageSize);
     void SetSocketFd(int _socket);
     void SetMessage(char *_message);
+    void SetMessage(char *_message, int _size);
 
   private:
     ENUM_MESSAGE_TYPE  messageType;

@@ -10,3 +10,5 @@ logs/
 tags
 __assertion_failed.log
 .vscode/
+client/chat_client
+client/chat_server

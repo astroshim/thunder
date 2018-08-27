@@ -169,12 +169,6 @@ const void* const ChatServer::GetSendQueue()
 
 void ChatServer::PutBroadcastQueue(BroadcastMessage *message, Client *const _pClient)
 {
-  // Client *pNewClient;
-  // pNewClient = new ChatUser(_pClientSocket);
-  // pNewClient->SetMainProcess(this);
-
-  // 새로운 class 생성하여 message 와 client 를 세팅해서 queue에 집어 넣자.
-  // BroadcastMessage *broadcastMessage = new BroadcastMessage(_pClient->GetSocket()->GetFd(), message);
   m_pBroadcastQueue->EnQueue(message);
 }
 
@@ -483,7 +477,7 @@ void ChatServer::MessageBroadcastToManagers(BroadcastMessage *_message)
             socket->GetFd(), _message->GetMessage());
     #endif
 
-    CNPLog::GetInstance().Log("ChatServer:: 메세지를 manager로 relay !");
+    CNPLog::GetInstance().Log("ChatServer:: 메세지를 manager로 relay ! size=(%d), message=(%s)", tSendPacket.header.length, sndbody->message);
 
     socket->Write((char *)&tSendPacket, PDUHEADERSIZE+tSendPacket.header.length);
     // socket->Write((char *)&tSendPacket, PDUHEADERSIZE+_message->GetMessageSize());
@@ -524,7 +518,7 @@ void ChatServer::MessageBroadcast(BroadcastMessage *_message)
                                       _message->GetSocketFd(),
                                       _message->GetMessage());
 
-      pClient->GetSocket()->Write(_message->GetMessage(), 1024);
+      pClient->GetSocket()->Write(_message->GetMessage(), _message->GetMessageSize());
     }
 
     iter++;

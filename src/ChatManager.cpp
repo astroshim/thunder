@@ -463,7 +463,8 @@ const int ChatManager::SetDS(int* const _piSeq, int* const _piMaxUser, int* cons
 const int ChatManager::MessageBroadcast(const T_PACKET &_tPacket)
 {
   Tcmd_CHAT_DS_DSM *pChatPacket = (Tcmd_CHAT_DS_DSM *)_tPacket.data;
-  CNPLog::GetInstance().Log("ClientChatServer::MessageBroadcast Broadcast 요청 받음 from pid=(%d), message=(%s)", pChatPacket->iPid, pChatPacket->message);
+  CNPLog::GetInstance().Log("ClientChatServer::MessageBroadcast Broadcast 요청 받음 from pid=(%d), length=(%d), message=(%s)", 
+                              pChatPacket->iPid, _tPacket.header.length, pChatPacket->message);
 
   // for(int i = 0; i < m_pServerInfo->GetDNCnt(); i++)
   // {

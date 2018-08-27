@@ -87,13 +87,11 @@ typedef enum
  */
 typedef enum
 {
-  CLIENT_NOTHING = 0,   /*  */
-  CLIENT_USER,          /* User */
+  CLIENT_NOTHING = 0,     /*  */
+  CLIENT_USER,            /* User */
   CLIENT_SERVER,          /* for Server Socket */
-  CLIENT_CHAT_MANAGER,          /* for Server Socket */
-  CLIENT_CHAT_SERVER           /* Chat Server */
-    //    CLIENT_MEMBER,        /* Member Server */
-    //    CLIENT_SMEMBER        /* SubMember Server */
+  CLIENT_CHAT_MANAGER,    /* Chat Manager user */      
+  CLIENT_CHAT_SERVER      /* Chat Server user */
 }ENUM_CLIENT_TYPE;
 
 /**
