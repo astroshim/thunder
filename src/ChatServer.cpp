@@ -33,8 +33,6 @@ ChatServer::ChatServer()
   :m_pServerInfo(NULL)
   ,m_iConnCount(0)
   ,m_pDNServerSocket(NULL)
-  // ,m_lstChatManagerSocket(NULL)
-  // ,m_pShm(NULL)
   ,m_pShmKcps(NULL)
   ,m_pShmDSStatus(NULL)
   ,m_pShmD(NULL)
@@ -53,11 +51,8 @@ ChatServer::ChatServer()
 }
 
 ChatServer::ChatServer(Properties& _cProperties)
-  //:m_pServerInfo(NULL)
   :m_iConnCount(0)
   ,m_pDNServerSocket(NULL)
-  // ,m_pSendPipe(NULL)
-  // ,m_pShm(NULL)
   ,m_pShmKcps(NULL)
   ,m_pShmDSStatus(NULL)
   ,m_pShmD(NULL)
@@ -78,7 +73,6 @@ ChatServer::ChatServer(Properties& _cProperties)
 
 ChatServer::~ChatServer()
 {
-  //  CNPLog::GetInstance().Log("================ ~ChatServer() ");
   this->SetStarted(false);
   delete m_pIOMP;
   delete m_pServerInfo;
@@ -86,35 +80,20 @@ ChatServer::~ChatServer()
   delete m_pSendQueue;
   delete m_pBroadcastQueue;
   delete m_pDNServerSocket;
-  // delete m_pSendPipe;
-  // delete m_pShm;
   delete m_pShmKcps;
   delete m_pShmDSStatus;
   delete m_pShmD;
   delete m_pSlot;
-  //  delete m_pMQ;
-
 }
 
 const int ChatServer::GetCurrentUserCount()
 {
-  /*
-     int iCnt;
-
-     pthread_mutex_lock(&m_lockClient);
-     iCnt = m_lstClient.size();
-     pthread_mutex_unlock(&m_lockClient);
-
-     return iCnt;
-     */
-
   return m_iConnCount;
 }
 
 const int ChatServer::GetMaxUser()
 {
   return m_iMaxUser;
-  //return m_pServerInfo->GetMaxUser();
 }
 
 const int ChatServer::GetShmKey()
@@ -182,11 +161,6 @@ const char* const ChatServer::GetMRTGURL()
   return m_pServerInfo->GetMRTGURL();
 }
 
-// void ChatServer::SendStorageInfo()
-// {
-//   // Send to web about statistics
-// }
-
 const int ChatServer::GetServerPort()
 {
   return m_pServerInfo->GetPort(SERVER_PORT);
@@ -238,7 +212,6 @@ const int ChatServer::ConnectToMgr()
   vector<string> v = split(m_pServerInfo->GetManagerIpAddresses(), ",");
   for (const string& server : v) {
     CNPLog::GetInstance().Log("Connect to (%s:%d)", server.c_str(), port);
-    // NegotiationWithManager(server, port);
     m_lstChatManagerSocket.push_back(NegotiationWithManager(server, port));
   }
 
@@ -269,8 +242,6 @@ ClientSocket* const ChatServer::NegotiationWithManager(string server, int port)
   sndbody->iPid = GetPid();
 
   if(pCSocket->Write((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DS_DSM)) < 0)
-    //if(static_cast<Socket *>(pCSocket)->Write((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DS_DSM)) < 0)
-    //if(((Socket *)(pCSocket))->Write((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DS_DSM)) < 0)
   {
     CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Send Fail (%s)(%d)", server.c_str(), port);
 
@@ -281,8 +252,6 @@ ClientSocket* const ChatServer::NegotiationWithManager(string server, int port)
   }
 
   memset((char *)&tHelloPacket, 0x00, sizeof(T_PACKET));
-  //if(((Socket *)(pCSocket))->Read((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DSM_DS)) < 0)
-  //if(pCSocket->Read((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DSM_DS)) < 0)
   if(pCSocket->Recv((char *)&tHelloPacket, PDUHEADERSIZE+sizeof(Tcmd_HELLO_DSM_DS)) < 0)
   {
     CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Recv Fail (%s)(%d)", server.c_str(), port);
@@ -297,7 +266,6 @@ ClientSocket* const ChatServer::NegotiationWithManager(string server, int port)
   CNPLog::GetInstance().Log("In ConnectToMgr:: Hello Recv seq=(%d), shmKey=(%d), maxUser=(%d)",
       pRcvBody->iSeq, pRcvBody->iShmKey, pRcvBody->iMaxUser);
 
-  //m_pServerInfo->SetMaxUser(pRcvBody->iMaxUser);
   SetSeq(pRcvBody->iSeq);
 
   SetShmKey(pRcvBody->iShmKey);
@@ -329,15 +297,11 @@ void ChatServer::HealthCheckUsers()
 
       CNPLog::GetInstance().Log("ChatServer::HealthCheckUsers Kill Client [%p] fd=(%d)=(%f)\n",
           pClient,
-          //((Socket *) (pClient->GetSocket()))->GetFd(),
           pClient->GetSocket()->GetFd(),
           CNPUtil::GetMicroTime()-pClient->GetAccessTime());
 
-
       iter = m_lstClient.erase( iter );
-
       m_pSlot->PutSlot(pClient->GetUserSeq());
-      // memset(&(m_pShm[pClient->GetUserSeq()]), 0, sizeof(struct scoreboard_file));
 
       delete pClient;
       m_iConnCount--;
@@ -357,11 +321,6 @@ void ChatServer::SetServerSocket(Client *_pClient)
 {
   m_pDNServerSocket = _pClient;
 }
-
-// ClientSocket* const ChatServer::GetSendPipeClient()
-// {
-//   return m_pSendPipe;
-// }
 
 void ChatServer::UpdateEPoll(Client* const _pClient, const unsigned int _uiEvents)
 {
@@ -422,8 +381,6 @@ void ChatServer::AcceptClient(Socket* const _pClientSocket, ENUM_CLIENT_TYPE typ
 #endif
       {
         CloseClient(pNewClient);
-        //    delete _pClientSocket;
-        //    pthread_mutex_unlock(&m_lockClient);
         return;
       }
 }
@@ -447,7 +404,6 @@ void ChatServer::CloseClient(Client* const _pClient)
   int iSlot = _pClient->GetUserSeq();
   m_lstClient.remove(_pClient);
   m_pSlot->PutSlot(iSlot);
-  // memset(&(m_pShm[iSlot]), 0, sizeof(struct scoreboard_file));
   delete _pClient;
   pthread_mutex_unlock(&m_lockClient);
   m_iConnCount--;
@@ -480,7 +436,6 @@ void ChatServer::MessageBroadcastToManagers(BroadcastMessage *_message)
     CNPLog::GetInstance().Log("ChatServer:: 메세지를 manager로 relay ! size=(%d), message=(%s)", tSendPacket.header.length, sndbody->message);
 
     socket->Write((char *)&tSendPacket, PDUHEADERSIZE+tSendPacket.header.length);
-    // socket->Write((char *)&tSendPacket, PDUHEADERSIZE+_message->GetMessageSize());
     iter++;
   }
 }
@@ -542,16 +497,13 @@ void ChatServer::Run()
 #ifdef _FREEBSD
   m_pIOMP = new IOMP_KQUEUE(500000000);
 #else
-  //m_pIOMP = new IOMP_EPoll(20);
   m_pIOMP = new IOMP_EPoll(1000);
 #endif
 
   // create log file. 
   char pchLogFileName[1024];
   memset(pchLogFileName, 0x00, sizeof(pchLogFileName));
-  // sprintf(pchLogFileName, "%s", m_pServerInfo->GetLogFileName());
   sprintf(pchLogFileName, "%s_%d", m_pServerInfo->GetLogFileName(), getpid());
-  //if(CNPLog::GetInstance().SetFileName(pchLogFileName));
   CNPLog::GetInstance().SetFileName(pchLogFileName);
 
   sleep(2);
@@ -566,12 +518,6 @@ void ChatServer::Run()
 
   // create release slot
   m_pSlot = new ReleaseSlot(GetMaxUser());
-
-  // // attach SharedMemory
-  // SharedMemory sm((key_t)GetShmKey(), sizeof(struct scoreboard_file));
-  // m_pShm = (struct scoreboard_file *)sm.GetDataPoint();
-  // m_pShm = &(m_pShm[GetMaxUser() * GetSeq()]);
-
 
   // attach shm where ds status
   SharedMemory smDSStatus((key_t)m_iShmDSStatus, sizeof(struct TDSStatus));
@@ -658,7 +604,6 @@ void ChatServer::Run()
       continue;
     }
 
-    //CNPLog::GetInstance().Log("epoll_event count=%d", iEventCount);
     for(int i = 0; i < iEventCount; ++i)
     {
 
@@ -671,19 +616,13 @@ void ChatServer::Run()
 #endif
 
       // ServerSocket event Check
-      //if(pServer == pClient)
       if(pClient->GetType() == CLIENT_SERVER)
       {
-        //CNPLog::GetInstance().Log("ServerSocket Event =========");
         Socket *pClientSocket;
         if((pClientSocket = static_cast<ServerSocket *>(pClient->GetSocket())->Accept()) != NULL)
         {
           pClientSocket->SetNonBlock();
 
-          /*
-             CNPLog::GetInstance().Log("<Accept> ClientIp(%p)=(%s),CurrentUser=(%d),Max=(%d)" ,
-             pClientSocket, ((TcpSocket *)pClientSocket)->GetClientIpAddr(), GetCurrentUserCount(), GetMaxUser());
-             */
           CNPLog::GetInstance().Log("Accept Client IP=[%s], CurrentUserCount=(%d),MaxCount=(%d)" ,
               ((TcpSocket *)pClientSocket)->GetClientIpAddr(), GetCurrentUserCount(), GetMaxUser());
 
@@ -696,9 +635,6 @@ void ChatServer::Run()
             continue;
           }
 
-          //Client *pNewClient;
-          //if(((ServerSocket *)pServer->GetSocket())->GetType() == SERVER_PORT)
-          //if(((ServerSocket *)pClient->GetSocket())->GetType() == SERVER_PORT)
           if(static_cast<ServerSocket *>(pClient->GetSocket())->GetType() == SERVER_PORT)
           {
             AcceptClient(pClientSocket, CLIENT_USER);
@@ -721,7 +657,6 @@ void ChatServer::Run()
         CloseClient(pClient);
       }
       else
-        //if(tEvents[i].events & EVFILT_READ)
         if(tEvents[i].filter == EVFILT_READ)
         {
   #ifdef _DEBUG
@@ -734,10 +669,6 @@ void ChatServer::Run()
 #else
       if(tEvents[i].events & (EPOLLERR | EPOLLHUP))
       {
-        /*
-           CNPLog::GetInstance().Log("In EPOLLERR or EPOLLHUP disconnect (%p) (%d) errno=(%d)(%s)",
-           pClient, pClient->GetSocket()->GetFd(), errno, strerror(errno));
-           */
         errno = 0;
         CloseClient(pClient);
       }

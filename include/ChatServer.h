@@ -19,9 +19,6 @@ class CircularQueue;
 class BroadcastMessage;
 
 class ReleaseSlot;
-// #ifdef _ONESHOT
-// class ThreadQoS;
-// #endif
 
 using namespace std;
 #include <iostream>
@@ -43,9 +40,6 @@ class ChatServer : public Process
 
     Client *m_pDNServerSocket; //
 
-    // ClientSocket *m_pSendPipe;
-
-    // scoreboard_file *m_pShm;
     TStatistics *m_pShmKcps;
     TDSStatus *m_pShmDSStatus; // for DS Status
     int *m_pShmD;
@@ -70,9 +64,6 @@ class ChatServer : public Process
     int m_iShmKey;      // key from dsm
     int m_iShmDSStatus; // key from dsm
     ReleaseSlot *m_pSlot;
-// #ifdef _ONESHOT
-//     ThreadQoS *m_pTQoS;
-// #endif
 
   public:
     ChatServer();
@@ -98,7 +89,6 @@ class ChatServer : public Process
     const char *const GetIPAddr();
     const int GetCurrentUserCount();
     void HealthCheckUsers();
-    // void SendStorageInfo();
 
 #ifdef _FREEBSD
     void AddEPoll(Client *const _pClient, const short _filter, const unsigned short _usFlags);
@@ -119,7 +109,6 @@ class ChatServer : public Process
     const void *const GetSendQueue();
 
     void PutBroadcastQueue(BroadcastMessage *message, Client *const _pClient);
-    // void PutBroadcastQueue(const void *const _pVoid);
     const void *const GetBroadcastQueue();
 
     const int GetDNServerPort();
@@ -129,18 +118,11 @@ class ChatServer : public Process
     const char *const GetVolName();
     const char *const GetDirName();
 
-    // ClientSocket *const GetSendPipeClient();
     const uint64_t GetDownloadSize(const uint32_t _nBillNo);
 
     const unsigned int GetBandwidth(const char _chID);
-// #ifdef _ONESHOT
-//     const int AddQoS(Client *const _pClient, const unsigned int _uiEvents);
-// #endif
     void SetD();
-    // void SetComCodeIdx(ChatUser *const _pClient);
-    // const int GetComCodeIdx(const int _iComCode);
 
-    // void BroadcastMessage(char *message, Client *const _pClient);
     void MessageBroadcast(BroadcastMessage *_message);
     void MessageBroadcastToManagers(BroadcastMessage *_message);
 };

@@ -124,23 +124,6 @@ typedef enum
 }ENUM_SEND_MODE;
 
 
-// DS <-> SHM <-> DSM
-// struct scoreboard_file {
-//   char cUse;
-//   int isupload;
-//   unsigned int comcode;
-//   unsigned int billno;
-
-//   unsigned int count;
-//   unsigned int kcps;
-//   uint64_t    iFSize;
-//   uint64_t    iDNSize;
-//   char id[16];
-//   char filename[128];
-//   double      tAccessTime;      // Access time
-//   //time_t      tAccessTime;      // Access time
-// };
-
 // shm to check DS Status
 // use DSMgr
 struct TDSStatus {

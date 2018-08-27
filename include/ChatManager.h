@@ -17,36 +17,12 @@ class Properties;
 class ServerInfoMgr;
 class CircularQueue;
 class ServerInfoDNMgr;
-//class ReleaseSlot;
 
-/*
-#include <map>
-typedef map<int, Client*> mapConnection;
-typedef mapConnection::value_type connValType;
-typedef mapConnection::iterator connItor;
- */
 
 const unsigned int MAX_DN = 10;
-//const unsigned int MAX_CLIENT = 300;
 const unsigned int MAX_CLIENT = 2000;
 const unsigned int MAX_MAC_LEN = 20;
 
-/*
-// DSMgr
-// struct scoreboard_file {
-char cUse;
-int isupload;
-unsigned int comcode;
-unsigned int billno;
-unsigned int count;
-unsigned int kcps;
-uint64_t  iFSize;
-uint64_t  iDNSize;
-char id[16];
-char filename[128];
-time_t      tAccessTime;      // Access time
-};
- */
 
 class ChatManager : public Process
 {
@@ -54,9 +30,6 @@ class ChatManager : public Process
     static const int TIME_ALIVE = 300; //
     //static const int TIME_ALIVE = 600;  //
     static const int MAX_STATISTICS = 20000; //
-
-    //  Client *m_pMS;        // member server
-    //  list <Client*> m_lstSMS;  // submember server
 
 #ifdef _FREEBSD
     IOMP_KQUEUE *m_pIOMP;
@@ -67,11 +40,6 @@ class ChatManager : public Process
     int m_iConnCount;
     unsigned long long m_iMacAddr;
     unsigned long m_iIPAddr;
-    /*
-       char  m_pchMacAddr[MAX_MAC_LEN];
-       char  m_pchIPAddr[MAX_IP_LEN];
-     */
-    //  char  m_pchStatistics[MAX_STATISTICS];
     char *m_pchStatistics;
 
     /**
@@ -81,15 +49,10 @@ class ChatManager : public Process
     CircularQueue *m_pWorkQueue;
     CircularQueue *m_pBBSQueue;
 
-    //  Client      *m_pRecvPipe;
-    //  ReleaseSlot   *m_pSlot;
-
     Tcmd_HELLO_DSM_DS *m_ChatServerInfo; 
-    // scoreboard_file   *m_pShm;
     TDSStatus *m_pShmDSStatus; // for ds status
-    //pthread_mutex_t   m_lockShm;
 
-    // DownloadServer
+    // ChatServer
     list<Client *> m_lstChatServer;
     pthread_mutex_t m_lockClient;
     //mapConnection   m_mapConnectList;
@@ -97,25 +60,9 @@ class ChatManager : public Process
     list<Tcmd_USER_CLOSE_DS_DSM *> m_lstClosed;
     pthread_mutex_t m_lockClosed;
 
-    /*
-#ifdef _FREEBSD
-const bool  SetFDSet(IOMP_KQUEUE* const _pcIomp);
-#else
-const bool  SetFDSet(IOMP_EPoll* const _pcIomp);
-#endif
-     */
     void DeleteAllMember();
 
     const int PingRoutine(Client *const _pClient, const int _iCommand);
-
-    // const int GetStatistics(
-    //     struct scoreboard_file *const pSt,
-    //     struct scoreboard_file **const _pNext,
-    //     uint32_t _iPos,
-    //     uint32_t *const _piFCount,  // file count
-    //     uint32_t *const _piUserCnt, // id count
-    //     uint32_t *const _piKcps,    // kcps
-    //     uint32_t *const _piSameCnt);
 
   public:
     ChatManager();
@@ -133,11 +80,8 @@ const bool  SetFDSet(IOMP_EPoll* const _pcIomp);
 
     const int GetMaxUser();
     const char *const GetIPAddr();
-    //  const serverInfoMap& GetServerPortMap();
     const int GetCurrentUserCount();
     void HealthCheckUsers();
-    // void SendStorageInfo();
-    // void SendStorageInfoOld();
 
     const int MessageBroadcast(const T_PACKET &_tPacket);
 

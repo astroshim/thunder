@@ -560,27 +560,6 @@ void ChatManager::DoFork(Process *_pProcess)
   pServerSocket->SetLinger();
   pDNServer = new ClientServer(pServerSocket);
 
-  // // Create SharedMemory
-  // // 1. create
-  // SharedMemory sm((key_t)m_pServerInfo->GetShmKey(), MAX_CLIENT * sizeof(struct scoreboard_file));
-  // if(!sm.IsStarted())
-  // {
-  //   printf("Creating SharedMemory failed! \n");
-
-  //   // 2. destroy
-  //   SharedMemory sm1((key_t)m_pServerInfo->GetShmKey());
-  //   sm1.Destroy();
-  //   return ;
-  // }
-  // m_pShm = (struct scoreboard_file *)sm.GetDataPoint();
-  // if(m_pShm == NULL)
-  // {
-  //   printf("Shm is NULL \n");
-  //   return;
-  // }
-  // //printf("Shared Memory start=(%p) \n", m_pShm);
-  // memset(m_pShm, 0, MAX_CLIENT * sizeof(struct scoreboard_file));
-
   /**
    * create shm to check DS status
    */
@@ -600,7 +579,6 @@ void ChatManager::DoFork(Process *_pProcess)
     printf("Shm is NULL \n");
     return;
   }
-  //printf("Shared Memory start=(%p) \n", m_pShmDSStatus);
   memset(m_pShmDSStatus, 0, 100 * sizeof(struct TDSStatus));
   // **
 
@@ -620,15 +598,6 @@ void ChatManager::Run()
 
   CNPUtil::GetIPConfig(&m_iMacAddr, &m_iIPAddr);
 
-  //if(CNPLog::GetInstance().SetFileName((char *)(cDNMgrProperties.GetProperty("SERVER_LOGFILE").c_str())))
-  //printf("[%s] \n", m_pServerInfo->GetLogFileName());
-
-
-  /*
-     for(int i =0; i < 10; i++)
-     {
-     */
-  //CNPLog::GetInstance().BackupLogFile2((char *)m_pServerInfo->GetLogFileName());
   if(CNPLog::GetInstance().SetFileName((char *)(m_pServerInfo->GetLogFileName())) )
   {
     Assert(false, "LogFile create error! ");
@@ -651,10 +620,6 @@ void ChatManager::Run()
   struct ether_addr haddr;
   memcpy((void *)&haddr, (void *)&m_iMacAddr, 6);
 
-  // CNPLog::GetInstance().Log("ChatManager::Run : pSm=(%p), size=(%d), stSize=(%d), ip=(%s)(%s)",
-  //     m_pShm,  MAX_CLIENT * sizeof(struct scoreboard_file), sizeof(struct scoreboard_file), inet_ntoa(laddr),
-  //     (char *)ether_ntoa ((struct ether_addr *)&haddr));
-
   // Worker create.
   for(int i = 0; i < m_pServerInfo->GetThreadCount(THREAD_WORKER); i++)
   {
@@ -675,7 +640,10 @@ void ChatManager::Run()
 
     if((iEventCount = m_pIOMP->Polling()) <= 0)
     {
-      //CNPLog::GetInstance().Log("epoll_wait error errno=%d, strerror=(%s)", errno, strerror(errno));
+  
+#ifdef _DEBUG
+      CNPLog::GetInstance().Log("epoll_wait error errno=%d, strerror=(%s)", errno, strerror(errno));
+#endif
       if(!GetStarted())
       {
         break;
@@ -730,7 +698,6 @@ void ChatManager::Run()
 #ifdef _FREEBSD
             if(m_pIOMP->AddClient(pNewClient, EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT|EV_ERROR) < 0)
 #else
-              //if(m_pIOMP->AddClient(pNewClient, EPOLLIN|EPOLLET) < 0)
               if(m_pIOMP->AddClient(pNewClient, EPOLLIN|EPOLLET|EPOLLONESHOT) < 0)
 #endif
               {
@@ -784,7 +751,6 @@ void ChatManager::Run()
       if(tEvents[i].events & (EPOLLERR | EPOLLHUP))
       {
         CNPLog::GetInstance().Log("In EPOLLERR or EPOLLHUP disconnect (%p) (%d) errno=(%d)(%s)", pClient,
-            //((Socket *)(pClient->GetSocket()))->GetFd(), errno?EBADF:1000?EINVAL:2000?EFAULT:3000?EINTR:4000,
             pClient->GetSocket()->GetFd(), errno, strerror(errno));
 
         CloseClient(pClient);
@@ -797,19 +763,10 @@ void ChatManager::Run()
 #endif
         pClient->SetAccessTime();
         PutWorkQueue(pClient);
-        //EventQueue::GetInstance().EnQueue(pClient);
       }
       else if(tEvents[i].events & EPOLLOUT)
       {
         CNPLog::GetInstance().Log("EPOLLOUT Client %p, events=(%d)", pClient, tEvents[i].events);
-        /*
-           if(((ClientUser*)pClient)->GetSendPacketCount() > 0)
-           {
-           m_pIOMP->DelClient(pClient);
-           PutSendQueue(pClient);
-        //SendQueue::GetInstance().EnQueue(pClient);
-        }
-        */
       }
 #endif
 
